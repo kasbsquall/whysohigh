@@ -118,7 +118,12 @@ export interface LlmDeps {
 // endpoint once answered "multimodal processing is not enabled" and worked
 // on the next call. Client errors are not retried.
 const BACKOFF_MS = [3_000, 10_000];
-const isTransient = (error: unknown): boolean => error instanceof NightshiftError && error.status >= 500;
+// Seen on 22 Oct: the NVIDIA VL endpoint kept answering "multimodal processing
+// is not enabled" (as a 502) for every call for over ten minutes, so retrying
+// that one only adds minutes before the caller's fallback.
+const NOT_RETRYABLE = /multimodal processing is not enabled/i;
+const isTransient = (error: unknown): boolean =>
+  error instanceof NightshiftError && error.status >= 500 && !NOT_RETRYABLE.test(error.message);
 
 async function callWithRetry(deps: LlmDeps, agent: string, request: ChatRequest): Promise<ChatResult> {
   const backoff = deps.backoffMs ?? BACKOFF_MS;

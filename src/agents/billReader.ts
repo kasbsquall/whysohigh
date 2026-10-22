@@ -1,15 +1,16 @@
 // BillReader: reads a bill image with a Nemotron vision model through
 // Nightshift and returns the printed fields. It never fills a field that is
 // not on the bill; a reply that fails validation is sent back once with the
-// reason.
+// reason. If the vision endpoint fails, it falls back to the bill's text layer.
 
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { extname } from "node:path";
-import type { ChatMessage, LlmClient } from "../llm/nightshift.ts";
+import { NightshiftError, type ChatMessage, type LlmClient } from "../llm/nightshift.ts";
 import type { RunLogger } from "../log.ts";
 
 export const AGENT = "BillReader";
 export const BILL_READER_MODEL = "nvidia/nemotron-3.5-super-vl-120b-a12b";
+export const BILL_TEXT_MODEL = "nvidia/nemotron-3.5-lightning-30b-a3b";
 const MAX_ATTEMPTS = 2;
 // The VL model spends most of its budget reasoning before the JSON; 1,500
 // tokens left a live run 4 tokens short of truncation.
@@ -102,8 +103,11 @@ export function parseBill(text: string): Bill {
   };
 }
 
+/** The text layer of a bill, kept next to the image as <name>.txt (sample bills ship with one). */
+export const textLayerPath = (billPath: string): string => billPath.slice(0, -extname(billPath).length) + ".txt";
+
 export async function readBill(llm: LlmClient, logger: RunLogger, billPath: string): Promise<Bill> {
-  let messages: readonly ChatMessage[] = [
+  const vision: readonly ChatMessage[] = [
     {
       role: "user",
       content: [
@@ -112,11 +116,34 @@ export async function readBill(llm: LlmClient, logger: RunLogger, billPath: stri
       ],
     },
   ];
+  try {
+    return await extract(llm, logger, BILL_READER_MODEL, vision, billPath);
+  } catch (error: unknown) {
+    const textPath = textLayerPath(billPath);
+    if (!(error instanceof NightshiftError) || !existsSync(textPath)) throw error;
+    // Plan B: the vision endpoint is down, so read the bill's text layer with a
+    // Nemotron text model. Fails closed when the bill has no text layer.
+    logger.log({ agent: AGENT, step: "fallback_text", reason: error.message.slice(0, 200), textPath });
+    const text: readonly ChatMessage[] = [
+      { role: "user", content: `${PROMPT}\n\nBill text:\n${readFileSync(textPath, "utf8")}` },
+    ];
+    return extract(llm, logger, BILL_TEXT_MODEL, text, billPath);
+  }
+}
+
+async function extract(
+  llm: LlmClient,
+  logger: RunLogger,
+  model: string,
+  initial: readonly ChatMessage[],
+  billPath: string,
+): Promise<Bill> {
+  let messages = initial;
   for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
-    const reply = await llm.chat(AGENT, { model: BILL_READER_MODEL, messages, maxTokens: MAX_TOKENS });
+    const reply = await llm.chat(AGENT, { model, messages, maxTokens: MAX_TOKENS });
     try {
       const bill = parseBill(reply.text);
-      logger.log({ agent: AGENT, step: "extracted", attempt, bill });
+      logger.log({ agent: AGENT, step: "extracted", attempt, model: reply.modelServed, bill });
       return bill;
     } catch (error: unknown) {
       const reason = (error as Error).message;

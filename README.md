@@ -15,7 +15,14 @@ npm run explain -- --bill samples/linda-2026-09.png --household samples/linda.js
 
 With no `.env`, the run uses `SAMPLE_MODE=true`: the same agent code runs on model and SQL responses recorded from a live run in `samples/cache/`. Each run writes its trace to `logs/<runId>.jsonl` and its result to `out/<runId>.json`.
 
-To run live, copy `.env.example` to `.env`, set `SAMPLE_MODE=false`, fill in the Meterless Nightshift runtime token and the local Zetaris password, and check the stack with `npm run doctor`.
+To run live:
+
+1. Copy `.env.example` to `.env`, set `SAMPLE_MODE=false` and fill in the Meterless Nightshift runtime token, the local Zetaris password and a long random `HOUSEHOLD_DB_PASSWORD`.
+2. Start the household database on the Zetaris network: `npm run db:up`.
+3. Register the data sources in Zetaris (NOAA daily weather, OpenEI URDB tariffs, EIA retail prices and the household Postgres): `npm run setup:sources`.
+4. Check the stack: `npm run doctor`.
+
+If the Nemotron vision endpoint fails, BillReader reads the bill's text layer (`<bill>.txt`) with a Nemotron text model and logs a `fallback_text` step. Without a text layer it stops with the error.
 
 ## Tests
 

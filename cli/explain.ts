@@ -6,6 +6,7 @@ import { join } from "node:path";
 import { parseArgs } from "node:util";
 import { readBill } from "../src/agents/billReader.ts";
 import { createRuntime } from "../src/runtime.ts";
+import { billWeather } from "../src/zetaris/queries.ts";
 
 const { values } = parseArgs({
   options: {
@@ -25,10 +26,12 @@ const { logger, config } = runtime;
 
 try {
   logger.log({ agent: "Orchestrator", step: "start", sampleMode: config.sampleMode, bill: values.bill });
-  const household = values.household ? JSON.parse(readFileSync(values.household, "utf8")) : null;
+  const household = values.household ? (JSON.parse(readFileSync(values.household, "utf8")) as { id?: string }) : null;
   const bill = await readBill(runtime.llm, logger, values.bill);
+  // Bill periods joined with station weather through Zetaris; the analysts build on this.
+  const history = household?.id ? await billWeather(runtime.sql, "WeatherAnalyst", household.id) : [];
 
-  const result = { runId: logger.runId, sampleMode: config.sampleMode, household, bill };
+  const result = { runId: logger.runId, sampleMode: config.sampleMode, household, bill, history };
   mkdirSync(values.out, { recursive: true });
   const outFile = join(values.out, `${logger.runId}.json`);
   writeFileSync(outFile, `${JSON.stringify(result, null, 2)}\n`, "utf8");

@@ -1,0 +1,30 @@
+# Household data (bills and household facts) in Postgres, joined by Zetaris
+# with the public REST sources. It sits on the Zetaris compose network so the
+# Zetaris driver reaches it as household-db:5432. No host port is published:
+# the app reads it only through Zetaris, and seeding runs inside the container.
+#
+#   docker compose --env-file ../../.env up -d
+name: whysohigh
+services:
+  household-db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: household
+      POSTGRES_USER: whysohigh
+      POSTGRES_PASSWORD: ${HOUSEHOLD_DB_PASSWORD:?set HOUSEHOLD_DB_PASSWORD in .env}
+    volumes:
+      - household-data:/var/lib/postgresql/data
+      - ./init:/docker-entrypoint-initdb.d:ro
+    mem_limit: 256m
+    cpus: 0.5
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U whysohigh -d household"]
+      interval: 5s
+      retries: 12
+    networks: [zetaris]
+networks:
+  zetaris:
+    name: zetaris_default
+    external: true
+volumes:
+  household-data:

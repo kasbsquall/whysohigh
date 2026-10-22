@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { parseBill, readBill } from "../src/agents/billReader.ts";
-import type { ChatRequest, LlmClient } from "../src/llm/nightshift.ts";
+import { BILL_READER_MODEL, BILL_TEXT_MODEL, parseBill, readBill } from "../src/agents/billReader.ts";
+import { NightshiftError, type ChatRequest, type LlmClient } from "../src/llm/nightshift.ts";
 import type { LogEvent, RunLogger } from "../src/log.ts";
 
 const GOOD = JSON.stringify({
@@ -49,6 +49,36 @@ describe("parseBill", () => {
     expect(() => parseBill(JSON.stringify({ ...base, days: 0 }))).toThrow(/days must be above 0/);
     expect(() => parseBill(JSON.stringify({ ...base, period_end: "Sept 16" }))).toThrow(/period_end/);
     expect(() => parseBill(JSON.stringify({ ...base, line_items: [null] }))).toThrow(/line_items\[0\]/);
+  });
+});
+
+describe("readBill fallback", () => {
+  const events: LogEvent[] = [];
+  const logger: RunLogger = { runId: "t", file: "", log: (e) => events.push(e) };
+
+  it("reads the text layer with a Nemotron text model when the vision endpoint fails", async () => {
+    const models: string[] = [];
+    const llm: LlmClient = {
+      async chat(_agent, request) {
+        models.push(request.model);
+        if (request.model === BILL_READER_MODEL) throw new NightshiftError(502, "multimodal processing is not enabled");
+        expect(String(request.messages[0].content)).toContain("Total amount due");
+        return { text: GOOD, reasoning: "", modelRequested: request.model, modelServed: request.model };
+      },
+    };
+    const bill = await readBill(llm, logger, "samples/linda-2026-09.png");
+    expect(bill.totalUsd).toBe(187.42);
+    expect(models).toEqual([BILL_READER_MODEL, BILL_TEXT_MODEL]);
+    expect(events.map((e) => e.step)).toContain("fallback_text");
+  });
+
+  it("fails closed when there is no text layer", async () => {
+    const llm: LlmClient = {
+      async chat() {
+        throw new NightshiftError(502, "down");
+      },
+    };
+    await expect(readBill(llm, logger, "test/fixtures/no-text-layer.png")).rejects.toThrow(/down/);
   });
 });
 

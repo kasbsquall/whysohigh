@@ -1,0 +1,19 @@
+Electric Service Statement
+Residential service, Columbus OH
+SAMPLE / NOT A REAL BILL
+Account: 0000-111-222
+Statement date: 09/19/2026
+Service period: 08/14/2026 - 09/16/2026
+Days in period: 33
+Meter read previous: 48,210
+Meter read current: 49,394
+Energy used: 1,184 kWh
+Rate: Residential Service (RS)
+Last month: 902 kWh, 29 days, $138.60
+Due date: 10/09/2026
+Customer charge	$10.00
+Distribution charge 1,184 kWh	$46.17
+Generation (price to compare) 1,184 kWh x $0.1012	$119.82
+Transmission 1,184 kWh	$5.94
+Riders and taxes	$5.49
+Total amount due	$187.42
