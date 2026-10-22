@@ -1,0 +1,14 @@
+{
+  "key": "7ee8daea6b4700a651f6da0a",
+  "response": {
+    "text": "{\n  \"period_start\": \"08/14/2026\",\n  \"period_end\": \"09/16/2026\",\n  \"days\": 33,\n  \"kwh\": 1184,\n  \"total_usd\": 217.42,\n  \"prev_kwh\": 902,\n  \"prev_days\": 29,\n  \"prev_total_usd\": 170.12,\n  \"line_items\": [\n    {\"label\": \"Customer charge\", \"usd\": 18.79},\n    {\"label\": \"Energy charge\", \"usd\": 41.17},\n    {\"label\": \"Riders and adjustments\", \"usd\": 157.46}\n  ]\n}",
+    "reasoning": "",
+    "modelRequested": "nvidia/nemotron-3.5-lightning-30b-a3b",
+    "modelServed": "nvidia/nemotron-3.5-lightning-30b-a3b",
+    "usage": {
+      "prompt_tokens": 1034,
+      "completion_tokens": 2693,
+      "total_tokens": 3727
+    }
+  }
+}

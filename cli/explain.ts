@@ -4,9 +4,8 @@
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { parseArgs } from "node:util";
-import { readBill } from "../src/agents/billReader.ts";
+import { explain, ORCHESTRATOR } from "../src/pipeline.ts";
 import { createRuntime } from "../src/runtime.ts";
-import { billWeather } from "../src/zetaris/queries.ts";
 
 const { values } = parseArgs({
   options: {
@@ -25,18 +24,16 @@ const runtime = createRuntime();
 const { logger, config } = runtime;
 
 try {
-  logger.log({ agent: "Orchestrator", step: "start", sampleMode: config.sampleMode, bill: values.bill });
+  logger.log({ agent: ORCHESTRATOR, step: "start", sampleMode: config.sampleMode, bill: values.bill });
   const household = values.household ? (JSON.parse(readFileSync(values.household, "utf8")) as { id?: string }) : null;
-  const bill = await readBill(runtime.llm, logger, values.bill);
-  // Bill periods joined with station weather through Zetaris; the analysts build on this.
-  const history = household?.id ? await billWeather(runtime.sql, "WeatherAnalyst", household.id) : [];
+  const explanation = await explain(runtime, values.bill, household?.id ?? null);
 
-  const result = { runId: logger.runId, sampleMode: config.sampleMode, household, bill, history };
+  const result = { runId: logger.runId, sampleMode: config.sampleMode, household, ...explanation };
   mkdirSync(values.out, { recursive: true });
   const outFile = join(values.out, `${logger.runId}.json`);
   writeFileSync(outFile, `${JSON.stringify(result, null, 2)}\n`, "utf8");
-  logger.log({ agent: "Orchestrator", step: "done", outFile, logFile: logger.file });
+  logger.log({ agent: ORCHESTRATOR, step: "done", outFile, logFile: logger.file });
 } catch (error: unknown) {
-  logger.log({ agent: "Orchestrator", step: "failed", error: (error as Error).message });
+  logger.log({ agent: ORCHESTRATOR, step: "failed", error: (error as Error).message });
   process.exitCode = 1;
 }

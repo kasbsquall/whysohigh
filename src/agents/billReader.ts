@@ -55,6 +55,14 @@ const num = (value: unknown): number | null => {
   return DECIMAL.test(cleaned) ? Number(cleaned) : null;
 };
 
+/** Day number of an MM/DD/YYYY date, or null when the date does not exist (02/30, 13/45). */
+const calendarDay = (printed: string): number | null => {
+  const [m, d, y] = printed.split("/").map(Number);
+  const time = Date.UTC(y, m - 1, d);
+  const date = new Date(time);
+  return date.getUTCFullYear() === y && date.getUTCMonth() === m - 1 && date.getUTCDate() === d ? time / 86_400_000 : null;
+};
+
 const isObject = (value: unknown): value is Record<string, unknown> =>
   value !== null && typeof value === "object" && !Array.isArray(value);
 
@@ -77,6 +85,13 @@ export function parseBill(text: string): Bill {
   if (missing.length > 0) throw new Error(`Missing or invalid fields: ${missing.join(", ")}.`);
   if ((required.days as number) <= 0 || (required.kwh as number) < 0) {
     throw new Error("days must be above 0 and kwh cannot be negative.");
+  }
+  const start = calendarDay(raw.period_start as string);
+  const end = calendarDay(raw.period_end as string);
+  if (start === null || end === null) throw new Error("period_start and period_end must be real calendar dates (MM/DD/YYYY).");
+  if (end <= start) throw new Error("period_end must be after period_start.");
+  if (end - start !== required.days) {
+    throw new Error(`days is ${required.days} but the period dates are ${end - start} days apart. Check the dates and the day count.`);
   }
 
   const items = Array.isArray(raw.line_items) ? raw.line_items : [];

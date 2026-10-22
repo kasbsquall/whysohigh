@@ -9,11 +9,9 @@ Meter read previous: 48,210
 Meter read current: 49,394
 Energy used: 1,184 kWh
 Rate: Residential Service (RS)
-Last month: 902 kWh, 29 days, $138.60
+Last month: 902 kWh, 29 days, $170.12
 Due date: 10/09/2026
-Customer charge	$10.00
-Distribution charge 1,184 kWh	$46.17
-Generation (price to compare) 1,184 kWh x $0.1012	$119.82
-Transmission 1,184 kWh	$5.94
-Riders and taxes	$5.49
-Total amount due	$187.42
+Customer charge	$18.79
+Energy charge 1,184 kWh	$41.17
+Riders and adjustments 1,184 kWh	$157.46
+Total amount due	$217.42

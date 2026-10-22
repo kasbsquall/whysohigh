@@ -82,7 +82,7 @@ export async function callNightshift(
     signal: AbortSignal.timeout(TIMEOUT_MS),
   });
   if (!response.ok) {
-    const detail = redact((await response.text()).slice(0, 300), config.token);
+    const detail = redact(await response.text(), config.token).slice(0, 300);
     throw new NightshiftError(response.status, `Nightshift returned HTTP ${response.status} for ${request.model}: ${detail}`);
   }
   const body = (await response.json()) as {
@@ -144,6 +144,32 @@ async function callWithRetry(deps: LlmDeps, agent: string, request: ChatRequest)
   }
 }
 
+// Provider failures are recorded too, so SAMPLE_MODE replays the same path
+// (for example the text-layer fallback when the vision endpoint is down).
+interface RecordedFailure {
+  readonly providerError: { readonly status: number; readonly message: string };
+}
+type Recorded = ChatResult | RecordedFailure;
+
+async function liveOrRecorded(deps: LlmDeps, agent: string, request: ChatRequest): Promise<Recorded> {
+  if (deps.config.sampleMode) return deps.cache.read<Recorded>("llm", request);
+  try {
+    return await callWithRetry(deps, agent, request);
+  } catch (error: unknown) {
+    if (!(error instanceof NightshiftError)) throw error;
+    return { providerError: { status: error.status, message: error.message } };
+  }
+}
+
+// A transient failure while re-recording must not replace a good answer.
+function hasGoodRecording(cache: ResponseCache, request: ChatRequest): boolean {
+  try {
+    return !("providerError" in cache.read<Recorded>("llm", request));
+  } catch {
+    return false;
+  }
+}
+
 /** Live, recording or replaying client depending on SAMPLE_MODE and RECORD_SAMPLES. */
 export function createLlmClient(deps: LlmDeps): LlmClient {
   const { config, cache, logger } = deps;
@@ -151,10 +177,15 @@ export function createLlmClient(deps: LlmDeps): LlmClient {
     async chat(agent: string, request: ChatRequest): Promise<ChatResult> {
       const started = Date.now();
       const source = config.sampleMode ? "sample" : "live";
-      const result = config.sampleMode
-        ? cache.read<ChatResult>("llm", request)
-        : await callWithRetry(deps, agent, request);
-      if (config.recordSamples) cache.write("llm", request, result);
+      const result = await liveOrRecorded(deps, agent, request);
+      if (config.recordSamples && !("providerError" in result && hasGoodRecording(cache, request))) {
+        cache.write("llm", request, result);
+      }
+      if ("providerError" in result) {
+        const { status, message } = result.providerError;
+        logger.log({ agent, step: "model_call_failed", source, modelRequested: request.model, status, latencyMs: Date.now() - started });
+        throw new NightshiftError(status, message);
+      }
       logger.log({
         agent,
         step: "model_call",

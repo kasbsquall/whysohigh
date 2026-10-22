@@ -50,6 +50,13 @@ describe("parseBill", () => {
     expect(() => parseBill(JSON.stringify({ ...base, period_end: "Sept 16" }))).toThrow(/period_end/);
     expect(() => parseBill(JSON.stringify({ ...base, line_items: [null] }))).toThrow(/line_items\[0\]/);
   });
+
+  it("rejects impossible or inconsistent dates", () => {
+    const base = JSON.parse(GOOD);
+    expect(() => parseBill(JSON.stringify({ ...base, period_start: "02/30/2026" }))).toThrow(/real calendar dates/);
+    expect(() => parseBill(JSON.stringify({ ...base, period_start: "09/16/2026", period_end: "08/14/2026" }))).toThrow(/after period_start/);
+    expect(() => parseBill(JSON.stringify({ ...base, days: 34 }))).toThrow(/days is 34 but the period dates are 33 days apart/);
+  });
 });
 
 describe("readBill fallback", () => {

@@ -132,6 +132,29 @@ describe("live model client", () => {
     await expect(llm.chat("BillReader", request)).rejects.toThrow(/HTTP 400/);
     expect(calls).toHaveLength(1);
   });
+
+  it("records a provider failure so sample mode replays the same failure", async () => {
+    const cache = fileCache(mkdtempSync(join(tmpdir(), "wsh-")));
+    const recording = loadConfig({ SAMPLE_MODE: "false", RECORD_SAMPLES: "true", METERLESS_RUNTIME_TOKEN: "tok", ZETARIS_PASSWORD: "pw" });
+    const down = new Response("multimodal processing is not enabled", { status: 502 });
+    const live = createLlmClient({ config: recording, cache, logger: memoryLogger(), fetchImpl: fakeFetch([down], []) });
+    await expect(live.chat("BillReader", request)).rejects.toMatchObject({ name: "NightshiftError", status: 502 });
+
+    const logger = memoryLogger();
+    const replay = createLlmClient({ config: loadConfig({}), cache, logger });
+    await expect(replay.chat("BillReader", request)).rejects.toThrow(/multimodal processing is not enabled/);
+    expect(logger.events).toMatchObject([{ step: "model_call_failed", source: "sample", status: 502 }]);
+  });
+
+  it("keeps a good recording when a re-record hits a provider failure", async () => {
+    const cache = fileCache(mkdtempSync(join(tmpdir(), "wsh-")));
+    cache.write("llm", request, { text: "ok", reasoning: "", modelRequested: "m", modelServed: "m" });
+    const recording = loadConfig({ SAMPLE_MODE: "false", RECORD_SAMPLES: "true", METERLESS_RUNTIME_TOKEN: "tok", ZETARIS_PASSWORD: "pw" });
+    const down = new Response("upstream", { status: 400 });
+    const live = createLlmClient({ config: recording, cache, logger: memoryLogger(), fetchImpl: fakeFetch([down], []) });
+    await expect(live.chat("BillReader", request)).rejects.toThrow(/HTTP 400/);
+    expect(cache.read<{ text: string }>("llm", request).text).toBe("ok");
+  });
 });
 
 describe("sample mode clients", () => {

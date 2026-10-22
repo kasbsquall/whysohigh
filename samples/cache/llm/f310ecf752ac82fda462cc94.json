@@ -1,0 +1,9 @@
+{
+  "key": "f310ecf752ac82fda462cc94",
+  "response": {
+    "providerError": {
+      "status": 502,
+      "message": "Nightshift returned HTTP 502 for nvidia/nemotron-3.5-super-vl-120b-a12b: {\"error\":{\"message\":\"400: {\\\"message\\\":\\\"ValueError: Received multimodal data but multimodal processing is not enabled. Use --enable-multimodal flag to enable multimodal processing.\\\",\\\"type\\\":\\\"Bad Request\\\",\\\"code\\\":400}\",\"type\":\"api_error\",\"code\":\"provider_error\",\"param\":null,\"meterless_detail\":\""
+    }
+  }
+}

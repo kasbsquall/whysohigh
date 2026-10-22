@@ -54,6 +54,19 @@ export function parseBillWeather(rows: readonly Row[]): readonly BillWeather[] {
   }));
 }
 
+/** AEP Ohio's bundled residential tariff (rate RS), every version URDB holds. */
+export const RS_BUNDLED = "Residential Service Bundled Ohio Power Rate Zone (RS)";
+
+export function tariffsSql(name: string = RS_BUNDLED): string {
+  if (/['\\]/.test(name)) throw new Error(`Invalid tariff name "${name}".`);
+  return (
+    "SELECT t.label, t.name, t.startdate, t.enddate, t.approved, t.fixedchargefirstmeter, t.fixedchargeunits, " +
+    "to_json(t.energyratestructure), to_json(t.energyweekdayschedule[0]), to_json(t.energyweekendschedule[0]) " +
+    "FROM openei_urdb.aep_ohio_residential LATERAL VIEW explode(items) AS t " +
+    `WHERE t.name = '${name}' ORDER BY t.startdate`
+  );
+}
+
 export async function billWeather(sql: SqlClient, agent: string, householdId: string): Promise<readonly BillWeather[]> {
   return parseBillWeather(await sql.run(agent, billWeatherSql(householdId)));
 }
