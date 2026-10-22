@@ -41,7 +41,7 @@ function render(page: PageView, state: State, onToggle: () => void, focusSwitch 
   $("checks").innerHTML = checks(run);
   $("rules").innerHTML = rulesLine(run, page.rules);
   $("evidence").innerHTML = evidence(run.evidence);
-  $("actions").innerHTML = actions(page.household);
+  $("actions").innerHTML = actions(run);
   $("page").setAttribute("aria-busy", "false");
   $("page").classList.remove("is-loading");
 

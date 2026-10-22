@@ -7,6 +7,7 @@
 import { readFileSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import { openHouseholdMemory, parseNote, rememberNote } from "./memory/householdMemory.ts";
+import { parseHouseholdFacts, PROGRAMS, type HouseholdFacts, type Program, type ProgramId } from "./actions/programs.ts";
 import { CLOSURE_FLOOR_USD, CLOSURE_SHARE, MAX_SLOPE_VS_OHIO, RECOMPUTE_TOLERANCE } from "./agents/critic.ts";
 import { MIN_BILLS_TO_FIT } from "./agents/weatherAnalyst.ts";
 import type { LogEvent } from "./log.ts";
@@ -34,11 +35,13 @@ export interface DemoRun extends Explanation {
   readonly logFile: string;
 }
 
+const lindaFacts = (): HouseholdFacts => parseHouseholdFacts(JSON.parse(readFileSync("samples/linda.json", "utf8")));
+
 async function run(step: DemoStep, memoryDir: string): Promise<DemoRun> {
   const runtime = createRuntime();
   const { logger } = runtime;
   logger.log({ agent: ORCHESTRATOR, step: "start", demoStep: step.name, sampleMode: runtime.config.sampleMode, bill: step.bill });
-  const explanation = await explain(runtime, step.bill, { householdId: DEMO_HOUSEHOLD, memoryDir: step.memory ? memoryDir : null });
+  const explanation = await explain(runtime, step.bill, { householdId: DEMO_HOUSEHOLD, memoryDir: step.memory ? memoryDir : null, facts: lindaFacts() });
   logger.log({ agent: ORCHESTRATOR, step: "done", logFile: logger.file });
   return { step: step.name, runId: logger.runId, sampleMode: runtime.config.sampleMode, logFile: logger.file, ...explanation };
 }
@@ -67,6 +70,8 @@ export interface Household {
 }
 
 export interface DemoPayloadRun extends Omit<DemoRun, "logFile"> {
+  /** The programs this run's actions refer to, with name, next step and source. */
+  readonly programs: Readonly<Partial<Record<ProgramId, Program>>>;
   /** The run's log, one event per agent step, model call, SQL statement and verdict. */
   readonly trace: readonly LogEvent[];
   /** Most the critic lets stay unexplained for this change (check 2). */
@@ -125,6 +130,7 @@ export function demoPayload(runs: readonly DemoRun[]): DemoPayload {
       return {
         ...run,
         trace: readTrace(logFile),
+        programs: Object.fromEntries(run.actions.actions.map((a) => [a.id, PROGRAMS[a.id]])),
         closureAllowedUsd: change === undefined ? null : Math.max(Math.abs(change) * CLOSURE_SHARE, CLOSURE_FLOOR_USD),
       };
     }),

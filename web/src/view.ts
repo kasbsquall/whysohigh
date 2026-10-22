@@ -1,8 +1,8 @@
 // HTML for each part of the page, from the view model. Text from the server is escaped.
 
 import { esc, kwh, short, usd } from "./format.ts";
-import type { DemoRules, Household } from "../../src/demo.ts";
-import type { BillEnd, CauseView, CheckView, Evidence, PageView, RunView } from "./model.ts";
+import type { DemoRules } from "../../src/demo.ts";
+import type { ActionView, BillEnd, CauseView, CheckView, Evidence, PageView, RunView } from "./model.ts";
 
 const icon = (name: string): string => `<i class="ph-light ph-${name}" aria-hidden="true"></i>`;
 
@@ -147,7 +147,7 @@ export function evidence(e: Evidence): string {
           "The tariff used to recompute your bill",
           "file-text",
           `<p>${esc(e.tariff.name)}, in force since ${esc(short(e.tariff.start))}. OpenEI URDB rate <code translate="no">${esc(e.tariff.label)}</code>.</p>
-           <p><a href="https://apps.openei.org/USURDB/rate/view/${encodeURIComponent(e.tariff.label)}" target="_blank" rel="noopener noreferrer">Open the published tariff${icon("arrow-square-out")}</a></p>`,
+           <p><a href="https://apps.openei.org/IURDB/rate/view/${encodeURIComponent(e.tariff.label)}" target="_blank" rel="noopener noreferrer">Open the published tariff${icon("arrow-square-out")}</a></p>`,
         )
       : "",
     block(
@@ -159,43 +159,98 @@ export function evidence(e: Evidence): string {
   ].join("");
 }
 
-// Ohio's income limit for HEAP and PIPP Plus, 175% of the federal poverty guidelines, by household size.
-// ODJFS table for Jul 2026 to May 2027, read 22 Oct 2026 (docs/11-ohio-y-piezas.md).
-const INCOME_LIMIT_USD: Readonly<Record<number, number>> = { 1: 27930, 2: 37870, 3: 47810, 4: 57750, 5: 67690, 6: 77630, 7: 87570 };
-// PIPP Plus share of gross income paid to the electric company: 5% with gas heat, 10% with electric heat (same source).
-const pippShare = (electricHeat: boolean): number => (electricHeat ? 0.1 : 0.05);
+function amountText(a: ActionView): { big: string; small: string } {
+  const amt = a.amount;
+  if (!amt) return { big: "Amount not known", small: "We need more facts about the household." };
+  switch (amt.kind) {
+    case "monthly":
+      return { big: `about ${usd(amt.usd).replace(".00", "")} a month`, small: `instead of this bill's ${usd(amt.insteadOfUsd)}` };
+    case "range":
+      return { big: `${usd(amt.minUsd).replace(".00", "")} to ${usd(amt.maxUsd).replace(".00", "")}`, small: "once, for the heating season" };
+    case "up_to":
+      return { big: `up to ${usd(amt.usd).replace(".00", "")}`, small: "toward the bill" };
+    case "disputed":
+      return { big: usd(amt.usd), small: "in question on this bill" };
+    case "share_of_change":
+      return { big: usd(amt.usd), small: "of the change came from your own use" };
+  }
+}
 
-export function actions(h: Household): string {
-  const limit = INCOME_LIMIT_USD[h.householdSize];
-  const share = pippShare(h.electricHeat);
-  const people = h.householdSize === 1 ? "one person" : `${h.householdSize} people`;
-  const under = limit === undefined ? "" : h.annualIncomeUsd <= limit ? ` (under the ${usd(limit).replace(".00", "")} limit)` : "";
-  const pipp =
-    limit !== undefined && h.annualIncomeUsd > limit
-      ? `<p>At ${usd(h.annualIncomeUsd).replace(".00", "")} a year for ${people}, the household is over the ${usd(limit).replace(".00", "")} limit.</p>`
-      : `<p>Pay ${Math.round(share * 100)}% of your income instead of the full bill. At ${usd(h.annualIncomeUsd).replace(".00", "")} a year for ${people}${under}:</p>
-        <span class="amt num">about ${usd(Math.round((h.annualIncomeUsd * share) / 12)).replace(".00", "")} a month</span>
-        <p>Each on-time payment forgives 1/24 of your past-due balance.</p>`;
+const ACTION_ICONS: Readonly<Record<string, string>> = {
+  pipp_plus: "hand-coins",
+  heap: "flame",
+  summer_crisis: "sun",
+  winter_crisis: "snowflake",
+  puco_complaint: "scales",
+  usage_note: "notebook",
+};
+
+const telHref = (phone: string): string => `tel:+1${phone.replace(/\D/g, "").replace(/^1(?=\d{10}$)/, "")}`;
+
+function actionCard(a: ActionView): string {
+  const amt = amountText(a);
+  const taken = a.status === "already_taken";
+  const step = a.nextStep;
+  return `
+    <article class="act${taken ? " taken" : ""}">
+      <h3>${icon(ACTION_ICONS[a.id] ?? "check")}${esc(a.name)}</h3>
+      ${a.longName && a.longName !== a.name ? `<span class="full">${esc(a.longName)}</span>` : ""}
+      ${taken ? `<span class="status-taken">${icon("hourglass")}You told us on ${esc(short(a.takenAt ?? ""))}. Not suggested again.</span>` : ""}
+      <p>${esc(a.why)}</p>
+      <span class="amt num">${esc(amt.big)}</span>
+      <span class="amt-sub">${esc(amt.small)}</span>
+      ${taken ? `<p class="ok-why">${icon("notebook")}<span>From your note: “${esc(a.reason)}”</span></p>` : `<p class="ok-why">${icon("seal-check")}<span>${esc(a.reason)}</span></p>`}
+      ${
+        taken
+          ? ""
+          : `<p class="next"><strong>Next step.</strong> ${esc(step.text)}</p>
+             <div class="next-links">
+               ${step.phone ? `<a class="src-link" href="${telHref(step.phone)}">${icon("phone")}${esc(step.phone)}</a>` : ""}
+               ${step.url ? `<a class="src-link" href="${esc(step.url)}" target="_blank" rel="noopener noreferrer">${icon("arrow-square-out")}Apply or read more</a>` : ""}
+             </div>`
+      }
+      <div class="act-stub"><span class="k">CHECKED BY</span><span class="who" translate="no">${taken ? "HouseholdMemory" : "ReconciliationCritic"}</span>${
+        a.source.startsWith("https://")
+          ? `<a class="src-link" href="${esc(a.source)}" target="_blank" rel="noopener noreferrer">Program rules${icon("arrow-square-out")}</a>`
+          : `<span class="src">${esc(a.source)}</span>`
+      }</div>
+    </article>`;
+}
+
+/** Today's date in Columbus, YYYY-MM-DD. */
+export const todayInOhio = (): string => new Intl.DateTimeFormat("en-CA", { timeZone: "America/New_York" }).format(new Date());
+
+/**
+ * The run judges eligibility at the bill's date so replays stay the same. A program
+ * whose season has ended since then is shown as closed today, with no call to action.
+ */
+export function actions(run: RunView, today: string = todayInOhio()): string {
+  const closedNow = (a: ActionView): boolean => a.status === "recommended" && a.window !== null && today > a.window.to;
+  const offered = run.actions.filter((a) => a.status !== "rejected" && !closedNow(a));
+  const rejected = run.actions.filter((a) => a.status === "rejected");
+  const declined = [
+    ...run.actions
+      .filter(closedNow)
+      .map((a) => ({ name: a.name, reason: `Closed on ${short(a.window?.to ?? "")}. It was open on this bill's date, ${short(run.actionsAsOf)}; ask about next season.`, by: "Today's date" })),
+    ...rejected.map((a) => ({ name: a.name, reason: a.reason, by: "ReconciliationCritic" })),
+    ...run.notOffered.map((n) => ({ name: n.name, reason: n.reason, by: "ActionPlanner" })),
+  ];
   return `
     <div class="area-h">
-      <h2>Help you could ask for</h2>
-      <span class="preview">${icon("eye")}Preview, amounts to be confirmed</span>
+      <h2>What you can do this month</h2>
+      <span class="by">${icon("scales")}Checked at the bill's date, ${esc(short(run.actionsAsOf))}</span>
     </div>
-    <div class="acts">
-      <article class="act">
-        <h3>${icon("hand-coins")}PIPP Plus</h3>
-        <span class="full">Percentage of Income Payment Plan</span>
-        ${pipp}
-        <div class="act-stub"><span class="k">SOURCE</span><a class="src-link" href="https://jfs.ohio.gov/public-assistance/energy-and-community-assistance/percentage-of-income-payment-plan-pipp" target="_blank" rel="noopener noreferrer">Ohio JFS, PIPP Plus${icon("arrow-square-out")}</a></div>
-      </article>
-      <article class="act">
-        <h3>${icon("flame")}HEAP</h3>
-        <span class="full">Home Energy Assistance Program</span>
-        <p>A one-time credit on your bill for the heating season, Oct 1, 2026 to Apr 30, 2027:</p>
-        <span class="amt num">$31 to $546</span>
-        <div class="act-stub"><span class="k">SOURCE</span><a class="src-link" href="https://development.ohio.gov/individual/energy-assistance" target="_blank" rel="noopener noreferrer">Ohio energy assistance${icon("arrow-square-out")}</a></div>
-      </article>
-    </div>`;
+    ${offered.length ? `<div class="acts">${offered.map(actionCard).join("")}</div>` : `<p class="notice">${icon("info")}None of the programs we check fit this bill right now.</p>`}
+    ${
+      declined.length
+        ? `<details class="ev declined">
+            <summary>${icon("x-circle")}Looked at and not offered (${declined.length})${icon("caret-down").replace('class="', 'class="chev ')}</summary>
+            <ul class="decl">${declined
+              .map((d) => `<li><strong>${esc(d.name)}</strong><span>${esc(d.reason)}</span><span class="by-small" translate="no">${esc(d.by)}</span></li>`)
+              .join("")}</ul>
+          </details>`
+        : ""
+    }`;
 }
 
 const lowerFirst = (t: string): string => (/^[A-Z][a-z]/.test(t) ? t.charAt(0).toLowerCase() + t.slice(1) : t);

@@ -19,7 +19,7 @@ The two-month demo, from an empty memory:
 npm run demo
 ```
 
-It explains Linda's September bill, stores her note that September was a one-off (`samples/linda-notes.json`), explains her October bill with that memory, and explains October again without memory so the difference is visible. Results go to `out/demo/`.
+It explains Linda's September bill, stores her notes that September was a one-off and that she applied for PIPP Plus on September 25 (`samples/linda-notes.json`), explains her October bill with that memory, and explains October again without memory so the difference is visible. Results go to `out/demo/`.
 
 To see it as a page:
 
@@ -55,6 +55,11 @@ If the Nemotron vision endpoint fails, BillReader reads the bill's text layer (`
 
 What the checks prove: the first closure check tests whether the model fits this household. After calibration the kWh add up by construction and both bills already match the tariff, so closure there only confirms the bookkeeping, and the split between weather and usage rests on check 3. With fewer than 6 bills of history, that split uses statewide slopes and is marked low confidence.
 
+10. ActionPlanner proposes what the household can do with this bill, each with an amount worked out from the household's facts: PIPP Plus (a share of income each month: 5% with gas heat, 10% with electric heat, at least 10 USD), HEAP (31 to 546 USD once per heating season, 75% less on PIPP Plus), the Summer and Winter Crisis programs (up to 1,300 and 1,200 USD), a PUCO complaint only when the bill is above the published tariff, and a usage note when the household's own use drove the change. A program the household already told us it applied for this season is skipped. Budget billing is left out until there are 12 bills to average.
+11. ReconciliationCritic checks every proposal before it is shown (check 4): income under 175% of the federal poverty guidelines for the household size (ODJFS table, Jul 2026 to May 2027, sizes 1 to 7), the program open on the bill's end date, and the crisis programs' extra condition (someone 60 or older, or a disconnection notice). A missing or malformed fact rejects the program instead of guessing. Every amount, limit and date was read from ODJFS, PUCO and AEP Ohio on 22 Oct 2026 and is listed in `src/actions/programs.ts` with its source.
+
+Eligibility is judged at the bill's end date so a replay gives the same plan. The page then compares each program's dates with today in Ohio: a season that closed after the bill shows as "Closed on …" with no call to action.
+
 Days and weather are separated per day: "days" is the extra days used like an average day of the previous bill, "weather" is how much hotter or colder each day of this bill was.
 
 ## Memory
@@ -65,6 +70,8 @@ Two Meterless engines, vendored in `engines/` and declared in `engines/VENDORED.
 - World Model keeps the household graph with provenance on every write: household, AEP Ohio (EIA 14006), the URDB tariff versions it was billed under, NOAA station USW00014821, and each bill with its diagnosis as facts.
 
 How memory changes a diagnosis: when the household marked the previous bill as a one-off, WeatherAnalyst leaves it out of any fit and calibrates the model to the latest normal bill instead. The previous bill's extra use then shows as its own component ("last bill's one-off use did not repeat"). Without that note, the same October bill reads as "used less".
+
+An action note (kind `action`, tagged with the program) tells ActionPlanner the household already applied: in October, with memory, PIPP Plus shows as "You told us on Sep 25" and HEAP warns that it pays 75% less once PIPP Plus is approved. Without memory, PIPP Plus is suggested again.
 
 The sample bills are generated from the published tariff by `scripts/make-sample-bill.ts`, then rendered to PNG with a headless browser. Linda's October kWh follow a stated recipe (the Ohio prior calibrated to her August bill, applied to NOAA's degree days for that period), so in the demo her October usage matches the model by construction. Accuracy has to be measured on synthetic households with known causes; that evaluation is not built yet.
 

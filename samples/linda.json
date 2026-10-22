@@ -6,5 +6,7 @@
   "utility": "AEP Ohio",
   "householdSize": 1,
   "annualIncomeUsd": 24000,
-  "electricHeat": false
+  "electricHeat": false,
+  "oldestMemberAge": 71,
+  "disconnectionNotice": false
 }

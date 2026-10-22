@@ -4,5 +4,12 @@
     "kind": "one_off",
     "text": "My grandson stayed with me from August 20 to September 10, so September was not a normal month.",
     "at": "2026-09-22"
+  },
+  {
+    "periodStart": "2026-08-14",
+    "kind": "action",
+    "action": "pipp_plus",
+    "text": "I applied for PIPP Plus on September 25.",
+    "at": "2026-09-25"
   }
 ]

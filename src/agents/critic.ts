@@ -2,6 +2,7 @@
 // reject them. Each check returns a verdict with its reason; nothing passes
 // silently.
 
+import { INCOME_LIMIT_USD, SUMMER_CRISIS_MIN_AGE, type HouseholdFacts, type Program } from "../actions/programs.ts";
 import type { RunLogger } from "../log.ts";
 import { segmentsFor, type Tariff } from "../tariff/tariff.ts";
 import type { BillWeather } from "../zetaris/queries.ts";
@@ -97,4 +98,51 @@ export function checkFreshness(tariffs: readonly Tariff[], bills: readonly BillW
 
 export function logVerdict(logger: RunLogger, verdict: Verdict, about: string, attempt: number): void {
   logger.log({ agent: AGENT, step: verdict.accepted ? "accepted" : "rejected", about, attempt, ...verdict });
+}
+
+const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+const longDate = (iso: string): string => `${MONTHS[Number(iso.slice(5, 7)) - 1]} ${Number(iso.slice(8, 10))}, ${iso.slice(0, 4)}`;
+const wholeUsd = (n: number): string => `${n.toLocaleString("en-US")} USD`;
+const people = (n: number): string => (n === 1 ? "1 person" : `${n} people`);
+
+/**
+ * Check 4: the household must be able to take the action at the bill's date.
+ * Income, household size and dates come from the program rules in src/actions/programs.ts.
+ * A fact the rule needs and the household has not given rejects the action (fail closed).
+ */
+export function checkEligibility(program: Program, facts: HouseholdFacts | null, asOf: string, hasAmount: boolean): Verdict {
+  const verdict = (accepted: boolean, reason: string): Verdict => ({ check: "eligibility", accepted, reason, gapUsd: 0 });
+  const w = program.window;
+  if (w && asOf < w.from) return verdict(false, `Not open yet: ${program.name} takes applications from ${longDate(w.from)} to ${longDate(w.to)}.`);
+  if (w && asOf > w.to) return verdict(false, `Closed: ${program.name} ran from ${longDate(w.from)} to ${longDate(w.to)}.`);
+
+  const reasons: string[] = [];
+  if (program.incomeTested) {
+    const size = facts?.householdSize;
+    const income = facts?.annualIncomeUsd;
+    if (size === undefined || income === undefined || !Number.isInteger(size) || size < 1 || !Number.isFinite(income) || income < 0) {
+      return verdict(false, "We need the household size and yearly income to check the income limit.");
+    }
+    const limit = INCOME_LIMIT_USD[size];
+    if (limit === undefined) return verdict(false, `Households of ${size} or more people are not supported yet.`);
+    if (income > limit) return verdict(false, `${wholeUsd(income)} a year is over the ${wholeUsd(limit)} limit for ${people(size)}.`);
+    reasons.push(`${wholeUsd(income)} a year is under the ${wholeUsd(limit)} limit for ${people(size)}`);
+  }
+  if (!hasAmount) return verdict(false, `We need ${program.id === "pipp_plus" ? "the yearly income and whether you heat with electricity" : "more facts"} to work out the amount.`);
+
+  if (program.id === "summer_crisis") {
+    const age = facts?.oldestMemberAge;
+    const older = age !== undefined && age >= SUMMER_CRISIS_MIN_AGE;
+    if (!older && facts?.disconnectionNotice !== true) {
+      return verdict(false, `Needs someone ${SUMMER_CRISIS_MIN_AGE} or older at home, a doctor's note that cooling is needed, or a disconnection notice.`);
+    }
+    reasons.push(older ? `someone at home is ${age}` : "there is a disconnection notice");
+  }
+  if (program.id === "winter_crisis" && facts?.disconnectionNotice !== true) {
+    return verdict(false, "Only with a disconnection notice, a service already cut off, a new service or a transfer.");
+  }
+  if (w) reasons.push(`it is open from ${longDate(w.from)} to ${longDate(w.to)}`);
+  if (reasons.length === 0) reasons.push("anyone can do this; it has no income or date rules");
+  const text = reasons.length === 1 ? reasons[0] : `${reasons.slice(0, -1).join("; ")}; and ${reasons.at(-1)}`;
+  return verdict(true, `${text.charAt(0).toUpperCase()}${text.slice(1)}.`);
 }

@@ -1,6 +1,7 @@
 // Turns one demo run (result plus trace) into what the page shows. Every number
 // comes from the run; the words around it are chosen here.
 
+import type { ActionAmount, ActionStatus } from "../../src/agents/actionPlanner.ts";
 import type { ComponentKey } from "../../src/agents/usageAnalyst.ts";
 import type { DemoPayload, DemoPayloadRun, DemoRules, Household } from "../../src/demo.ts";
 import type { LogEvent } from "../../src/log.ts";
@@ -39,6 +40,22 @@ export interface CheckView {
   readonly sentBackTo: string | null;
 }
 
+export interface ActionView {
+  readonly id: string;
+  readonly name: string;
+  readonly longName: string;
+  readonly status: ActionStatus;
+  readonly why: string;
+  readonly amount: ActionAmount | null;
+  /** Check 4's reason, or what the household told us it did. */
+  readonly reason: string;
+  readonly takenAt: string | null;
+  readonly nextStep: { readonly text: string; readonly phone?: string; readonly url?: string };
+  readonly source: string;
+  /** Dates the program takes applications, when it has a season. */
+  readonly window: { readonly from: string; readonly to: string } | null;
+}
+
 export interface Evidence {
   readonly weatherSql: string | null;
   readonly tariffSql: string | null;
@@ -64,6 +81,10 @@ export interface RunView {
   readonly note: { readonly text: string; readonly at: string } | null;
   /** Why the run could not split the change, when it could not. */
   readonly skipped: string | null;
+  /** The date check 4 judged eligibility at. */
+  readonly actionsAsOf: string;
+  readonly actions: readonly ActionView[];
+  readonly notOffered: readonly { readonly name: string; readonly reason: string }[];
 }
 
 const TARIFF_AGENT = "RateAnalyst";
@@ -192,7 +213,8 @@ export function checksFromTrace(trace: readonly LogEvent[]): CheckView[] {
   const checks: CheckView[] = [];
   let rejectedBefore = false;
   trace.forEach((e, i) => {
-    if (e.agent !== "ReconciliationCritic") return;
+    // Check 4 (eligibility) is shown with the actions it judged, not in this trail.
+    if (e.agent !== "ReconciliationCritic" || e.check === "eligibility") return;
     const accepted = e.accepted === true;
     const retry = accepted ? undefined : trace.slice(i + 1).find((next) => next.step === "retry");
     checks.push({
@@ -276,6 +298,24 @@ export function runView(run: DemoPayloadRun, household: Household, minBillsToFit
     evidence: evidenceFrom(run),
     note,
     skipped: run.change.skipped,
+    actionsAsOf: run.actions.asOf,
+    actions: run.actions.actions.map((a) => {
+      const program = run.programs[a.id];
+      return {
+        id: a.id,
+        name: program?.name ?? a.id,
+        longName: program?.longName ?? "",
+        status: a.status,
+        why: plainReason(a.why),
+        amount: a.amount,
+        reason: plainReason(a.verdict?.reason ?? a.taken?.text ?? ""),
+        takenAt: a.taken?.at ?? null,
+        nextStep: program?.nextStep ?? { text: "" },
+        source: program?.source ?? "",
+        window: program?.window ?? null,
+      };
+    }),
+    notOffered: run.actions.notProposed.map((n) => ({ name: n.name, reason: plainReason(n.reason) })),
   };
 }
 

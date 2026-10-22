@@ -5,6 +5,7 @@
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { parseArgs } from "node:util";
+import { parseHouseholdFacts } from "../src/actions/programs.ts";
 import { explain, ORCHESTRATOR } from "../src/pipeline.ts";
 import { createRuntime } from "../src/runtime.ts";
 
@@ -31,7 +32,7 @@ try {
   const household = values.household ? (JSON.parse(readFileSync(values.household, "utf8")) as { id?: string }) : null;
   const householdId = household?.id ?? null;
   const memoryDir = values["no-memory"] || !householdId ? null : (values.memory ?? join(".memory", householdId));
-  const explanation = await explain(runtime, values.bill, { householdId, memoryDir });
+  const explanation = await explain(runtime, values.bill, { householdId, memoryDir, facts: household ? parseHouseholdFacts(household) : null });
 
   const result = { runId: logger.runId, sampleMode: config.sampleMode, household, memoryDir, ...explanation };
   mkdirSync(values.out, { recursive: true });

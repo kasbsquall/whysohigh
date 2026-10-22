@@ -38,7 +38,7 @@ export const kwh = (n: number, signed = false): string => {
 /** The critic writes "12.60 USD"; the page says "$12.60". */
 export const plainReason = (reason: string): string =>
   reason
-    .replace(/(-?)(\d+(?:\.\d+)?) USD/g, (_, sign: string, n: string) => `${sign ? MINUS : ""}$${n}`)
+    .replace(/(-?)(\d[\d,]*(?:\.\d+)?) USD/g, (_, sign: string, n: string) => `${sign ? MINUS : ""}$${n}`)
     .replace(/(?<![\w-])-(\d)/g, `${MINUS}$1`)
     .replace(/the −\$([\d.]+) change/g, "the $$$1 drop")
     .replace(/the ohio_prior weather model/g, "Ohio averages")

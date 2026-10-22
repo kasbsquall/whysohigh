@@ -8,6 +8,8 @@ import { WorldModel } from "../../engines/world-model/reference/src/index.ts";
 import type { RunLogger } from "../log.ts";
 import type { Decomposition } from "../agents/usageAnalyst.ts";
 import type { RateEstimate } from "../agents/rateAnalyst.ts";
+import type { ActionPlan } from "../agents/actionPlanner.ts";
+import { PROGRAMS } from "../actions/programs.ts";
 
 export const AGENT = "WorldModel";
 
@@ -121,4 +123,36 @@ export function previousDiagnosis(wm: WorldModel, householdId: string, periodSta
     usageStrategy: typeof value("usageStrategy") === "string" ? (value("usageStrategy") as string) : null,
     confidence: typeof value("modelConfidence") === "string" ? (value("modelConfidence") as string) : null,
   };
+}
+
+/** Each program the planner looked at, with check 4's verdict as a fact on the household. */
+export async function recordActionPlan(
+  wm: WorldModel,
+  householdId: string,
+  plan: ActionPlan,
+  billEnd: string,
+  runId: string,
+  logger: RunLogger,
+): Promise<void> {
+  const at = `${billEnd}T00:00:00.000Z`;
+  const by = (agent: string) => ({ kind: "agent", by: agent, at, runId, url: `whysohigh://run/${runId}` });
+  const household = await wm.upsertEntity({ type: "household", externalKey: { system: "whysohigh", id: householdId }, name: householdId, source: by("Orchestrator") });
+  for (const action of plan.actions) {
+    const program = PROGRAMS[action.id];
+    const isUrl = program.source.startsWith("https://");
+    const entity = await wm.upsertEntity({
+      type: "program",
+      externalKey: { system: "whysohigh-program", id: program.id },
+      name: program.name,
+      source: { kind: "file", by: "src/actions/programs.ts", at, ...(isUrl ? { url: program.source } : {}) },
+    });
+    await wm.assertFact({
+      about: household.id,
+      predicate: `action:${program.id}`,
+      value: { status: action.status, reason: action.verdict?.reason ?? action.taken?.text ?? null, program: entity.id },
+      confidence: 0.8,
+      source: by(action.verdict ? "ReconciliationCritic" : "HouseholdMemory"),
+    });
+  }
+  logger.log({ agent: AGENT, step: "recorded_actions", household: household.id, actions: plan.actions.length });
 }

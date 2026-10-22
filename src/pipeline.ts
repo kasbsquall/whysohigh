@@ -1,6 +1,8 @@
 // Orchestration of one explanation run. Agents hand their work to the critic,
 // and a rejection sends the work back with the reason instead of going on.
 
+import type { HouseholdFacts, ProgramId } from "./actions/programs.ts";
+import { planActions, type ActionPlan } from "./agents/actionPlanner.ts";
 import { readBill, type Bill } from "./agents/billReader.ts";
 import { checkRecompute, logVerdict, type Verdict } from "./agents/critic.ts";
 import {
@@ -13,8 +15,9 @@ import {
 } from "./agents/rateAnalyst.ts";
 import { join } from "node:path";
 import { analyzeChange, type ChangeResult } from "./changeAnalysis.ts";
-import { openHouseholdGraph, previousDiagnosis, recordRun, type PreviousDiagnosis } from "./memory/householdGraph.ts";
+import { openHouseholdGraph, previousDiagnosis, recordActionPlan, recordRun, type PreviousDiagnosis } from "./memory/householdGraph.ts";
 import {
+  actionsTaken,
   notesAbout,
   oneOffPeriods,
   openHouseholdMemory,
@@ -48,6 +51,8 @@ export interface Explanation {
   readonly history: readonly BillWeather[];
   readonly rate: RateResult;
   readonly change: ChangeResult;
+  /** ActionPlanner's proposals, each judged by critic check 4. */
+  readonly actions: ActionPlan;
   readonly memory: MemoryUsed | null;
 }
 
@@ -135,6 +140,8 @@ export interface ExplainOptions {
   readonly householdId: string | null;
   /** Folder for the household's H-MEM and World Model state; null runs without memory. */
   readonly memoryDir: string | null;
+  /** What the household told us about itself (size, income, heating); null if nothing. */
+  readonly facts?: HouseholdFacts | null;
 }
 
 export async function explain(runtime: Runtime, billPath: string, options: ExplainOptions): Promise<Explanation> {
@@ -143,11 +150,25 @@ export async function explain(runtime: Runtime, billPath: string, options: Expla
   const history = householdId ? await billWeather(runtime.sql, "WeatherAnalyst", householdId) : [];
   const tariffs = await loadTariffs(runtime.sql);
   const rate = analyzeRate(runtime, tariffs, bill, history);
+  const { start, end } = rate.estimate.period;
+  const plan = (change: ChangeResult, taken: ReadonlyMap<ProgramId, { at: string; text: string }>): ActionPlan =>
+    planActions(
+      {
+        facts: options.facts ?? null,
+        billTotalUsd: bill.totalUsd,
+        rate,
+        change,
+        billsOnRecord: history.filter((h) => h.periodEnd <= end).length,
+        asOf: end,
+        taken,
+      },
+      runtime.logger,
+    );
   if (!householdId || !memoryDir) {
-    return { bill, history, rate, change: analyzeChange(runtime, tariffs, bill, history, rate), memory: null };
+    const change = analyzeChange(runtime, tariffs, bill, history, rate);
+    return { bill, history, rate, change, actions: plan(change, new Map()), memory: null };
   }
 
-  const { start, end } = rate.estimate.period;
   const memory = openHouseholdMemory(join(memoryDir, "hmem"), end);
   const graph = openHouseholdGraph(memoryDir, householdId);
   const previousStart = history.find((h) => h.periodEnd === start)?.periodStart ?? null;
@@ -160,6 +181,7 @@ export async function explain(runtime: Runtime, billPath: string, options: Expla
   };
 
   const change = analyzeChange(runtime, tariffs, bill, history, rate, oneOffPeriods(memory, end));
+  const actions = plan(change, actionsTaken(memory, end));
   // Graph first: if it fails, H-MEM is not left holding a diagnosis the graph lacks.
   await recordRun(
     graph,
@@ -170,8 +192,9 @@ export async function explain(runtime: Runtime, billPath: string, options: Expla
     runtime.logger.runId,
     runtime.logger,
   );
+  await recordActionPlan(graph, householdId, actions, end, runtime.logger.runId, runtime.logger);
   rememberDiagnosis(memory, householdId, start, end, summarize(bill, start, end, change), runtime.logger.runId, runtime.logger);
-  return { bill, history, rate, change, memory: used };
+  return { bill, history, rate, change, actions, memory: used };
 }
 
 /** One line a later run can recall: the bill and how its change was split. */

@@ -81,15 +81,30 @@ describe("page view from the demo runs", () => {
     expect(page.first.recomputedUsd).toBe(payload.runs[0].rate.estimate.charges.totalUsd);
   });
 
-  it("works out the PIPP Plus preview from the household instead of fixed text", () => {
-    const linda = actions(payload.household);
-    expect(linda).toContain("Pay 5% of your income");
-    expect(linda).toContain("about $100 a month");
-    expect(linda).toContain("under the $27,930 limit");
-    const over = actions({ ...payload.household, annualIncomeUsd: 40000 });
-    expect(over).toContain("over the $27,930 limit");
-    expect(over).not.toContain("a month");
-    expect(actions({ ...payload.household, electricHeat: true })).toContain("about $200 a month");
+  it("shows the planner's actions with check 4's reasons, and memory changes them in October", () => {
+    expect(page.first.actions.map((a) => [a.id, a.status])).toEqual([
+      ["pipp_plus", "recommended"],
+      ["heap", "rejected"],
+      ["summer_crisis", "recommended"],
+      ["winter_crisis", "rejected"],
+      ["usage_note", "recommended"],
+    ]);
+    const html = actions(page.first, "2026-09-20");
+    expect(html).toContain("about $100 a month");
+    expect(html).toContain("instead of this bill&#39;s $217.42");
+    expect(html).toContain("$24,000 a year is under the $27,930 limit for 1 person.");
+    expect(html).toContain('href="tel:+18002820880"');
+    expect(html).toContain("Not open yet: HEAP takes applications from Oct 1, 2026 to Apr 30, 2027.");
+    expect(page.withMemory.actions.find((a) => a.id === "pipp_plus")?.status).toBe("already_taken");
+    expect(page.withoutMemory.actions.find((a) => a.id === "pipp_plus")?.status).toBe("recommended");
+    expect(page.first.checks.some((c) => c.title === "eligibility")).toBe(false);
+  });
+
+  it("shows a season that ended after the bill's date as closed today, with no call to action", () => {
+    const html = actions(page.first, "2026-10-22");
+    expect(html).toContain("Closed on Sep 30. It was open on this bill&#39;s date, Sep 16; ask about next season.");
+    expect(html).not.toContain("ask for Summer Crisis help");
+    expect(actions(page.first, "2026-09-20")).toContain("ask for Summer Crisis help");
   });
 
   it("says which way the reading without the note goes", () => {
