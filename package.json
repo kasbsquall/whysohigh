@@ -1,0 +1,25 @@
+{
+  "name": "whysohigh",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Snap your electricity bill. Why So High tells you why it went up and what you can do about it this month.",
+  "license": "Apache-2.0",
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "explain": "tsx cli/explain.ts",
+    "doctor": "tsx cli/doctor.ts",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "conformance:hmem": "tsx engines/hmem/conformance/runner.ts",
+    "conformance:world-model": "tsx engines/world-model/conformance/runner.ts"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "tsx": "^4.20.0",
+    "typescript": "^5.7.0",
+    "vitest": "^3.2.0"
+  }
+}

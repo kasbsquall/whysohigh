@@ -1,0 +1,165 @@
+// Model calls through Meterless Nightshift, the app's primary AI provider.
+// OpenAI-compatible chat completions on the local runtime. The model that
+// actually answered is read from the response and logged, because the router
+// can serve a different model than the one requested.
+
+import type { Config } from "../config.ts";
+import type { ResponseCache } from "../cache.ts";
+import type { RunLogger } from "../log.ts";
+
+export type ContentPart =
+  | { readonly type: "text"; readonly text: string }
+  | { readonly type: "image_url"; readonly image_url: { readonly url: string } };
+
+export interface ChatMessage {
+  readonly role: "system" | "user" | "assistant";
+  readonly content: string | readonly ContentPart[];
+}
+
+export interface ChatRequest {
+  readonly model: string;
+  readonly messages: readonly ChatMessage[];
+  readonly maxTokens?: number;
+  readonly temperature?: number;
+}
+
+export interface ChatResult {
+  readonly text: string;
+  readonly reasoning: string;
+  readonly modelRequested: string;
+  readonly modelServed: string;
+  readonly usage?: Readonly<Record<string, number>>;
+}
+
+export interface LlmClient {
+  chat(agent: string, request: ChatRequest): Promise<ChatResult>;
+}
+
+const TIMEOUT_MS = 240_000;
+const THINK_END = "</think>";
+
+/** status is the HTTP status, or 0 when the reply arrived but is unusable. */
+export class NightshiftError extends Error {
+  constructor(
+    readonly status: number,
+    message: string,
+  ) {
+    super(message);
+    this.name = "NightshiftError";
+  }
+}
+
+const redact = (text: string, secret: string): string => (secret ? text.replaceAll(secret, "[redacted]") : text);
+
+/** Splits a completion into the reasoning trace and the final answer. */
+export function splitReasoning(content: string): { text: string; reasoning: string } {
+  const at = content.lastIndexOf(THINK_END);
+  if (at === -1) return { text: content.trim(), reasoning: "" };
+  const reasoning = content.slice(0, at).replace(/^\s*<think>/, "").trim();
+  return { text: content.slice(at + THINK_END.length).trim(), reasoning };
+}
+
+export async function callNightshift(
+  config: Config["meterless"],
+  request: ChatRequest,
+  fetchImpl: typeof fetch = fetch,
+): Promise<ChatResult> {
+  const maxTokens = request.maxTokens ?? 1200;
+  const response = await fetchImpl(`${config.baseUrl}/chat/completions`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${config.token}`,
+      "Content-Type": "application/json",
+      "meterless-app": "whysohigh",
+      "meterless-scope": "user",
+    },
+    body: JSON.stringify({
+      model: request.model,
+      messages: request.messages,
+      max_tokens: maxTokens,
+      temperature: request.temperature ?? 0,
+    }),
+    signal: AbortSignal.timeout(TIMEOUT_MS),
+  });
+  if (!response.ok) {
+    const detail = redact((await response.text()).slice(0, 300), config.token);
+    throw new NightshiftError(response.status, `Nightshift returned HTTP ${response.status} for ${request.model}: ${detail}`);
+  }
+  const body = (await response.json()) as {
+    model?: string;
+    usage?: Record<string, number>;
+    choices?: { finish_reason?: string; message?: { content?: string | null } }[];
+  };
+  const choice = body.choices?.[0];
+  if (choice?.finish_reason === "length") {
+    throw new NightshiftError(0, `Nightshift output for ${request.model} was cut at max_tokens (${maxTokens}).`);
+  }
+  const content = choice?.message?.content;
+  if (typeof content !== "string") {
+    throw new NightshiftError(0, `Nightshift returned no message content for ${request.model}.`);
+  }
+  return {
+    ...splitReasoning(content),
+    modelRequested: request.model,
+    modelServed: body.model ?? "unknown",
+    usage: body.usage,
+  };
+}
+
+export interface LlmDeps {
+  readonly config: Config;
+  readonly cache: ResponseCache;
+  readonly logger: RunLogger;
+  readonly fetchImpl?: typeof fetch;
+  readonly backoffMs?: readonly number[];
+}
+
+// Upstream provider errors (HTTP 5xx) are often transient: the NVIDIA VL
+// endpoint once answered "multimodal processing is not enabled" and worked
+// on the next call. Client errors are not retried.
+const BACKOFF_MS = [3_000, 10_000];
+const isTransient = (error: unknown): boolean => error instanceof NightshiftError && error.status >= 500;
+
+async function callWithRetry(deps: LlmDeps, agent: string, request: ChatRequest): Promise<ChatResult> {
+  const backoff = deps.backoffMs ?? BACKOFF_MS;
+  for (let attempt = 0; ; attempt++) {
+    try {
+      return await callNightshift(deps.config.meterless, request, deps.fetchImpl);
+    } catch (error: unknown) {
+      if (attempt >= backoff.length || !isTransient(error)) throw error;
+      deps.logger.log({
+        agent,
+        step: "provider_retry",
+        attempt: attempt + 1,
+        waitMs: backoff[attempt],
+        reason: (error as Error).message.slice(0, 200),
+      });
+      await new Promise((resolve) => setTimeout(resolve, backoff[attempt]));
+    }
+  }
+}
+
+/** Live, recording or replaying client depending on SAMPLE_MODE and RECORD_SAMPLES. */
+export function createLlmClient(deps: LlmDeps): LlmClient {
+  const { config, cache, logger } = deps;
+  return {
+    async chat(agent: string, request: ChatRequest): Promise<ChatResult> {
+      const started = Date.now();
+      const source = config.sampleMode ? "sample" : "live";
+      const result = config.sampleMode
+        ? cache.read<ChatResult>("llm", request)
+        : await callWithRetry(deps, agent, request);
+      if (config.recordSamples) cache.write("llm", request, result);
+      logger.log({
+        agent,
+        step: "model_call",
+        source,
+        modelRequested: result.modelRequested,
+        modelServed: result.modelServed,
+        latencyMs: Date.now() - started,
+        usage: result.usage,
+      });
+      return result;
+    },
+  };
+}

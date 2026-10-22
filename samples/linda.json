@@ -1,0 +1,9 @@
+{
+  "_note": "Illustrative household. Synthetic, not a real person.",
+  "name": "Linda",
+  "city": "Columbus, OH",
+  "utility": "AEP Ohio",
+  "householdSize": 1,
+  "annualIncomeUsd": 24000,
+  "electricHeat": false
+}
