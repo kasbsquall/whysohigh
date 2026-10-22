@@ -33,7 +33,7 @@ describe("sourceStatements", () => {
 describe("billWeather", () => {
   it("joins bills with station days inside each period", () => {
     const sql = billWeatherSql("linda");
-    expect(sql).toContain("FROM household_pg.bills b JOIN noaa_ncei.cmh_daily w");
+    expect(sql).toContain("FROM household_pg.bills b LEFT JOIN noaa_ncei.cmh_daily w");
     expect(sql).toContain("WHERE b.household_id = 'linda'");
   });
 
@@ -46,5 +46,6 @@ describe("billWeather", () => {
       { periodStart: "2026-08-14", periodEnd: "2026-09-16", days: 33, kwh: 1184, weatherDays: 33, cdd: 322.5, hdd: 1.5 },
     ]);
     expect(() => parseBillWeather([["a", "b", "x", "1", "1", "1", "1"]])).toThrow(/days/);
+    expect(() => parseBillWeather([["2026-08-14", "2026-08-14", "0", "1", "0", "0", "0"]])).toThrow(/days must be above 0/);
   });
 });

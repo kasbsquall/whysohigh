@@ -27,9 +27,12 @@ const mean = "(CAST(w.TMAX AS DOUBLE) + CAST(w.TMIN AS DOUBLE)) / 2";
 export function billWeatherSql(householdId: string): string {
   assertId(householdId);
   return (
-    "SELECT b.period_start, b.period_end, b.days, CAST(b.kwh AS DOUBLE) AS kwh, count(w.DATE) AS weather_days, " +
-    `round(sum(greatest(${mean} - 65, 0)), 1) AS cdd, round(sum(greatest(65 - ${mean}, 0)), 1) AS hdd ` +
-    "FROM household_pg.bills b JOIN noaa_ncei.cmh_daily w " +
+    // A day counts only when both TMAX and TMIN are present (the sum is null otherwise).
+    "SELECT b.period_start, b.period_end, b.days, CAST(b.kwh AS DOUBLE) AS kwh, " +
+    "count(CAST(w.TMAX AS DOUBLE) + CAST(w.TMIN AS DOUBLE)) AS weather_days, " +
+    `coalesce(round(sum(greatest(${mean} - 65, 0)), 1), 0) AS cdd, coalesce(round(sum(greatest(65 - ${mean}, 0)), 1), 0) AS hdd ` +
+    // LEFT JOIN keeps a bill with missing weather days, so the critic can see the gap.
+    "FROM household_pg.bills b LEFT JOIN noaa_ncei.cmh_daily w " +
     "ON to_date(w.DATE) >= b.period_start AND to_date(w.DATE) < b.period_end " +
     `WHERE b.household_id = '${householdId}' ` +
     "GROUP BY b.period_start, b.period_end, b.days, b.kwh ORDER BY b.period_start"
@@ -42,11 +45,16 @@ const toNumber = (cell: string, column: string): number => {
   return value;
 };
 
+const positive = (value: number, column: string): number => {
+  if (value <= 0) throw new Error(`Column ${column} must be above 0, got ${value}.`);
+  return value;
+};
+
 export function parseBillWeather(rows: readonly Row[]): readonly BillWeather[] {
   return rows.map((row) => ({
     periodStart: row[0],
     periodEnd: row[1],
-    days: toNumber(row[2], "days"),
+    days: positive(toNumber(row[2], "days"), "days"),
     kwh: toNumber(row[3], "kwh"),
     weatherDays: toNumber(row[4], "weather_days"),
     cdd: toNumber(row[5], "cdd"),

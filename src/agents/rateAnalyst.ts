@@ -36,7 +36,7 @@ export async function loadTariffs(sql: SqlClient): Promise<readonly Tariff[]> {
 const previousDay = (date: string): string =>
   new Date(Date.parse(`${date}T00:00:00Z`) - 86_400_000).toISOString().slice(0, 10);
 
-function segmentsByStrategy(tariffs: readonly Tariff[], period: BillPeriod, strategy: RateStrategy): readonly Segment[] {
+export function segmentsByStrategy(tariffs: readonly Tariff[], period: BillPeriod, strategy: RateStrategy): readonly Segment[] {
   const all = segmentsFor(tariffs, period);
   if (strategy === "prorated") return all;
   const lastDay = segmentsFor(tariffs, { start: previousDay(period.end), end: period.end })[0].tariff;

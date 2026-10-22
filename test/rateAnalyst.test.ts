@@ -90,7 +90,7 @@ describe("analyzeRate", () => {
   it("closes on the first attempt when the bill matches the tariff", async () => {
     const runtime = fakeRuntime();
     const history = [weather("2026-07-16", "2026-08-14", 902), weather("2026-08-14", "2026-09-16", 1184)];
-    const result = await analyzeRate(runtime, bill("08/14/2026", "09/16/2026", 1184, 217.42), history);
+    const result = analyzeRate(runtime, tariffs, bill("08/14/2026", "09/16/2026", 1184, 217.42), history);
     expect(result).toMatchObject({ closed: true, possibleBillingErrorUsd: null, priceEffectUsd: 0 });
     expect(result.verdicts).toHaveLength(1);
   });
@@ -98,7 +98,7 @@ describe("analyzeRate", () => {
   it("sends the work back with the critic's reason, then prorates", async () => {
     const runtime = fakeRuntime();
     const prorated = estimateBill(tariffs, { start: "2026-03-25", end: "2026-04-24" }, 900, "prorated").charges.totalUsd;
-    const result = await analyzeRate(runtime, bill("03/25/2026", "04/24/2026", 900, prorated), []);
+    const result = analyzeRate(runtime, tariffs, bill("03/25/2026", "04/24/2026", 900, prorated), []);
     expect(result.verdicts.map((v) => v.accepted)).toEqual([false, true]);
     expect(result.estimate.strategy).toBe("prorated");
     const retry = runtime.events.find((e) => e.step === "retry");
@@ -107,7 +107,7 @@ describe("analyzeRate", () => {
 
   it("reports a possible billing error when no strategy closes the bill", async () => {
     const runtime = fakeRuntime();
-    const result = await analyzeRate(runtime, bill("08/14/2026", "09/16/2026", 1184, 260), []);
+    const result = analyzeRate(runtime, tariffs, bill("08/14/2026", "09/16/2026", 1184, 260), []);
     expect(result).toMatchObject({ closed: false, possibleBillingErrorUsd: 42.58, priceEffectUsd: null });
     expect(runtime.events.find((e) => e.step === "finding")).toMatchObject({ kind: "possible_billing_error", direction: "billed_above_tariff" });
   });
@@ -118,14 +118,14 @@ describe("analyzeRate", () => {
     const end = estimateBill(tariffs, period, 900, "period_end").charges.totalUsd;
     const split = estimateBill(tariffs, period, 900, "prorated").charges.totalUsd;
     const billed = Math.round(Math.max(end, split) * 1.05 * 100) / 100;
-    const result = await analyzeRate(runtime, bill("03/25/2026", "04/24/2026", 900, billed), []);
+    const result = analyzeRate(runtime, tariffs, bill("03/25/2026", "04/24/2026", 900, billed), []);
     expect(result.possibleBillingErrorUsd).toBe(Math.round((billed - Math.max(end, split)) * 100) / 100);
   });
 
   it("keeps the verdict when no tariff covers the previous bill", async () => {
     const runtime = fakeRuntime();
     const history = [weather("2024-11-01", "2024-12-01", 700), weather("2026-08-14", "2026-09-16", 1184)];
-    const result = await analyzeRate(runtime, bill("08/14/2026", "09/16/2026", 1184, 217.42), history);
+    const result = analyzeRate(runtime, tariffs, bill("08/14/2026", "09/16/2026", 1184, 217.42), history);
     expect(result).toMatchObject({ closed: true, priceEffectUsd: null });
     expect(runtime.events.find((e) => e.step === "price_effect")?.reason).toMatch(/No approved tariff covers 2024-11-01/);
   });

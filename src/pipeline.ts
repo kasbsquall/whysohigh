@@ -11,6 +11,7 @@ import {
   type RateEstimate,
   type RateStrategy,
 } from "./agents/rateAnalyst.ts";
+import { analyzeChange, type ChangeResult } from "./changeAnalysis.ts";
 import type { Runtime } from "./runtime.ts";
 import type { BillPeriod, Tariff } from "./tariff/tariff.ts";
 import { billWeather, type BillWeather } from "./zetaris/queries.ts";
@@ -30,6 +31,7 @@ export interface Explanation {
   readonly bill: Bill;
   readonly history: readonly BillWeather[];
   readonly rate: RateResult;
+  readonly change: ChangeResult;
 }
 
 const STRATEGIES: readonly RateStrategy[] = ["period_end", "prorated"];
@@ -40,13 +42,13 @@ export const isoDate = (printed: string): string => {
   return `${y}-${m}-${d}`;
 };
 
-export async function analyzeRate(
+export function analyzeRate(
   runtime: Runtime,
+  tariffs: readonly Tariff[],
   bill: Bill,
   history: readonly BillWeather[],
-): Promise<RateResult> {
+): RateResult {
   const { logger } = runtime;
-  const tariffs = await loadTariffs(runtime.sql);
   const period: BillPeriod = { start: isoDate(bill.periodStart), end: isoDate(bill.periodEnd) };
 
   const verdicts: Verdict[] = [];
@@ -115,6 +117,8 @@ function priceEffectOrNull(
 export async function explain(runtime: Runtime, billPath: string, householdId: string | null): Promise<Explanation> {
   const bill = await readBill(runtime.llm, runtime.logger, billPath);
   const history = householdId ? await billWeather(runtime.sql, "WeatherAnalyst", householdId) : [];
-  const rate = await analyzeRate(runtime, bill, history);
-  return { bill, history, rate };
+  const tariffs = await loadTariffs(runtime.sql);
+  const rate = analyzeRate(runtime, tariffs, bill, history);
+  const change = analyzeChange(runtime, tariffs, bill, history, rate);
+  return { bill, history, rate, change };
 }
