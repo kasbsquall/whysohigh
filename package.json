@@ -16,7 +16,9 @@
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
     "conformance:hmem": "tsx engines/hmem/conformance/runner.ts",
-    "conformance:world-model": "tsx engines/world-model/conformance/runner.ts"
+    "conformance:world-model": "tsx engines/world-model/conformance/runner.ts",
+    "remember": "tsx cli/remember.ts",
+    "demo": "tsx cli/demo.ts"
   },
   "devDependencies": {
     "@types/node": "^22.10.0",

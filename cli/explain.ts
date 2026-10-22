@@ -1,5 +1,6 @@
 // Programmatic entry point.
 //   npm run explain -- --bill samples/linda-2026-09.png --household samples/linda.json --out out/
+// Household memory lives in .memory/<household id> unless --memory points elsewhere; --no-memory runs without it.
 
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
@@ -12,6 +13,8 @@ const { values } = parseArgs({
     bill: { type: "string" },
     household: { type: "string" },
     out: { type: "string", default: "out" },
+    memory: { type: "string" },
+    "no-memory": { type: "boolean", default: false },
   },
 });
 
@@ -26,9 +29,11 @@ const { logger, config } = runtime;
 try {
   logger.log({ agent: ORCHESTRATOR, step: "start", sampleMode: config.sampleMode, bill: values.bill });
   const household = values.household ? (JSON.parse(readFileSync(values.household, "utf8")) as { id?: string }) : null;
-  const explanation = await explain(runtime, values.bill, household?.id ?? null);
+  const householdId = household?.id ?? null;
+  const memoryDir = values["no-memory"] || !householdId ? null : (values.memory ?? join(".memory", householdId));
+  const explanation = await explain(runtime, values.bill, { householdId, memoryDir });
 
-  const result = { runId: logger.runId, sampleMode: config.sampleMode, household, ...explanation };
+  const result = { runId: logger.runId, sampleMode: config.sampleMode, household, memoryDir, ...explanation };
   mkdirSync(values.out, { recursive: true });
   const outFile = join(values.out, `${logger.runId}.json`);
   writeFileSync(outFile, `${JSON.stringify(result, null, 2)}\n`, "utf8");

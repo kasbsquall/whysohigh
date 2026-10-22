@@ -13,6 +13,14 @@ npm install
 npm run explain -- --bill samples/linda-2026-09.png --household samples/linda.json
 ```
 
+The two-month demo, from an empty memory:
+
+```bash
+npm run demo
+```
+
+It explains Linda's September bill, stores her note that September was a one-off (`samples/linda-notes.json`), explains her October bill with that memory, and explains October again without memory so the difference is visible. Results go to `out/demo/`.
+
 With no `.env`, the run uses `SAMPLE_MODE=true`: the same agent code runs on model and SQL responses recorded from a live run in `samples/cache/`. Each run writes its trace to `logs/<runId>.jsonl` and its result to `out/<runId>.json`.
 
 To run live:
@@ -40,7 +48,16 @@ What the checks prove: the first closure check tests whether the model fits this
 
 Days and weather are separated per day: "days" is the extra days used like an average day of the previous bill, "weather" is how much hotter or colder each day of this bill was.
 
-The sample bill is generated from the published tariff by `scripts/make-sample-bill.ts`, then rendered to PNG with a headless browser.
+## Memory
+
+Two Meterless engines, vendored in `engines/` and declared in `engines/VENDORED.md`, keep the household's memory in `.memory/<household id>/` (or `--memory <dir>`; `--no-memory` runs without it).
+
+- H-MEM keeps what happened in words: each bill's diagnosis and what the household tells us (`npm run remember -- --household <json> --notes <json>`), tagged with the bill period it is about. Its clock is the bill's date, so replays give the same state.
+- World Model keeps the household graph with provenance on every write: household, AEP Ohio (EIA 14006), the URDB tariff versions it was billed under, NOAA station USW00014821, and each bill with its diagnosis as facts.
+
+How memory changes a diagnosis: when the household marked the previous bill as a one-off, WeatherAnalyst leaves it out of any fit and calibrates the model to the latest normal bill instead. The previous bill's extra use then shows as its own component ("last bill's one-off use did not repeat"). Without that note, the same October bill reads as "used less".
+
+The sample bills are generated from the published tariff by `scripts/make-sample-bill.ts`, then rendered to PNG with a headless browser. Linda's October kWh follow a stated recipe (the Ohio prior calibrated to her August bill, applied to NOAA's degree days for that period), so in the demo her October usage matches the model by construction. Accuracy has to be measured on synthetic households with known causes; that evaluation is not built yet.
 
 ## Tests
 

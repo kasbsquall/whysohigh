@@ -7,6 +7,9 @@
 //   calibrated: the model's base use is shifted to reproduce the previous bill,
 //               then usage is measured the same way. The change then adds up by
 //               construction; check 3 decides whether the calibrated model is credible.
+//               When the household told us the previous bill was a one-off, the
+//               model is calibrated to the last normal bill instead, and the
+//               previous bill's extra use becomes its own component.
 
 import type { RunLogger } from "../log.ts";
 import { computeCharges, type Segment, type Tariff } from "../tariff/tariff.ts";
@@ -18,7 +21,7 @@ export const AGENT = "UsageAnalyst";
 
 export type UsageStrategy = "model" | "calibrated";
 
-export type ComponentKey = "price" | "days" | "weather" | "usage" | "unexplained";
+export type ComponentKey = "price" | "one_off" | "days" | "weather" | "usage" | "unexplained";
 
 export interface Component {
   readonly key: ComponentKey;
@@ -34,6 +37,8 @@ export interface BillSide {
 
 export interface Decomposition {
   readonly usageStrategy: UsageStrategy;
+  /** Period start of the bill the model was calibrated to; null when not calibrated. */
+  readonly calibratedTo: string | null;
   readonly model: WeatherModel;
   readonly fromUsd: number;
   readonly toUsd: number;
@@ -52,17 +57,23 @@ export function decompose(
   previous: BillSide,
   current: BillSide,
   usageStrategy: UsageStrategy,
+  /** The bill to calibrate to; defaults to the previous bill. */
+  calibrateTo: BillWeather = previous.bill,
 ): Decomposition {
   const p = previous.bill;
   const c = current.bill;
-  const used = usageStrategy === "calibrated" ? calibrate(model, p) : model;
+  const calibrated = usageStrategy === "calibrated";
+  const used = calibrated ? calibrate(model, calibrateTo) : model;
+  // Extra use on the previous bill the calibrated model does not expect (0 when calibrated to it).
+  const oneOff = calibrated && calibrateTo.periodStart !== p.periodStart ? p.kwh - predictKwh(used, p) : 0;
   const { daysKwh, weatherKwh: weather } = daysAndWeatherKwh(used, p, c);
   const usage = c.kwh - predictKwh(used, c);
 
   // Each kWh step is priced with this bill's tariff, in waterfall order.
   const segments: readonly Segment[] = segmentsByStrategy(tariffs, { start: c.periodStart, end: c.periodEnd }, rateStrategy);
   const cost = (kwh: number): number => computeCharges(segments, kwh).totalUsd;
-  const steps = [p.kwh, p.kwh + daysKwh, p.kwh + daysKwh + weather, p.kwh + daysKwh + weather + usage];
+  const base = p.kwh - oneOff;
+  const steps = [p.kwh, base, base + daysKwh, base + daysKwh + weather, base + daysKwh + weather + usage];
   if (steps.some((k) => k < 0)) {
     throw new Error("The weather model takes the bill below zero kWh at some step, so the change cannot be split in this order.");
   }
@@ -71,13 +82,15 @@ export function decompose(
   const changeUsd = cents(current.billedUsd - previous.billedUsd);
   const explained: Component[] = [
     { key: "price", kwh: null, usd: cents(priceUsd) },
-    { key: "days", kwh: tenths(daysKwh), usd: stepUsd(0) },
-    { key: "weather", kwh: tenths(weather), usd: stepUsd(1) },
-    { key: "usage", kwh: tenths(usage), usd: stepUsd(2) },
+    ...(oneOff !== 0 ? [{ key: "one_off" as const, kwh: tenths(-oneOff), usd: stepUsd(0) }] : []),
+    { key: "days", kwh: tenths(daysKwh), usd: stepUsd(1) },
+    { key: "weather", kwh: tenths(weather), usd: stepUsd(2) },
+    { key: "usage", kwh: tenths(usage), usd: stepUsd(3) },
   ];
   const unexplained = cents(changeUsd - explained.reduce((s, x) => s + x.usd, 0));
   return {
     usageStrategy,
+    calibratedTo: calibrated ? calibrateTo.periodStart : null,
     model: used,
     fromUsd: previous.billedUsd,
     toUsd: current.billedUsd,
@@ -95,6 +108,7 @@ export function logDecomposition(logger: RunLogger, d: Decomposition, attempt: n
     step: "decomposition",
     attempt,
     usageStrategy: d.usageStrategy,
+    calibratedTo: d.calibratedTo,
     model: d.model,
     fromUsd: d.fromUsd,
     toUsd: d.toUsd,

@@ -11,7 +11,16 @@ import {
   type RateEstimate,
   type RateStrategy,
 } from "./agents/rateAnalyst.ts";
+import { join } from "node:path";
 import { analyzeChange, type ChangeResult } from "./changeAnalysis.ts";
+import { openHouseholdGraph, previousDiagnosis, recordRun, type PreviousDiagnosis } from "./memory/householdGraph.ts";
+import {
+  notesAbout,
+  oneOffPeriods,
+  openHouseholdMemory,
+  rememberDiagnosis,
+  type RecalledNote,
+} from "./memory/householdMemory.ts";
 import type { Runtime } from "./runtime.ts";
 import type { BillPeriod, Tariff } from "./tariff/tariff.ts";
 import { billWeather, type BillWeather } from "./zetaris/queries.ts";
@@ -27,11 +36,19 @@ export interface RateResult {
   readonly priceEffectUsd: number | null;
 }
 
+export interface MemoryUsed {
+  /** What the household told us about the previous bill. */
+  readonly notes: readonly RecalledNote[];
+  /** What the run for the previous bill concluded, read from the household graph. */
+  readonly previousDiagnosis: PreviousDiagnosis | null;
+}
+
 export interface Explanation {
   readonly bill: Bill;
   readonly history: readonly BillWeather[];
   readonly rate: RateResult;
   readonly change: ChangeResult;
+  readonly memory: MemoryUsed | null;
 }
 
 const STRATEGIES: readonly RateStrategy[] = ["period_end", "prorated"];
@@ -114,11 +131,54 @@ function priceEffectOrNull(
   return usd;
 }
 
-export async function explain(runtime: Runtime, billPath: string, householdId: string | null): Promise<Explanation> {
+export interface ExplainOptions {
+  readonly householdId: string | null;
+  /** Folder for the household's H-MEM and World Model state; null runs without memory. */
+  readonly memoryDir: string | null;
+}
+
+export async function explain(runtime: Runtime, billPath: string, options: ExplainOptions): Promise<Explanation> {
+  const { householdId, memoryDir } = options;
   const bill = await readBill(runtime.llm, runtime.logger, billPath);
   const history = householdId ? await billWeather(runtime.sql, "WeatherAnalyst", householdId) : [];
   const tariffs = await loadTariffs(runtime.sql);
   const rate = analyzeRate(runtime, tariffs, bill, history);
-  const change = analyzeChange(runtime, tariffs, bill, history, rate);
-  return { bill, history, rate, change };
+  if (!householdId || !memoryDir) {
+    return { bill, history, rate, change: analyzeChange(runtime, tariffs, bill, history, rate), memory: null };
+  }
+
+  const { start, end } = rate.estimate.period;
+  const memory = openHouseholdMemory(join(memoryDir, "hmem"), end);
+  const graph = openHouseholdGraph(memoryDir, householdId);
+  const previousStart = history.find((h) => h.periodEnd === start)?.periodStart ?? null;
+  // Only what the household had said by the end of this bill, so replaying an old bill is stable.
+  const notes = previousStart ? notesAbout(memory, previousStart, end) : [];
+  runtime.logger.log({ agent: "HouseholdMemory", step: "notes", previousBill: previousStart, notes });
+  const used: MemoryUsed = {
+    notes,
+    previousDiagnosis: previousStart ? previousDiagnosis(graph, householdId, previousStart, runtime.logger) : null,
+  };
+
+  const change = analyzeChange(runtime, tariffs, bill, history, rate, oneOffPeriods(memory, end));
+  // Graph first: if it fails, H-MEM is not left holding a diagnosis the graph lacks.
+  await recordRun(
+    graph,
+    householdId,
+    { periodStart: start, periodEnd: end, kwh: bill.kwh, totalUsd: bill.totalUsd },
+    rate.estimate,
+    change.decomposition,
+    runtime.logger.runId,
+    runtime.logger,
+  );
+  rememberDiagnosis(memory, householdId, start, end, summarize(bill, start, end, change), runtime.logger.runId, runtime.logger);
+  return { bill, history, rate, change, memory: used };
+}
+
+/** One line a later run can recall: the bill and how its change was split. */
+function summarize(bill: Bill, start: string, end: string, change: ChangeResult): string {
+  const head = `Bill ${start} to ${end}: ${bill.kwh} kWh, ${bill.totalUsd.toFixed(2)} USD.`;
+  const d = change.decomposition;
+  if (!d) return `${head} Change not split: ${change.skipped ?? "unknown reason"}`;
+  const parts = d.components.map((c) => `${c.key} ${c.usd >= 0 ? "+" : ""}${c.usd.toFixed(2)}`).join(", ");
+  return `${head} Change ${d.changeUsd >= 0 ? "+" : ""}${d.changeUsd.toFixed(2)} USD from the previous bill: ${parts} (${d.model.source}, confidence ${d.model.confidence}).`;
 }

@@ -1,9 +1,14 @@
 {
   "key": "f310ecf752ac82fda462cc94",
   "response": {
-    "providerError": {
-      "status": 502,
-      "message": "Nightshift returned HTTP 502 for nvidia/nemotron-3.5-super-vl-120b-a12b: {\"error\":{\"message\":\"400: {\\\"message\\\":\\\"ValueError: Received multimodal data but multimodal processing is not enabled. Use --enable-multimodal flag to enable multimodal processing.\\\",\\\"type\\\":\\\"Bad Request\\\",\\\"code\\\":400}\",\"type\":\"api_error\",\"code\":\"provider_error\",\"param\":null,\"meterless_detail\":\""
+    "text": "{\n  \"period_start\": \"08/14/2026\",\n  \"period_end\": \"09/16/2026\",\n  \"days\": 33,\n  \"kwh\": 1184,\n  \"total_usd\": 217.42,\n  \"prev_kwh\": 902,\n  \"prev_days\": 29,\n  \"prev_total_usd\": 170.12,\n  \"line_items\": [\n    {\n      \"label\": \"Customer charge\",\n      \"usd\": 18.79\n    },\n    {\n      \"label\": \"Energy charge 1,184 kWh\",\n      \"usd\": 41.17\n    },\n    {\n      \"label\": \"Riders and adjustments 1,184 kWh\",\n      \"usd\": 157.46\n    }\n  ]\n}",
+    "reasoning": "",
+    "modelRequested": "nvidia/nemotron-3.5-super-vl-120b-a12b",
+    "modelServed": "nvidia/nemotron-3.5-super-vl-120b-a12b",
+    "usage": {
+      "prompt_tokens": 1891,
+      "completion_tokens": 619,
+      "total_tokens": 2510
     }
   }
 }

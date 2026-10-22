@@ -40,7 +40,17 @@ import type { BillWeather } from "./zetaris/queries.ts";
 const ORCHESTRATOR = "Orchestrator";
 const USAGE_STRATEGIES: readonly UsageStrategy[] = ["model", "calibrated"];
 
+/** What the household's notes did to this comparison. */
+export interface MemoryEffect {
+  /** Period starts of the compared bills the household marked as a one-off. */
+  readonly oneOffBills: readonly string[];
+  /** The bill the model was calibrated to because of a note; null when no note changed it. */
+  readonly calibratedInsteadTo: string | null;
+  readonly explanation: string;
+}
+
 export interface ChangeResult {
+  readonly memoryEffect: MemoryEffect | null;
   readonly decomposition: Decomposition | null;
   readonly verdicts: readonly Verdict[];
   readonly closed: boolean;
@@ -50,7 +60,7 @@ export interface ChangeResult {
 
 const skip = (runtime: Runtime, reason: string, verdicts: readonly Verdict[] = []): ChangeResult => {
   runtime.logger.log({ agent: ORCHESTRATOR, step: "change_skipped", reason });
-  return { decomposition: null, verdicts, closed: false, skipped: reason };
+  return { memoryEffect: null, decomposition: null, verdicts, closed: false, skipped: reason };
 };
 
 /** The previous and current bills from the household history, or why they cannot be paired. */
@@ -74,12 +84,47 @@ function pairBills(
   return { previous, current };
 }
 
+/**
+ * The bill to calibrate the model to: the previous one, unless the household
+ * told us it was a one-off, in which case the latest earlier bill that was not.
+ */
+function calibrationTarget(
+  history: readonly BillWeather[],
+  previous: BillWeather,
+  current: BillWeather,
+  oneOffPeriods: ReadonlySet<string>,
+): { target: BillWeather; effect: MemoryEffect | null } {
+  const oneOffBills = [previous, current].map((b) => b.periodStart).filter((p) => oneOffPeriods.has(p));
+  if (oneOffBills.length === 0) return { target: previous, effect: null };
+  const notes: string[] = [];
+  let target = previous;
+  if (oneOffPeriods.has(previous.periodStart)) {
+    const normal = fittableHistory(history, previous.periodStart)
+      .filter((b) => !oneOffPeriods.has(b.periodStart))
+      .at(-1);
+    if (normal) target = normal;
+    notes.push(
+      normal
+        ? `The household said the bill starting ${previous.periodStart} was a one-off, so the model is calibrated to the bill starting ${normal.periodStart} and that bill's extra use is shown on its own.`
+        : `The household said the bill starting ${previous.periodStart} was a one-off, but there is no earlier normal bill with complete weather, so the note could not be applied.`,
+    );
+  }
+  if (oneOffPeriods.has(current.periodStart)) {
+    notes.push(`The household said this bill is a one-off. It is explained as usual and will be set aside when the next bill is compared.`);
+  }
+  return {
+    target,
+    effect: { oneOffBills, calibratedInsteadTo: target === previous ? null : target.periodStart, explanation: notes.join(" ") },
+  };
+}
+
 export function analyzeChange(
   runtime: Runtime,
   tariffs: readonly Tariff[],
   bill: Bill,
   history: readonly BillWeather[],
   rate: RateResult,
+  oneOffPeriods: ReadonlySet<string> = new Set(),
 ): ChangeResult {
   const { logger } = runtime;
   if (!rate.closed) {
@@ -103,7 +148,13 @@ export function analyzeChange(
   if (!previousCheck.accepted) return skip(runtime, `Previous bill: ${previousCheck.reason}`, verdicts);
   if (rate.priceEffectUsd === null) return skip(runtime, "No price effect could be computed for the previous bill.", verdicts);
 
-  const model = chooseWeatherModel(runtime, fittableHistory(history, current.periodStart), verdicts);
+  const model = chooseWeatherModel(
+    runtime,
+    fittableHistory(history, current.periodStart).filter((b) => !oneOffPeriods.has(b.periodStart)),
+    verdicts,
+  );
+  const { target, effect } = calibrationTarget(history, previous, current, oneOffPeriods);
+  if (effect) logger.log({ agent: ORCHESTRATOR, step: "memory_effect", ...effect });
   const sides: [BillSide, BillSide] = [
     { bill: previous, billedUsd: previousBilled },
     { bill: current, billedUsd: bill.totalUsd },
@@ -113,14 +164,14 @@ export function analyzeChange(
   for (let attempt = 1; attempt <= USAGE_STRATEGIES.length; attempt++) {
     const strategy = USAGE_STRATEGIES[attempt - 1];
     if (strategy === "calibrated") {
-      const credible = checkWeatherModel(calibrate(model, previous));
+      const credible = checkWeatherModel(calibrate(model, target));
       verdicts.push(credible);
       logVerdict(logger, credible, WEATHER, attempt);
       if (!credible.accepted) break;
     }
     let decomposition: Decomposition;
     try {
-      decomposition = decompose(tariffs, rate.estimate.strategy, rate.priceEffectUsd, model, sides[0], sides[1], strategy);
+      decomposition = decompose(tariffs, rate.estimate.strategy, rate.priceEffectUsd, model, sides[0], sides[1], strategy, target);
     } catch (error: unknown) {
       return skip(runtime, (error as Error).message, verdicts);
     }
@@ -140,7 +191,7 @@ export function analyzeChange(
   if (!accepted) {
     logger.log({ agent: ORCHESTRATOR, step: "finding", kind: "unexplained_change", usd: best.closure.gapUsd, reason: best.closure.reason });
   }
-  return { decomposition: best.decomposition, verdicts, closed: Boolean(accepted), skipped: null };
+  return { memoryEffect: effect, decomposition: best.decomposition, verdicts, closed: Boolean(accepted), skipped: null };
 }
 
 /** A household fit when there is enough history and the critic accepts it; the Ohio prior otherwise. */
