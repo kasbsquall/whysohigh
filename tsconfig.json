@@ -9,5 +9,5 @@
     "noEmit": true,
     "types": ["node"]
   },
-  "include": ["src", "cli", "test", "engines/hmem/reference/src", "engines/world-model/reference/src"]
+  "include": ["src", "cli", "server", "web/src", "test", "engines/hmem/reference/src", "engines/world-model/reference/src"]
 }

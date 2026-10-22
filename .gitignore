@@ -7,3 +7,6 @@ logs/*
 out/*
 !out/.gitkeep
 .memory/
+
+.ui-direcciones/
+web/dist/

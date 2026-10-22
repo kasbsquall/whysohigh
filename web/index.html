@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Why So High</title>
+<meta name="description" content="Snap your electricity bill. Why So High tells you why it went up and what you can do about it this month.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://unpkg.com" crossorigin>
+<meta name="theme-color" content="#14295a">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Libre+Franklin:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/light/style.css">
+</head>
+<body>
+<header class="cover">
+  <div class="wrap">
+    <div class="topbar">
+      <div class="brand"><i class="ph-light ph-receipt" aria-hidden="true"></i>Why So High</div>
+      <div class="house">
+        <span id="household">Loading the household</span>
+        <span class="sample"><i class="ph-light ph-flask" aria-hidden="true"></i>SAMPLE BILL (synthetic data)</span>
+      </div>
+    </div>
+    <div class="tabs" role="tablist" aria-label="Which bill">
+      <button class="tab" role="tab" id="tab-first" aria-selected="true" aria-controls="page"><i class="ph-light ph-receipt" aria-hidden="true"></i><span id="tab-first-label">First bill</span></button>
+      <button class="tab" role="tab" id="tab-second" aria-selected="false" aria-controls="page" tabindex="-1"><i class="ph-light ph-receipt" aria-hidden="true"></i><span id="tab-second-label">Next bill</span></button>
+    </div>
+    <div id="cover" class="cover-body">
+      <div class="route sk-cover" aria-hidden="true"><div class="sk-line w40 on-dark"></div><div class="sk-line w60 on-dark"></div></div>
+    </div>
+  </div>
+</header>
+
+<main id="page" class="is-loading" role="tabpanel" aria-labelledby="tab-first" aria-busy="true">
+  <div class="wrap">
+    <div id="memory"></div>
+    <div class="grid">
+      <section aria-labelledby="trip-title">
+        <div class="area-h">
+          <h2 id="trip-title">How the change adds up</h2>
+          <span class="by"><i class="ph-light ph-arrow-down" aria-hidden="true"></i>Last bill to this bill, one cause at a time</span>
+        </div>
+        <div id="trip"></div>
+        <div id="comparison"></div>
+      </section>
+      <section aria-labelledby="checks-title">
+        <div class="area-h">
+          <h2 id="checks-title">Checked before you see it</h2>
+          <span class="by"><i class="ph-light ph-scales" aria-hidden="true"></i>ReconciliationCritic</span>
+        </div>
+        <div id="checks"></div>
+        <div id="rules"></div>
+      </section>
+    </div>
+    <div class="lower">
+      <section aria-labelledby="ev-title">
+        <div class="area-h"><h2 id="ev-title">Where the numbers come from</h2></div>
+        <div id="evidence"></div>
+      </section>
+      <section id="actions" aria-label="Help you could ask for"></section>
+    </div>
+  </div>
+</main>
+
+<footer class="foot">
+  <div class="wrap">
+    <p>Why So High, built for the Open Agent Hackathon 2026. The household and its bills are synthetic. Scope: AEP Ohio residential customers in Columbus, Ohio.</p>
+  </div>
+</footer>
+<script type="module" src="/src/main.ts"></script>
+</body>
+</html>

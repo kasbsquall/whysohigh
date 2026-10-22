@@ -1,0 +1,168 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-22T16:30:00-05:00",
+  "title": "Design System: Why So High",
+  "extensions": {
+    "colorMeta": {
+      "cover-navy": { "role": "primary", "displayName": "Cover Navy", "canonical": "oklch(30% .09 262)", "tonalRamp": ["oklch(15% .09 262)", "oklch(22% .09 262)", "oklch(30% .09 262)", "oklch(40% .09 262)", "oklch(52% .09 262)", "oklch(65% .07 262)", "oklch(80% .04 262)", "oklch(93% .015 262)"] },
+      "void-red": { "role": "secondary", "displayName": "Void Red", "canonical": "oklch(52% .2 27)", "tonalRamp": ["oklch(22% .1 27)", "oklch(32% .14 27)", "oklch(42% .18 27)", "oklch(52% .2 27)", "oklch(64% .17 27)", "oklch(78% .14 27)", "oklch(88% .07 27)", "oklch(96.5% .02 27)"] },
+      "carbon-violet": { "role": "tertiary", "displayName": "Carbon Violet", "canonical": "oklch(42% .12 300)", "tonalRamp": ["oklch(18% .08 300)", "oklch(28% .1 300)", "oklch(36% .12 300)", "oklch(42% .12 300)", "oklch(55% .11 300)", "oklch(70% .08 300)", "oklch(85% .045 300)", "oklch(95% .025 300)"] },
+      "carbon-paper": { "role": "tertiary", "displayName": "Carbon Paper", "canonical": "oklch(95% .025 300)" },
+      "memory-wash": { "role": "tertiary", "displayName": "Memory Wash", "canonical": "oklch(96.5% .02 300)" },
+      "confidence-amber": { "role": "tertiary", "displayName": "Confidence Amber", "canonical": "oklch(85% .12 80)" },
+      "void-wash": { "role": "secondary", "displayName": "Void Wash", "canonical": "oklch(96.5% .02 27)" },
+      "wallet-ground": { "role": "neutral", "displayName": "Wallet Ground", "canonical": "oklch(93% .015 262)" },
+      "coupon-white": { "role": "neutral", "displayName": "Coupon White", "canonical": "oklch(98.5% .004 260)" },
+      "ink": { "role": "neutral", "displayName": "Ink", "canonical": "oklch(22% .03 262)", "tonalRamp": ["oklch(15% .03 262)", "oklch(22% .03 262)", "oklch(30% .03 262)", "oklch(40% .03 262)", "oklch(55% .03 262)", "oklch(70% .025 262)", "oklch(84% .02 262)", "oklch(93% .015 262)"] },
+      "ink-muted": { "role": "neutral", "displayName": "Ink Muted", "canonical": "oklch(40% .03 262)" },
+      "perforation-line": { "role": "neutral", "displayName": "Perforation Line", "canonical": "oklch(84% .02 262)" },
+      "on-navy": { "role": "neutral", "displayName": "On Navy", "canonical": "oklch(95% .012 262)" },
+      "on-navy-muted": { "role": "neutral", "displayName": "On Navy Muted", "canonical": "oklch(82% .03 262)" },
+      "bar-track": { "role": "neutral", "displayName": "Bar Track", "canonical": "oklch(91% .015 262)" },
+      "table-head": { "role": "neutral", "displayName": "Table Head", "canonical": "oklch(96% .01 262)" }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display", "purpose": "FROM and TO bill totals on the cover only. 50px under 640px." },
+      "amount": { "displayName": "Amount", "purpose": "Dollar figure on each coupon; 48px on bill coupons, 32px on action cards." },
+      "headline": { "displayName": "Headline", "purpose": "Area titles; 30px for the table caption, failure title and brand." },
+      "statement": { "displayName": "Statement", "purpose": "The cover h1, 'Your bill went up ... Here is why.' 24px under 640px." },
+      "title": { "displayName": "Title", "purpose": "Coupon causes, check titles, action names." },
+      "body": { "displayName": "Body", "purpose": "Base reading text; 17px inside cards." },
+      "body-small": { "displayName": "Body small", "purpose": "Card copy, coupon details, evidence bodies." },
+      "stub-label": { "displayName": "Stub label", "purpose": "Uppercase field names on coupon and action stubs." },
+      "route-label": { "displayName": "Route label", "purpose": "FROM and TO above the cover figures." },
+      "stamp": { "displayName": "Stamp", "purpose": "VOID stamp at 38px; VALIDATED at 21px." },
+      "code": { "displayName": "Code", "purpose": "Identifiers, run IDs, tariff labels and SQL (13px in pre blocks)." }
+    },
+    "shadows": [
+      { "name": "card-on-table", "value": "0 1px 0 oklch(82% .025 262), 0 10px 22px -12px oklch(30% .09 262 / .38)", "purpose": "The single card elevation for coupons, checks, accordions, action cards, table and reading panel." },
+      { "name": "validated-ring", "value": "0 0 0 2px oklch(30% .09 262), 0 1px 0 oklch(82% .025 262), 0 10px 22px -12px oklch(30% .09 262 / .38)", "purpose": "Accepted check carrying the VALIDATED stamp." },
+      { "name": "void-ring", "value": "0 0 0 2px oklch(52% .2 27), 0 10px 22px -12px oklch(52% .2 27 / .4)", "purpose": "Rejected check carrying the VOID stamp." },
+      { "name": "memory-ring", "value": "0 0 0 1.5px oklch(42% .12 300 / .45), 0 1px 0 oklch(82% .025 262), 0 10px 22px -12px oklch(30% .09 262 / .38)", "purpose": "Coupon whose cause came from the household note." },
+      { "name": "switch-knob", "value": "0 1px 3px oklch(30% .09 262 / .35)", "purpose": "Knob of the memory switch." }
+    ],
+    "motion": [
+      { "name": "ease", "value": "cubic-bezier(0.23, 1, 0.32, 1)", "purpose": "The only easing in the build." },
+      { "name": "rise", "value": "240ms, opacity 0 to 1 and translateY(6px) to 0, delay 180ms + 30ms per item (index capped at 7)", "purpose": "Entrance of coupons, checks, the route and the memory panel." },
+      { "name": "grow", "value": "280ms, scaleX(0) to scaleX(--w), delay 260ms + 70ms per item", "purpose": "Cause bars." },
+      { "name": "thump", "value": "220ms, scale 1.25 to 1 with the stamp rotation, delay 420ms (VALIDATED 520ms)", "purpose": "Stamps landing." },
+      { "name": "state", "value": "200ms", "purpose": "Accordion caret rotation, switch track color and knob slide." },
+      { "name": "pulse", "value": "1.2s ease-in-out infinite alternate, opacity .55 to 1", "purpose": "Skeleton lines while loading." },
+      { "name": "reduced-motion", "value": "prefers-reduced-motion: reduce disables all transitions and animations", "purpose": "Accessibility." }
+    ],
+    "breakpoints": [
+      { "name": "stack", "value": "1020px" },
+      { "name": "mobile", "value": "640px" },
+      { "name": "narrow", "value": "420px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Coupon with perforated stub",
+      "kind": "card",
+      "refersTo": "coupon",
+      "description": "One cause of the change: icon, title, detail, signed amount with kWh and verb, share bar, and a stub naming the agent and source.",
+      "html": "<div class=\"ds-coupon\"><div class=\"ds-c-main\"><span class=\"ds-c-ico\"><svg width=\"28\" height=\"28\" viewBox=\"0 0 256 256\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><rect x=\"40\" y=\"40\" width=\"176\" height=\"176\" rx=\"8\"/><line x1=\"176\" y1=\"24\" x2=\"176\" y2=\"56\"/><line x1=\"80\" y1=\"24\" x2=\"80\" y2=\"56\"/><line x1=\"40\" y1=\"88\" x2=\"216\" y2=\"88\"/></svg></span><div><h3 class=\"ds-c-title\">4 more days in this bill</h3><p class=\"ds-c-detail\">33 days this time, 29 last time.</p></div><div class=\"ds-c-amt\"><span class=\"ds-usd\">+$20.86</span><span class=\"ds-kwh\">+124.4 kWh</span><span class=\"ds-dir\">Added</span></div><div class=\"ds-bar\"><i style=\"transform:scaleX(.44)\"></i></div></div><div class=\"ds-c-stub\"><span class=\"ds-k\">WORKED OUT BY</span><span class=\"ds-who\">UsageAnalyst</span><span>Bill dates read by BillReader</span></div></div>",
+      "css": ".ds-coupon{display:grid;grid-template-columns:minmax(0,1fr) 196px;background:var(--cupon,oklch(98.5% .004 260));border-radius:8px;box-shadow:0 1px 0 oklch(82% .025 262),0 10px 22px -12px oklch(30% .09 262 / .38);position:relative;font-family:'Libre Franklin',sans-serif;color:oklch(22% .03 262);font-variant-numeric:tabular-nums lining-nums;max-width:640px}.ds-coupon::before,.ds-coupon::after{content:'';position:absolute;right:189px;width:14px;height:14px;border-radius:50%;background:oklch(93% .015 262)}.ds-coupon::before{top:-7px}.ds-coupon::after{bottom:-7px}.ds-c-main{padding:18px 22px 18px 20px;display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:4px 14px;align-items:start}.ds-c-ico{color:oklch(30% .09 262);padding-top:2px}.ds-c-title{margin:0;font-size:19px;font-weight:600;line-height:1.3}.ds-c-detail{margin:2px 0 0;font-size:17px;color:oklch(40% .03 262)}.ds-c-amt{text-align:right;white-space:nowrap}.ds-usd{font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:40px;line-height:1;display:block;color:oklch(52% .2 27)}.ds-kwh{display:block;font-size:16px;color:oklch(40% .03 262);margin-top:4px}.ds-dir{display:block;font-size:15px;font-weight:600;color:oklch(52% .2 27);margin-top:2px}.ds-bar{grid-column:2 / 4;height:8px;background:oklch(91% .015 262);border-radius:4px;margin-top:10px;overflow:hidden}.ds-bar i{display:block;height:100%;background:oklch(52% .2 27);transform-origin:left;border-radius:4px}.ds-c-stub{position:relative;padding:18px 18px 18px 22px;font-size:15px;line-height:1.4;color:oklch(40% .03 262);display:flex;flex-direction:column;gap:4px}.ds-c-stub::before{content:'';position:absolute;left:0;top:14px;bottom:14px;border-inline-start:2px dashed oklch(84% .02 262)}.ds-k{font-size:14px;letter-spacing:.06em;font-weight:600}.ds-who{font-weight:600;color:oklch(22% .03 262)}"
+    },
+    {
+      "name": "Critic check, VOID",
+      "kind": "card",
+      "refersTo": "critic-check-void",
+      "description": "A rejected first pass: void wash, red ring, rotated VOID stamp, and the agent it was sent back to.",
+      "html": "<div class=\"ds-check ds-bad\"><span class=\"ds-n\">4</span><span class=\"ds-st\">Rejected, first pass</span><h3 class=\"ds-ck\">Too much left unexplained</h3><p class=\"ds-p\">$12.60 of the $47.30 change is not explained, more than the $2.36 allowed.</p><span class=\"ds-sentback\">Sent back to UsageAnalyst to try again</span><span class=\"ds-stamp\" aria-hidden=\"true\">VOID</span></div>",
+      "css": ".ds-check{background:oklch(98.5% .004 260);border-radius:8px;padding:16px 18px;display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 12px;position:relative;font-family:'Libre Franklin',sans-serif;color:oklch(22% .03 262);max-width:420px;font-variant-numeric:tabular-nums lining-nums}.ds-bad{background:oklch(96.5% .02 27);box-shadow:0 0 0 2px oklch(52% .2 27),0 10px 22px -12px oklch(52% .2 27 / .4)}.ds-n{font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:22px;color:oklch(40% .03 262);line-height:1.1}.ds-st{font-weight:700;font-size:17px;color:oklch(52% .2 27)}.ds-ck{grid-column:2;margin:2px 0 0;font-size:19px;font-weight:600;line-height:1.3;padding-right:96px}.ds-p{grid-column:2;margin:0;font-size:17px;padding-right:96px}.ds-sentback{grid-column:2;margin-top:6px;font-size:16px;font-weight:600;color:oklch(52% .2 27)}.ds-stamp{position:absolute;top:14px;right:12px;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:38px;letter-spacing:.08em;color:oklch(52% .2 27);border:3px solid currentColor;border-radius:6px;padding:2px 10px 0;line-height:1.1;transform:rotate(-11deg)}.ds-check:focus-visible{outline:3px solid oklch(52% .2 27);outline-offset:4px}"
+    },
+    {
+      "name": "Critic check, VALIDATED",
+      "kind": "card",
+      "refersTo": "critic-check",
+      "description": "The re-issued pass that the critic accepted: navy ring and the smaller VALIDATED stamp with a RE-ISSUED line.",
+      "html": "<div class=\"ds-check2\"><span class=\"ds-n2\">6</span><span class=\"ds-st2\">Accepted, second pass</span><h3 class=\"ds-ck2\">The change adds up</h3><p class=\"ds-p2\">Price, days, weather and usage explain the $47.30 change; $0.00 is left.</p><span class=\"ds-stamp2\" aria-hidden=\"true\"><small>RE-ISSUED</small>VALIDATED</span></div>",
+      "css": ".ds-check2{background:oklch(98.5% .004 260);border-radius:8px;padding:16px 18px;display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 12px;position:relative;font-family:'Libre Franklin',sans-serif;color:oklch(22% .03 262);max-width:420px;box-shadow:0 0 0 2px oklch(30% .09 262),0 1px 0 oklch(82% .025 262),0 10px 22px -12px oklch(30% .09 262 / .38)}.ds-n2{font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:22px;color:oklch(40% .03 262);line-height:1.1}.ds-st2{font-weight:700;font-size:17px;color:oklch(30% .09 262)}.ds-ck2{grid-column:2;margin:2px 0 0;font-size:19px;font-weight:600;line-height:1.3;padding-right:96px}.ds-p2{grid-column:2;margin:0;font-size:17px;padding-right:96px}.ds-stamp2{position:absolute;top:18px;right:12px;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:21px;letter-spacing:.08em;color:oklch(30% .09 262);border:3px solid currentColor;border-radius:6px;padding:2px 10px 0;line-height:1.1;transform:rotate(-7deg)}.ds-stamp2 small{display:block;font-size:12px;letter-spacing:.06em;text-align:center;font-weight:600;padding-bottom:3px}"
+    },
+    {
+      "name": "Memory note and switch",
+      "kind": "custom",
+      "refersTo": "memory-note",
+      "description": "What the household told HouseholdMemory, on carbon paper, with the switch that turns the note on and off.",
+      "html": "<div class=\"ds-memo\"><span class=\"ds-memo-k\">What Linda told HouseholdMemory on Sep 22</span><blockquote class=\"ds-memo-q\">“My grandson stayed with me from August 20 to September 10, so September was not a normal month.”</blockquote></div><button class=\"ds-switch\" role=\"switch\" aria-checked=\"true\"><span class=\"ds-track\"><span class=\"ds-knob\"></span></span>Use what Linda told us <span class=\"ds-state\">On</span></button>",
+      "css": ".ds-memo{background:oklch(95% .025 300);border-radius:8px;padding:20px 22px;margin-bottom:28px;box-shadow:0 0 0 1.5px oklch(42% .12 300 / .35);font-family:'Libre Franklin',sans-serif;max-width:640px}.ds-memo-k{font-size:15px;font-weight:600;color:oklch(42% .12 300)}.ds-memo-q{margin:6px 0 0;font-size:20px;line-height:1.45;color:oklch(22% .03 262)}.ds-switch{display:inline-flex;align-items:center;gap:12px;background:transparent;border:0;padding:6px 0;font:600 18px/1.2 'Libre Franklin',sans-serif;color:oklch(22% .03 262);cursor:pointer;min-height:48px}.ds-track{width:56px;height:32px;border-radius:16px;background:oklch(78% .02 262);position:relative;flex:none;transition:background-color 200ms cubic-bezier(0.23,1,0.32,1)}.ds-knob{position:absolute;top:4px;left:4px;width:24px;height:24px;border-radius:50%;background:oklch(98.5% .004 260);box-shadow:0 1px 3px oklch(30% .09 262 / .35);transition:transform 200ms cubic-bezier(0.23,1,0.32,1)}.ds-switch[aria-checked='true'] .ds-track{background:oklch(42% .12 300)}.ds-switch[aria-checked='true'] .ds-knob{transform:translateX(24px)}.ds-switch:hover .ds-track{background:oklch(70% .03 262)}.ds-switch[aria-checked='true']:hover .ds-track{background:oklch(36% .12 300)}.ds-state{font-weight:700;color:oklch(42% .12 300)}.ds-switch:focus-visible{outline:3px solid oklch(52% .2 27);outline-offset:3px;border-radius:4px}"
+    },
+    {
+      "name": "Comparison table",
+      "kind": "custom",
+      "refersTo": "comparison-table",
+      "description": "Same bill with and without the household note; rows that change are shaded violet.",
+      "html": "<table class=\"ds-cmp\"><caption>Same bill, with and without the note</caption><thead><tr><th>Cause</th><th>With the note</th><th>Without it</th></tr></thead><tbody><tr><th>Milder weather</th><td>−$54.52<small>−324.9 kWh</small></td><td>−$54.52<small>−324.9 kWh</small></td></tr><tr class=\"ds-diff\"><th>Your own use</th><td>−$0.05<small>−0.3 kWh</small></td><td>−$28.08<small>−167.4 kWh</small></td></tr></tbody></table>",
+      "css": ".ds-cmp{width:100%;max-width:560px;border-collapse:collapse;background:oklch(98.5% .004 260);border-radius:8px;box-shadow:0 1px 0 oklch(82% .025 262),0 10px 22px -12px oklch(30% .09 262 / .38);overflow:hidden;font:17px/1.55 'Libre Franklin',sans-serif;color:oklch(22% .03 262);font-variant-numeric:tabular-nums lining-nums}.ds-cmp caption{text-align:left;font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:30px;padding:0 0 14px;line-height:1.1}.ds-cmp th,.ds-cmp td{padding:12px 16px;text-align:left;vertical-align:top}.ds-cmp thead th{font-size:15px;font-weight:700;color:oklch(40% .03 262);background:oklch(96% .01 262)}.ds-cmp thead th:nth-child(2){color:oklch(42% .12 300)}.ds-cmp thead th:not(:first-child),.ds-cmp td{text-align:right;white-space:nowrap}.ds-cmp tbody tr+tr th,.ds-cmp tbody tr+tr td{border-top:1px solid oklch(30% .09 262 / .09)}.ds-cmp tbody th{font-weight:500}.ds-cmp td small{display:block;color:oklch(40% .03 262);font-size:15px}.ds-diff th,.ds-diff td{background:oklch(96.5% .02 300)}"
+    },
+    {
+      "name": "Evidence accordion",
+      "kind": "custom",
+      "refersTo": "evidence-accordion",
+      "description": "Native details row as a coupon: icon, title, rotating caret; body holds plain text, code chips and SQL.",
+      "html": "<details class=\"ds-ev\"><summary>Your bills joined with Columbus weather<svg class=\"ds-chev\" width=\"20\" height=\"20\" viewBox=\"0 0 256 256\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"12\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><polyline points=\"208 96 128 176 48 96\"/></svg></summary><div class=\"ds-ev-body\"><p>One federated SQL query joins <code>household_pg.bills</code> with NOAA daily weather.</p></div></details>",
+      "css": ".ds-ev{background:oklch(98.5% .004 260);border-radius:8px;box-shadow:0 1px 0 oklch(82% .025 262),0 10px 22px -12px oklch(30% .09 262 / .38);margin-bottom:12px;font-family:'Libre Franklin',sans-serif;color:oklch(22% .03 262);max-width:480px}.ds-ev summary{cursor:pointer;padding:16px 18px;font-weight:600;display:flex;gap:10px;align-items:center;list-style:none;min-height:56px}.ds-ev summary::-webkit-details-marker{display:none}.ds-ev summary:hover{color:oklch(30% .09 262)}.ds-ev summary:focus-visible{outline:3px solid oklch(52% .2 27);outline-offset:3px;border-radius:4px}.ds-chev{margin-left:auto;transition:transform 200ms cubic-bezier(0.23,1,0.32,1)}.ds-ev[open] .ds-chev{transform:rotate(180deg)}.ds-ev-body{padding:0 18px 18px 52px;font-size:17px;color:oklch(40% .03 262)}.ds-ev-body p{margin:0}.ds-ev-body code{font-family:'IBM Plex Mono',monospace;font-size:15px;color:oklch(22% .03 262);background:oklch(93% .015 262);padding:1px 6px;border-radius:4px}"
+    },
+    {
+      "name": "Action card with source stub",
+      "kind": "card",
+      "refersTo": "action-card",
+      "description": "A program the household could ask for, with its amount and a perforated source stub punched at both ends.",
+      "html": "<article class=\"ds-act\"><h3 class=\"ds-act-h\">HEAP</h3><span class=\"ds-act-full\">Home Energy Assistance Program</span><p class=\"ds-act-p\">A one-time credit on your bill for the heating season.</p><span class=\"ds-act-amt\">$31 to $546</span><div class=\"ds-act-stub\"><span class=\"ds-act-k\">SOURCE</span><a class=\"ds-act-link\" href=\"#\">Ohio energy assistance</a></div></article>",
+      "css": ".ds-act{position:relative;background:oklch(98.5% .004 260);border-radius:8px;box-shadow:0 1px 0 oklch(82% .025 262),0 10px 22px -12px oklch(30% .09 262 / .38);padding:20px 22px;display:flex;flex-direction:column;gap:8px;font-family:'Libre Franklin',sans-serif;color:oklch(22% .03 262);max-width:320px}.ds-act-h{margin:0;font-size:20px;font-weight:600;line-height:1.3}.ds-act-full{font-size:16px;color:oklch(40% .03 262)}.ds-act-p{margin:0;font-size:17px}.ds-act-amt{font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:32px;line-height:1.1;color:oklch(30% .09 262);font-variant-numeric:tabular-nums lining-nums}.ds-act-stub{margin:auto -22px -20px;padding:12px 22px 14px;border-block-start:2px dashed oklch(84% .02 262);display:flex;flex-direction:column;gap:2px;position:relative}.ds-act-stub::before,.ds-act-stub::after{content:'';position:absolute;top:-8px;width:14px;height:14px;border-radius:50%;background:oklch(93% .015 262)}.ds-act-stub::before{left:-7px}.ds-act-stub::after{right:-7px}.ds-act-k{font-size:14px;letter-spacing:.06em;font-weight:600;color:oklch(40% .03 262)}.ds-act-link{color:oklch(30% .09 262);font-weight:600;font-size:16px;text-underline-offset:3px;min-height:44px;display:inline-flex;align-items:center}.ds-act-link:hover{color:oklch(52% .2 27)}.ds-act-link:focus-visible{outline:3px solid oklch(52% .2 27);outline-offset:3px;border-radius:4px}"
+    },
+    {
+      "name": "Bill tabs on navy",
+      "kind": "nav",
+      "refersTo": "tab",
+      "description": "One tab per bill on the navy cover; the selected tab carries a red underline.",
+      "html": "<div class=\"ds-tabs\" role=\"tablist\"><button class=\"ds-tab\" role=\"tab\" aria-selected=\"true\">September bill</button><button class=\"ds-tab\" role=\"tab\" aria-selected=\"false\">October bill</button></div>",
+      "css": ".ds-tabs{display:flex;gap:4px;background:oklch(30% .09 262);padding:12px 16px 0;border-bottom:1px solid oklch(95% .012 262 / .2)}.ds-tab{font:600 18px/1 'Libre Franklin',sans-serif;color:oklch(82% .03 262);background:transparent;border:0;padding:14px 18px 16px;cursor:pointer;border-radius:8px 8px 0 0;position:relative;min-height:48px}.ds-tab:hover{color:oklch(95% .012 262);background:oklch(95% .012 262 / .07)}.ds-tab[aria-selected='true']{color:oklch(95% .012 262)}.ds-tab[aria-selected='true']::after{content:'';position:absolute;left:12px;right:12px;bottom:-1px;height:4px;background:oklch(52% .2 27);border-radius:2px 2px 0 0}.ds-tab:focus-visible{outline:3px solid oklch(95% .012 262);outline-offset:3px;border-radius:4px}"
+    },
+    {
+      "name": "Retry button",
+      "kind": "button",
+      "refersTo": "button",
+      "description": "The only live button: retry on the failure card.",
+      "html": "<button class=\"ds-btn\">Try again</button>",
+      "css": ".ds-btn{font:600 17px/1 'Libre Franklin',sans-serif;border-radius:8px;padding:13px 18px;border:1.5px solid oklch(84% .02 262);background:oklch(98.5% .004 260);color:oklch(22% .03 262);display:inline-flex;gap:8px;align-items:center;justify-content:center;min-height:48px;cursor:pointer}.ds-btn:hover{border-color:oklch(30% .09 262)}.ds-btn:focus-visible{outline:3px solid oklch(52% .2 27);outline-offset:3px}"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Jet-Age Ticket Wallet",
+    "overview": "Every step of the agents' reasoning is printed as a flight coupon. A navy cover holds the route of the bill (FROM one total TO the next) in tall condensed figures, and below it the wallet opens: white coupons on a pale blue-grey ground, each with a perforated stub on the right that names the agent who worked out or checked that line and the source it used. The critic's trail sits beside the coupons as its own column of tickets, and a rejected pass is stamped VOID in red while the re-issued pass is stamped VALIDATED in navy. Anything that came from the household's memory is printed on violet carbon paper.\n\nThe screen is calm and readable for a 71-year-old reader with the paper bill beside her: body text at 18px, amounts large and tabular, every dollar paired with kWh or a unit, and color never the only signal (each amount also carries a verb such as Added, Took off or No change). Density is moderate. Space is grouped tight inside a coupon and opened wide between areas, from 4px inside a figure stack to 104px between the reasoning and the evidence.\n\nThe world was chosen on 22 Oct 2026 as direction C of three (seed key 835f0fee). The build matches the contract on palette, type pairing, coupon stub, stamps and carbon violet. Where the build differs from the contract, this file records the build.",
+    "keyCharacteristics": [
+      "Navy cover over a pale blue-grey wallet ground; coupon-white cards carry all content.",
+      "Barlow Condensed for figures, route labels, area titles and stamps; Libre Franklin for everything a person reads as a sentence; IBM Plex Mono only for identifiers and SQL.",
+      "Perforation as structure: dashed rules and punched half-circle notches separate a coupon from its stub.",
+      "Two stamps, VOID and VALIDATED, are the only rotated elements in the system.",
+      "Carbon violet is reserved for household memory.",
+      "Phosphor Light icons on every cause, check, evidence row and action."
+    ],
+    "rules": [
+      { "name": "The Direction Has a Color Rule", "body": "Red means the bill went up or a pass was rejected; navy means it went down or was accepted. Every colored amount also carries a sign and a verb, so color is never the only carrier.", "section": "colors" },
+      { "name": "The Carbon Is Memory Rule", "body": "Violet appears only on things that came from what the household told HouseholdMemory, plus the preview chip. Do not use it as a general accent.", "section": "colors" },
+      { "name": "The Condensed Is For Figures Rule", "body": "Barlow Condensed sets numbers, the route labels, area titles and stamps. Sentences, even short ones, stay in Libre Franklin.", "section": "typography" },
+      { "name": "The 14px Floor Rule", "body": "Reading text never drops below 14px. The only smaller text is the 13px SQL block in evidence and the 12px RE-ISSUED line inside the VALIDATED stamp.", "section": "typography" },
+      { "name": "The One Lift Rule", "body": "There is one card shadow. Emphasis is a ring, not a bigger shadow.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do print every reasoning step as a coupon with a stub that names the agent and the source.",
+      "Do pair every amount with a sign, a unit (kWh or $) and a verb, and keep numbers tabular.",
+      "Do use red for up or rejected and navy for down or accepted, nothing else.",
+      "Do keep violet for what came from household memory.",
+      "Do use the one card shadow and express emphasis with a 1.5-2px ring.",
+      "Do keep reading text at 17-18px Libre Franklin and touch targets at 44-48px.",
+      "Do use Phosphor Light icons on causes, checks, evidence rows, actions and states."
+    ],
+    "donts": [
+      "Don't rotate anything except the VOID and VALIDATED stamps.",
+      "Don't set sentences in Barlow Condensed.",
+      "Don't let color carry meaning alone; the status text and verbs must say it too.",
+      "Don't introduce a second card radius or a second card shadow.",
+      "Don't use emojis anywhere."
+    ]
+  }
+}

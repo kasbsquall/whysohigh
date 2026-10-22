@@ -21,6 +21,15 @@ npm run demo
 
 It explains Linda's September bill, stores her note that September was a one-off (`samples/linda-notes.json`), explains her October bill with that memory, and explains October again without memory so the difference is visible. Results go to `out/demo/`.
 
+To see it as a page:
+
+```bash
+npm run web:build
+npm run serve
+```
+
+Then open http://127.0.0.1:8787. The server runs the same two-month demo through the agent pipeline once, then serves the explanation: each cause of the change with the agent that worked it out, the critic's checks in the order they ran (including the rejected first pass), the federated SQL and the tariff behind the numbers, and the October bill with and without Linda's note. For development, `npm run serve` in one terminal and `npm run web:dev` in another (Vite on port 5173, proxying `/api`). The server listens on 127.0.0.1 unless `HOST` says otherwise.
+
 With no `.env`, the run uses `SAMPLE_MODE=true`: the same agent code runs on model and SQL responses recorded from a live run in `samples/cache/`. Each run writes its trace to `logs/<runId>.jsonl` and its result to `out/<runId>.json`.
 
 To run live:
