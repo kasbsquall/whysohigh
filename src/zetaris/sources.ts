@@ -18,7 +18,8 @@ export interface SourceSecrets {
 export const AEP_OHIO_EIAID = 14006;
 /** NOAA GHCN-Daily id of John Glenn Columbus International Airport. */
 export const CMH_STATION = "USW00014821";
-const WEATHER_START = "2025-08-01";
+// From 2024 so the evaluation households have a year of history before each tariff version.
+const WEATHER_START = "2024-01-01";
 
 const rest = (table: string, db: string, endpoint: string): string =>
   `CREATE LIGHTNING REST TABLE ${table} FROM ${db} REQUEST(endpoint "${endpoint}", ` +
@@ -39,7 +40,7 @@ export function sourceStatements(secrets: SourceSecrets, today: string): readonl
 
   return [
     { source: "noaa", sql: 'CREATE LIGHTNING DATABASE NOAA_NCEI DESCRIBE BY "NOAA NCEI Access Data Service, daily summaries"' },
-    { source: "noaa", sql: rest("cmh_daily", "NOAA_NCEI", noaa) },
+    { source: "noaa", sql: rest("cmh_daily_from_2024", "NOAA_NCEI", noaa) },
     { source: "urdb", sql: 'CREATE LIGHTNING DATABASE OPENEI_URDB DESCRIBE BY "OpenEI Utility Rate Database"' },
     { source: "urdb", sql: rest("aep_ohio_residential", "OPENEI_URDB", urdb) },
     { source: "urdb", sql: "CACHE TABLE openei_urdb.aep_ohio_residential" },

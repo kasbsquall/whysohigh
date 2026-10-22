@@ -32,7 +32,7 @@ export function billWeatherSql(householdId: string): string {
     "count(CAST(w.TMAX AS DOUBLE) + CAST(w.TMIN AS DOUBLE)) AS weather_days, " +
     `coalesce(round(sum(greatest(${mean} - 65, 0)), 1), 0) AS cdd, coalesce(round(sum(greatest(65 - ${mean}, 0)), 1), 0) AS hdd ` +
     // LEFT JOIN keeps a bill with missing weather days, so the critic can see the gap.
-    "FROM household_pg.bills b LEFT JOIN noaa_ncei.cmh_daily w " +
+    "FROM household_pg.bills b LEFT JOIN noaa_ncei.cmh_daily_from_2024 w " +
     "ON to_date(w.DATE) >= b.period_start AND to_date(w.DATE) < b.period_end " +
     `WHERE b.household_id = '${householdId}' ` +
     "GROUP BY b.period_start, b.period_end, b.days, b.kwh ORDER BY b.period_start"

@@ -21,6 +21,8 @@ export interface ChatRequest {
   readonly messages: readonly ChatMessage[];
   readonly maxTokens?: number;
   readonly temperature?: number;
+  /** Repetition number in an evaluation. Part of the recorded key so each repetition is replayed; never sent. */
+  readonly repeat?: number;
 }
 
 export interface ChatResult {

@@ -19,6 +19,8 @@
     "conformance:world-model": "tsx engines/world-model/conformance/runner.ts",
     "remember": "tsx cli/remember.ts",
     "demo": "tsx cli/demo.ts",
+    "eval:generate": "tsx eval/generate.ts",
+    "eval": "tsx eval/run.ts",
     "serve": "tsx server/index.ts",
     "web:dev": "vite --config web/vite.config.ts",
     "web:build": "vite build --config web/vite.config.ts"

@@ -4,7 +4,7 @@
 import { fileCache, type ResponseCache } from "./cache.ts";
 import { loadConfig, loadDotEnv, type Config } from "./config.ts";
 import { createLlmClient, type LlmClient } from "./llm/nightshift.ts";
-import { createRunLogger, type RunLogger } from "./log.ts";
+import { createRunLogger, type LoggerOptions, type RunLogger } from "./log.ts";
 import { createSqlClient, type SqlClient } from "./zetaris/client.ts";
 
 export interface Runtime {
@@ -15,10 +15,10 @@ export interface Runtime {
   readonly sql: SqlClient;
 }
 
-export function createRuntime(): Runtime {
+export function createRuntime(logging: LoggerOptions = {}): Runtime {
   loadDotEnv();
   const config = loadConfig();
-  const logger = createRunLogger();
+  const logger = createRunLogger(logging);
   const cache = fileCache();
   return {
     config,

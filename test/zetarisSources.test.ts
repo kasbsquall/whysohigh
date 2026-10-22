@@ -33,7 +33,7 @@ describe("sourceStatements", () => {
 describe("billWeather", () => {
   it("joins bills with station days inside each period", () => {
     const sql = billWeatherSql("linda");
-    expect(sql).toContain("FROM household_pg.bills b LEFT JOIN noaa_ncei.cmh_daily w");
+    expect(sql).toContain("FROM household_pg.bills b LEFT JOIN noaa_ncei.cmh_daily_from_2024 w");
     expect(sql).toContain("WHERE b.household_id = 'linda'");
   });
 

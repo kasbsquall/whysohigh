@@ -1,0 +1,14 @@
+{
+  "key": "dc0aa116155c45d5d016c71c",
+  "response": {
+    "text": "1. Calculate the total dollar change: this bill’s total ($159.43) minus last month’s total ($151.46).  \n2. Compare billing period lengths (31 days vs. 30 days) and compute days_usd by valuing the extra day at last month’s average daily cost, or set it to 0 if all charges are strictly per-period or per-kWh with no daily component.  \n3. Derive the current variable rate per kWh from the line items (energy charge + riders ÷ 842 kWh) and derive last month’s implied variable rate per kWh from (last month total − customer charge) ÷ 828 kWh, assuming the customer charge is fixed and unchanged.  \n4. Split the remaining change into price_usd (effect of rate change on a baseline quantity) and usage_usd (effect of kWh change on a baseline rate); set weather_usd = 0 because no weather data is provided.  \n5. Verify that price_usd + days_usd + weather_usd + usage_usd equals the total change; investigate any residual to determine billing_error_suspected and billing_error_usd.  \n6. Return only the JSON object with keys price_usd, days_usd, weather_usd, usage_usd, billing_error_suspected, and billing_error_usd.",
+    "reasoning": "",
+    "modelRequested": "nvidia/nemotron-3-ultra-550b-a55b",
+    "modelServed": "nvidia/nemotron-3.5-super-vl-120b-a12b",
+    "usage": {
+      "prompt_tokens": 4887,
+      "completion_tokens": 2233,
+      "total_tokens": 7120
+    }
+  }
+}

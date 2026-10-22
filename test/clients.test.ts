@@ -103,6 +103,34 @@ describe("Zetaris REST", () => {
   });
 });
 
+describe("live SQL client", () => {
+  const cache = () => fileCache(mkdtempSync(join(tmpdir(), "wsh-")));
+
+  it("tries a failed statement once more and logs the retry", async () => {
+    const logger = memoryLogger();
+    const sql = createSqlClient({
+      config: live,
+      cache: cache(),
+      logger,
+      retryMs: 0,
+      fetchImpl: fakeFetch([json({ idToken: "x" }), new Response("Bad Request", { status: 400 }), json({ data: [["1"]] })], []),
+    });
+    expect(await sql.run("WeatherAnalyst", "SELECT 1")).toEqual([["1"]]);
+    expect(logger.events.map((e) => e.step)).toEqual(["sql_retry", "sql"]);
+  });
+
+  it("gives up after the second failure", async () => {
+    const sql = createSqlClient({
+      config: live,
+      cache: cache(),
+      logger: memoryLogger(),
+      retryMs: 0,
+      fetchImpl: fakeFetch([json({ idToken: "x" }), json({ msg: "table not found" }, 400), json({ msg: "table not found" }, 400)], []),
+    });
+    await expect(sql.run("WeatherAnalyst", "SELECT * FROM nope")).rejects.toThrow(/table not found/);
+  });
+});
+
 describe("live model client", () => {
   const request = { model: "m", messages: [{ role: "user" as const, content: "hi" }] };
   const ok = json({ model: "m", choices: [{ message: { content: "ok" } }] });

@@ -11,14 +11,11 @@
 
 import { readFileSync, writeFileSync } from "node:fs";
 import { calibrate, OHIO_PRIOR, predictKwh } from "../src/agents/weatherAnalyst.ts";
-import { computeCharges, parseTariffRows, periodDays, segmentsFor, type BillPeriod } from "../src/tariff/tariff.ts";
+import { parseTariffRows } from "../src/tariff/tariff.ts";
 import type { Row } from "../src/zetaris/client.ts";
+import { sampleBill, type BillSpec, type Period } from "./sample-bill.ts";
 
 const tariffs = parseTariffRows(JSON.parse(readFileSync("test/fixtures/urdb-aep-rs.json", "utf8")) as Row[]);
-
-interface Period extends BillPeriod {
-  readonly kwh: number;
-}
 
 const august: Period = { start: "2026-07-16", end: "2026-08-14", kwh: 902 };
 const september: Period = { start: "2026-08-14", end: "2026-09-16", kwh: 1184 };
@@ -30,63 +27,13 @@ const october: Period = {
   kwh: Math.round(predictKwh(calibrate(OHIO_PRIOR, augustWeather), octoberWeather)),
 };
 
-interface BillSpec {
-  readonly file: string;
-  readonly current: Period;
-  readonly previous: Period;
-  readonly statementDate: string;
-  readonly dueDate: string;
-  readonly meterPrevious: number;
-}
-
 const usd = (n: number): string => `$${n.toFixed(2)}`;
-const kwh = (n: number): string => n.toLocaleString("en-US");
-const label = (text: string): string => text.replace(/(\d+) kWh/, (_, n: string) => `${kwh(Number(n))} kWh`);
-const printed = (iso: string): string => `${iso.slice(5, 7)}/${iso.slice(8, 10)}/${iso.slice(0, 4)}`;
-const total = (p: Period): number => computeCharges(segmentsFor(tariffs, p), p.kwh).totalUsd;
 
-function writeBill(spec: BillSpec): void {
-  const { current, previous } = spec;
-  const charges = computeCharges(segmentsFor(tariffs, current), current.kwh);
-  const facts: readonly (readonly [string, string])[] = [
-    ["Account: 0000-111-222", `Statement date: ${spec.statementDate}`],
-    [`Service period: ${printed(current.start)} - ${printed(current.end)}`, `Days in period: ${periodDays(current)}`],
-    [`Meter read previous: ${kwh(spec.meterPrevious)}`, `Meter read current: ${kwh(spec.meterPrevious + current.kwh)}`],
-    [`Energy used: ${kwh(current.kwh)} kWh`, "Rate: Residential Service (RS)"],
-    [`Last month: ${kwh(previous.kwh)} kWh, ${periodDays(previous)} days, ${usd(total(previous))}`, `Due date: ${spec.dueDate}`],
-  ];
-  const lines = charges.lines.map((l) => [label(l.label), usd(l.usd)] as const);
-
-  const text = [
-    "Electric Service Statement",
-    "Residential service, Columbus OH",
-    "SAMPLE / NOT A REAL BILL",
-    ...facts.flat(),
-    ...lines.map(([a, b]) => `${a}\t${b}`),
-    `Total amount due\t${usd(charges.totalUsd)}`,
-  ].join("\n");
-
-  const html = `<!doctype html><html><head><meta charset="utf-8"><style>
-body{margin:0;background:#fff;font:15px/1.4 Arial,sans-serif;color:#222;width:850px}
-.w{padding:36px 44px}.h{display:flex;justify-content:space-between;border-bottom:3px solid #222;padding-bottom:12px}
-.h b{font-size:24px}.s{color:#c00;font-weight:bold;letter-spacing:2px}
-table{width:100%;border-collapse:collapse;margin-top:18px}td{padding:6px 4px;border-bottom:1px solid #ddd}
-td:last-child{text-align:right}.t td{font-weight:bold;font-size:19px;border-top:2px solid #222}
-.g{display:grid;grid-template-columns:1fr 1fr;gap:6px 30px;margin-top:16px}
-</style></head><body><div class="w">
-<div class="h"><div><b>Electric Service Statement</b><br>Residential service, Columbus OH</div><div class="s">SAMPLE / NOT A REAL BILL</div></div>
-<div class="g">
-${facts.map(([a, b]) => `<div>${a}</div><div>${b}</div>`).join("\n")}
-</div>
-<table>
-${lines.map(([a, b]) => `<tr><td>${a}</td><td>${b}</td></tr>`).join("\n")}
-<tr class="t"><td>Total amount due</td><td>${usd(charges.totalUsd)}</td></tr>
-</table></div></body></html>
-`;
-
-  writeFileSync(`samples/${spec.file}.html`, html, "utf8");
-  writeFileSync(`samples/${spec.file}.txt`, `${text}\n`, "utf8");
-  process.stdout.write(`${spec.file}: ${current.kwh} kWh, total ${usd(charges.totalUsd)}, last month ${usd(total(previous))}\n`);
+function writeBill(spec: BillSpec & { readonly file: string }): void {
+  const bill = sampleBill(tariffs, spec);
+  writeFileSync(`samples/${spec.file}.html`, bill.html, "utf8");
+  writeFileSync(`samples/${spec.file}.txt`, bill.text, "utf8");
+  process.stdout.write(`${spec.file}: ${spec.current.kwh} kWh, total ${usd(bill.totalUsd)}, last month ${usd(bill.previousTotalUsd)}\n`);
 }
 
 writeBill({ file: "linda-2026-09", current: september, previous: august, statementDate: "09/19/2026", dueDate: "10/09/2026", meterPrevious: 48210 });

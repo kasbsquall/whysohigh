@@ -96,19 +96,36 @@ export interface SqlDeps {
   readonly cache: ResponseCache;
   readonly logger: RunLogger;
   readonly fetchImpl?: typeof fetch;
+  readonly retryMs?: number;
 }
+
+// Seen on 22 Oct during the evaluation: Zetaris answered one statement with a bare
+// "HTTP 400: Bad Request" and ran the same statement fine right after, so a
+// failed statement is tried once more, and the retry is logged.
+const RETRY_MS = 2_000;
 
 /** Live, recording or replaying SQL client depending on SAMPLE_MODE and RECORD_SAMPLES. */
 export function createSqlClient(deps: SqlDeps): SqlClient {
   const { config, cache, logger } = deps;
   const rest = createZetarisRest(config.zetaris, deps.fetchImpl);
+  const liveRun = async (agent: string, sql: string, limit: number): Promise<readonly Row[]> => {
+    try {
+      return await rest.run(sql, limit);
+    } catch (error: unknown) {
+      if (!(error instanceof ZetarisError)) throw error;
+      const waitMs = deps.retryMs ?? RETRY_MS;
+      logger.log({ agent, step: "sql_retry", waitMs, reason: error.message.slice(0, 200) });
+      await new Promise((resolve) => setTimeout(resolve, waitMs));
+      return rest.run(sql, limit);
+    }
+  };
   return {
     async run(agent: string, sql: string, limit = 1000): Promise<readonly Row[]> {
       const started = Date.now();
       const request = { sql, limit };
       const rows = config.sampleMode
         ? cache.read<Row[]>("sql", request)
-        : await rest.run(sql, limit);
+        : await liveRun(agent, sql, limit);
       if (config.recordSamples) cache.write("sql", request, rows);
       logger.log({
         agent,
