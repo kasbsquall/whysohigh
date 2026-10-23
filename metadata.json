@@ -1,0 +1,57 @@
+{
+  "name": "Why So High",
+  "tagline": "Snap your electricity bill. Why So High tells you why it went up and what you can do about it this month.",
+  "event": "Open Agent Hackathon 2026",
+  "track": "Track 03: Reasoning Architecture",
+  "license": "Apache-2.0",
+  "scope": "AEP Ohio residential customers in Columbus, Ohio",
+  "entry_points": {
+    "explain_one_bill": "npm run explain -- --bill samples/linda-2026-09.png --household samples/linda.json",
+    "two_month_demo": "npm run demo",
+    "web": "npm run web:build && npm run serve",
+    "evaluation": "npm run eval"
+  },
+  "sample_mode": "SAMPLE_MODE=true is the default with no .env. The agent code runs unchanged on model and SQL responses recorded from a live run in samples/cache/, so it reproduces the recorded runs and cannot read a bill that was never recorded.",
+  "agents": [
+    { "name": "BillReader", "kind": "model", "role": "Reads the bill image into structured fields with Nemotron; falls back to the bill's text layer with a Nemotron text model" },
+    { "name": "WeatherAnalyst", "kind": "code", "role": "Joins the household's bills with NOAA daily weather in one federated Zetaris query and fits or picks the weather model" },
+    { "name": "RateAnalyst", "kind": "code", "role": "Loads AEP Ohio's published tariff versions from OpenEI URDB through Zetaris and recomputes the bill" },
+    { "name": "UsageAnalyst", "kind": "code", "role": "Splits the dollar change into price, extra days, weather, usage and unexplained" },
+    { "name": "ReconciliationCritic", "kind": "code", "role": "Runs checks 1 to 5 and sends work back to the analysts with the reason when a check fails" },
+    { "name": "ActionPlanner", "kind": "code", "role": "Proposes assistance programs and actions with amounts from the household's facts" },
+    { "name": "HouseholdMemory", "kind": "code", "role": "Meterless H-MEM: stores diagnoses and what the household tells us" },
+    { "name": "WorldModel", "kind": "code", "role": "Meterless World Model: household graph with provenance on every fact" },
+    { "name": "Orchestrator", "kind": "code", "role": "Runs the agents in order and routes the critic's send-backs" }
+  ],
+  "models": [
+    { "id": "nvidia/nemotron-3.5-super-vl-120b-a12b", "provider": "Meterless Nightshift", "used_by": "BillReader (bill image)" },
+    { "id": "nvidia/nemotron-3.5-lightning-30b-a3b", "provider": "Meterless Nightshift", "used_by": "BillReader (text-layer fallback)" },
+    { "id": "nvidia/nemotron-3-ultra-550b-a55b", "provider": "Meterless Nightshift", "used_by": "Evaluation baseline only (bill text, no tools)" }
+  ],
+  "agent_framework": "None. The orchestrator is plain TypeScript.",
+  "sponsor_technology": {
+    "zetaris": "Federated SQL over the sources in place, nothing copied into the app: every run joins the household bills in Postgres with NOAA NCEI daily weather (REST) in one query (WeatherAnalyst) and reads AEP Ohio's tariff versions from OpenEI URDB (REST) (RateAnalyst). EIA retail sales (REST) is registered too; the statewide Ohio prior was fitted once from it and is a constant in src/agents/weatherAnalyst.ts, not a query per run. Registered with npm run setup:sources (src/zetaris/sources.ts, src/zetaris/queries.ts).",
+    "meterless": "Nightshift is the model runtime for every model call (src/llm/nightshift.ts). H-MEM and World Model, vendored unchanged in engines/, hold the household's memory, and that memory changes the diagnosis and the action plan.",
+    "nvidia": "Nemotron 3.5 Super VL reads the bill image, Nemotron 3.5 Lightning reads the text layer when vision fails, and Nemotron 3 Ultra is the bill-only baseline in the evaluation. The model served is logged on every call.",
+    "cursor": "Not used. The code was written with Claude Code (Anthropic). The organizers' HackOS FAQ lists Cursor as optional."
+  },
+  "data_sources": [
+    { "name": "NOAA NCEI daily summaries, Columbus station USW00014821", "use": "Daily temperatures for degree days", "license": "U.S. government data" },
+    { "name": "OpenEI Utility Rate Database (URDB)", "use": "AEP Ohio residential tariff versions", "license": "CC0" },
+    { "name": "EIA retail sales API", "use": "Ohio residential sales per customer, Jan 2025 to Jul 2026, fitted once into the statewide weather prior", "license": "U.S. government data" },
+    { "name": "EIA RECS 2020, table CE4.3", "use": "Heating slope of electric-heat homes in the evaluation generator", "license": "U.S. government data" },
+    { "name": "ODJFS, PUCO and AEP Ohio program pages, read 22 Oct 2026", "use": "Program amounts, income limits and dates in src/actions/programs.ts", "license": "Public program information, cited per value" },
+    { "name": "Linda's household and bills", "use": "Demo", "license": "Synthetic, generated from the published tariff by scripts/make-sample-bill.ts" },
+    { "name": "30 evaluation households", "use": "Evaluation", "license": "Synthetic, generated by eval/generate.ts" }
+  ],
+  "evaluation": {
+    "file": "eval/results/summary.json",
+    "households": 30,
+    "mean_error_usd": { "agents": 5.89, "it_was_the_weather": 57.82, "nemotron_bill_only": 69.52 },
+    "main_cause_right": { "agents": "23/24", "it_was_the_weather": "11/24", "nemotron_bill_only": "21/72" },
+    "billing_errors_flagged": "5 of 6, precision 1.00"
+  },
+  "pre_existing_components": [
+    "Meterless H-MEM and World Model engines (Apache-2.0), vendored unchanged from github.com/Meterless/Meterless at commit 1742dec, listed in engines/VENDORED.md"
+  ]
+}

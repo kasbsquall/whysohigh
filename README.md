@@ -111,6 +111,54 @@ The agents give the same result in 3 runs per household. The critic closed 22 of
 - Homes that heat with electricity get a heating slope of 0.7 to 1.6 kWh per heating degree day, around EIA's figure: RECS 2020 table CE4.3 gives 28 billion kWh a year of space heating for 5.20 million Midwest homes heated with electricity, about 5,400 kWh each, which over Columbus's 4,244 (2024) to 5,204 (2025) heating degree days is 1.0 to 1.3. A first run used 2.3 to 3.2 with no source; check 3 rejected those fits as above 4 times the Ohio slope and the agents fell back to the low-confidence Ohio prior. With the sourced range no fit is rejected, so this evaluation no longer exercises that fallback; unit tests do.
 - 30 households, one utility, one weather station. The noise level and the size of each injected cause are choices of the generator, stated in `eval/generate.ts`.
 
+## Sponsor technology
+
+- **Zetaris** is where the data meets. Every run asks Zetaris, in Lightning SQL, for the household's bills in Postgres joined with NOAA's daily weather for Columbus in one federated query (WeatherAnalyst), and for AEP Ohio's published tariff versions from OpenEI URDB (RateAnalyst). Nothing is copied into the app first. EIA's Ohio retail sales are registered as a fourth source; the statewide weather prior was fitted once from them and lives as a constant in `src/agents/weatherAnalyst.ts`, so EIA is not queried on each run. Sources are registered by `npm run setup:sources` (`src/zetaris/sources.ts`), queries are in `src/zetaris/queries.ts`, and every query is logged with the agent that asked for it.
+- **Meterless** runs the models and keeps the memory. Every model call goes through Nightshift (`src/llm/nightshift.ts`), and the trace records both the model requested and the model Nightshift says served it. H-MEM keeps what happened and what the household told us, and World Model keeps the household graph with provenance; both are the Meterless reference engines, vendored unchanged in `engines/` and passing their conformance suites. The memory changes the outcome: Linda's October bill reads differently with and without her September note, and a program she already applied for is not suggested again.
+- **NVIDIA Nemotron** reads the bill. BillReader sends the bill image to Nemotron 3.5 Super VL and, when the vision call fails, the bill's text layer to Nemotron 3.5 Lightning. Nemotron 3 Ultra 550B is the bill-only baseline in the evaluation, which is how we know the agents add something over the largest model reading the bill alone.
+- **Cursor** was not used. The organizers' HackOS FAQ lists it as optional; the code was written with Claude Code (see AI and model usage).
+
+What is particular to this build: the models do one job, reading a document a person photographed, and everything after that is arithmetic that a critic can check against public data. Zetaris lets that check reach the household's private bills and three public sources in the same query, and the Meterless memory is what turns one diagnosis into a household history.
+
+## AI and model usage
+
+- Models: `nvidia/nemotron-3.5-super-vl-120b-a12b` (BillReader, bill image), `nvidia/nemotron-3.5-lightning-30b-a3b` (BillReader, text-layer fallback), `nvidia/nemotron-3-ultra-550b-a55b` (evaluation baseline only), all through Meterless Nightshift.
+- Agent framework: none. The orchestrator is plain TypeScript; the analysts, the critic and the planner are deterministic code, so the same bill fields always give the same diagnosis and every number can be traced to a query or a tariff line.
+- Libraries: none at runtime beyond Node 22's standard library. TypeScript runs through tsx; Vite builds the page and Vitest runs the tests.
+- Development: the code, tests and documentation were written with Claude Code (Anthropic) and reviewed and run by the author. Cursor was not used.
+- Sample mode: with no `.env`, `SAMPLE_MODE=true` runs the same agent code on model and SQL responses recorded from a live run (`samples/cache/`), with no network access. It reproduces the recorded runs; a bill that was never recorded needs the live stack.
+- `metadata.json` lists the agents, models, sources and evaluation figures in one place.
+
+## Data and licensing
+
+| Source | Used for | Terms |
+|---|---|---|
+| NOAA NCEI daily summaries, station USW00014821 (Columbus) | Degree days per bill period | U.S. government data |
+| OpenEI Utility Rate Database | AEP Ohio residential tariff versions | CC0 |
+| EIA retail sales API | Ohio residential sales per customer, Jan 2025 to Jul 2026, fitted into the statewide prior | U.S. government data |
+| EIA RECS 2020, table CE4.3 | Heating slope of electric-heat homes in the evaluation | U.S. government data |
+| ODJFS, PUCO and AEP Ohio program pages, read 22 Oct 2026 | Program amounts, income limits and dates, each cited in `src/actions/programs.ts` | Public program information |
+| Linda's household and bills | Demo | Synthetic, made from the published tariff by `scripts/make-sample-bill.ts` |
+| 30 evaluation households | Evaluation | Synthetic, made by `eval/generate.ts` |
+
+No real customer data is used anywhere.
+
+## Limitations
+
+- One utility and one city: AEP Ohio residential customers, weather from the Columbus airport station.
+- Not yet tried on real AEP Ohio bills. The recomputation uses the tariff as URDB publishes it; a charge that URDB does not list would make a real bill look like a possible billing error.
+- BillReader is not measured: the evaluation gives the agents the bill fields directly.
+- Sample mode replays recorded responses, so it cannot read a new bill without Nightshift and Zetaris.
+- With fewer than 6 earlier bills, the split between weather and usage rests on the statewide prior and is marked low confidence.
+- Billing errors under the critic's 2% tolerance are not flagged.
+- Program rules were read on 22 Oct 2026; the income table covers Jul 2026 to May 2027 and households of 1 to 7 people.
+- A memory note cannot be withdrawn yet, and a program rejected for a missing fact is stored the same way as one the household is not eligible for.
+- The server is for local use: no accounts, no authentication, bound to 127.0.0.1 unless `HOST` says otherwise.
+
+## Pre-existing components
+
+The Meterless H-MEM and World Model reference engines (Apache-2.0), vendored unchanged from github.com/Meterless/Meterless at commit `1742dec` and listed in `engines/VENDORED.md`. Everything else was written during the event, from 22 Oct 2026.
+
 ## Tests
 
 ```bash
@@ -121,3 +169,7 @@ npm run conformance:world-model
 ```
 
 Sample bills are synthetic and labelled SAMPLE. The household in `samples/linda.json` is illustrative.
+
+## License
+
+Apache-2.0, see `LICENSE`. The vendored engines keep their own Apache-2.0 license files in `engines/`.
