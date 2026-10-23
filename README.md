@@ -73,7 +73,43 @@ How memory changes a diagnosis: when the household marked the previous bill as a
 
 An action note (kind `action`, tagged with the program) tells ActionPlanner the household already applied: in October, with memory, PIPP Plus shows as "You told us on Sep 25" and HEAP warns that it pays 75% less once PIPP Plus is approved. Without memory, PIPP Plus is suggested again.
 
-The sample bills are generated from the published tariff by `scripts/make-sample-bill.ts`, then rendered to PNG with a headless browser. Linda's October kWh follow a stated recipe (the Ohio prior calibrated to her August bill, applied to NOAA's degree days for that period), so in the demo her October usage matches the model by construction. Accuracy has to be measured on synthetic households with known causes; that evaluation is not built yet.
+The sample bills are generated from the published tariff by `scripts/make-sample-bill.ts`, then rendered to PNG with a headless browser. Linda's October kWh follow a stated recipe (the Ohio prior calibrated to her August bill, applied to NOAA's degree days for that period), so in the demo her October usage matches the model by construction. Accuracy is measured on synthetic households with known causes (see Evaluation).
+
+## Evaluation
+
+```bash
+npm run eval
+```
+
+With no `.env` this replays the recorded run and writes the same files that are committed in `eval/results/` (`summary.json`, one line per household in `households.jsonl`, and every bill-only answer in `bill-only-baseline.jsonl`).
+
+**The households.** `npm run eval:generate` builds 30 synthetic AEP Ohio households (`eval/households.json`), each with 13 monthly bills made from a weather response the agents never see (base use per day, kWh per cooling and per heating degree day), NOAA's real Columbus weather, 5% monthly noise, and one cause injected in the last bill. There are six households per cause: a bill across the 10 Apr 2026 tariff change, a longer billing period, a change of season with nothing injected, a jump or drop in use, and a billing error (1, 3, 5, 8, 12 and -6% of the correct total). The bills are loaded into the household Postgres and read through the same federated Zetaris query as any household.
+
+**The truth.** The same dollar accounting the agents use (price from the published tariff, then days, weather and usage in waterfall order), applied with the household's true weather response calibrated to its previous bill. So the evaluation measures whether the agents recover that response from 12 noisy bills, and whether the critic catches a bill that does not match the tariff. It does not measure BillReader: the agents get the bill fields directly.
+
+**The baselines.** (a) "It was the weather": the whole change goes to weather. (b) Nemotron 3 Ultra 550B through Nightshift with the bill's text and no tools, asked for the same four-part split and whether it suspects a billing error, 3 repetitions per household at temperature 0.6, with one retry when the reply is not the JSON asked for (the same treatment BillReader gets).
+
+**Results.** Mean error per household in USD, summed over price, days, weather, usage and unexplained, and how often the biggest cause is the right one. 24 households (the 6 billing errors are scored apart); bill-only answers are pooled over the 3 repetitions.
+
+| Households | Agents | It was the weather | Nemotron, bill only |
+|---|---|---|---|
+| All 24 | 19.96 USD, 21/24 | 59.07 USD, 11/24 | 71.77 USD, 21/72 |
+| Price change (6) | 35.02 USD, 5/6 | 28.43 USD, 3/6 | 51.65 USD, 3/18 |
+| Longer period (6) | 10.22 USD, 5/6 | 84.73 USD, 2/6 | 116.42 USD, 0/18 |
+| Season change (6) | 9.83 USD, 6/6 | 13.93 USD, 4/6 | 51.61 USD, 6/18 |
+| Use jump or drop (6) | 24.77 USD, 5/6 | 109.19 USD, 2/6 | 67.43 USD, 12/18 |
+
+By the confidence the agents report: on the 20 households where the critic accepted a fit on the household's own bills, the error is 6.28 USD and the main cause is right 19 times out of 20. On the 4 where it rejected the fit and the agents fell back to the Ohio prior, marked low confidence, the error is 88.35 USD and the main cause is right 2 times out of 4.
+
+Billing errors, all 30 households: the agents flag 5 of the 6 with the exact amount and flag none of the other 24 (precision 1.00, recall 0.83). The one missed is the 1% error, under the critic's 2% tolerance on purpose. Nemotron with the bill only suspected a billing error in none of its 90 answers.
+
+The agents give the same result in 3 runs per household. The critic closed 22 of the 24 changes; the first closure check, before calibrating to the previous bill, passed 6 times out of 24.
+
+**Limits of this evaluation.**
+
+- The synthetic bills are priced with the same tariff engine the agents use, so a correct bill always recomputes exactly; billing error detection here only tests how large an error must be to be caught.
+- The four low-confidence households all heat with electricity. Their heating slopes (2.3 to 3.2 kWh per heating degree day) were chosen to sit above check 3's limit of 4 times the Ohio slope, to see what happens when the critic rejects a fit. That range has no published source, and neither does the limit for homes that heat with electricity.
+- 30 households, one utility, one weather station. The noise level and the size of each injected cause are choices of the generator, stated in `eval/generate.ts`.
 
 ## Tests
 
