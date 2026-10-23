@@ -39,6 +39,9 @@ export function billWeatherSql(householdId: string): string {
   );
 }
 
+/** NOAA's daily temperatures for Columbus, as registered in Zetaris. */
+export const NOAA_DAILY_SQL = "SELECT DATE, TMAX, TMIN FROM noaa_ncei.cmh_daily_from_2024 ORDER BY DATE";
+
 const toNumber = (cell: string, column: string): number => {
   const value = Number(cell);
   if (cell === "" || !Number.isFinite(value)) throw new Error(`Column ${column} is not numeric: "${cell}".`);
