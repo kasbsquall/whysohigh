@@ -1,0 +1,14 @@
+{
+  "key": "3c58e160c398470ac4271507",
+  "response": {
+    "text": "{\n  \"price_usd\": -12.48,\n  \"days_usd\": 0,\n  \"weather_usd\": 0,\n  \"usage_usd\": -11.12,\n  \"billing_error_suspected\": false,\n  \"billing_error_usd\": null\n}",
+    "reasoning": "",
+    "modelRequested": "nvidia/nemotron-3-ultra-550b-a55b",
+    "modelServed": "nvidia/nemotron-3.5-super-vl-120b-a12b",
+    "usage": {
+      "prompt_tokens": 3382,
+      "completion_tokens": 3189,
+      "total_tokens": 6571
+    }
+  }
+}

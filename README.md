@@ -93,22 +93,22 @@ With no `.env` this replays the recorded run and writes the same files that are 
 
 | Households | Agents | It was the weather | Nemotron, bill only |
 |---|---|---|---|
-| All 24 | 19.96 USD, 21/24 | 59.07 USD, 11/24 | 71.77 USD, 21/72 |
-| Price change (6) | 35.02 USD, 5/6 | 28.43 USD, 3/6 | 51.65 USD, 3/18 |
-| Longer period (6) | 10.22 USD, 5/6 | 84.73 USD, 2/6 | 116.42 USD, 0/18 |
-| Season change (6) | 9.83 USD, 6/6 | 13.93 USD, 4/6 | 51.61 USD, 6/18 |
-| Use jump or drop (6) | 24.77 USD, 5/6 | 109.19 USD, 2/6 | 67.43 USD, 12/18 |
+| All 24 | 5.89 USD, 23/24 | 57.82 USD, 11/24 | 69.52 USD, 21/72 |
+| Price change (6) | 3.83 USD, 6/6 | 26.10 USD, 3/6 | 31.12 USD, 3/18 |
+| Longer period (6) | 5.38 USD, 5/6 | 84.73 USD, 2/6 | 115.05 USD, 0/18 |
+| Season change (6) | 6.14 USD, 6/6 | 13.21 USD, 4/6 | 59.17 USD, 6/18 |
+| Use jump or drop (6) | 8.20 USD, 6/6 | 107.22 USD, 2/6 | 72.76 USD, 12/18 |
 
-By the confidence the agents report: on the 20 households where the critic accepted a fit on the household's own bills, the error is 6.28 USD and the main cause is right 19 times out of 20. On the 4 where it rejected the fit and the agents fell back to the Ohio prior, marked low confidence, the error is 88.35 USD and the main cause is right 2 times out of 4.
+The 4 households that heat with electricity come out at 3.93 USD and 4/4, the 20 with gas heat at 6.28 USD and 19/20. In all 24 the critic accepted a fit on the household's own bills.
 
 Billing errors, all 30 households: the agents flag 5 of the 6 with the exact amount and flag none of the other 24 (precision 1.00, recall 0.83). The one missed is the 1% error, under the critic's 2% tolerance on purpose. Nemotron with the bill only suspected a billing error in none of its 90 answers.
 
-The agents give the same result in 3 runs per household. The critic closed 22 of the 24 changes; the first closure check, before calibrating to the previous bill, passed 6 times out of 24.
+The agents give the same result in 3 runs per household. The critic closed 22 of the 24 changes. The other two are bills across the tariff change, where the agents report 2.04 and 1.44 USD as not explained instead of hiding them. The first closure check, before calibrating to the previous bill, passed 5 times out of 24.
 
 **Limits of this evaluation.**
 
 - The synthetic bills are priced with the same tariff engine the agents use, so a correct bill always recomputes exactly; billing error detection here only tests how large an error must be to be caught.
-- The four low-confidence households all heat with electricity. Their heating slopes (2.3 to 3.2 kWh per heating degree day) were chosen to sit above check 3's limit of 4 times the Ohio slope, to see what happens when the critic rejects a fit. That range has no published source, and neither does the limit for homes that heat with electricity.
+- Homes that heat with electricity get a heating slope of 0.7 to 1.6 kWh per heating degree day, around EIA's figure: RECS 2020 table CE4.3 gives 28 billion kWh a year of space heating for 5.20 million Midwest homes heated with electricity, about 5,400 kWh each, which over Columbus's 4,244 (2024) to 5,204 (2025) heating degree days is 1.0 to 1.3. A first run used 2.3 to 3.2 with no source; check 3 rejected those fits as above 4 times the Ohio slope and the agents fell back to the low-confidence Ohio prior. With the sourced range no fit is rejected, so this evaluation no longer exercises that fallback; unit tests do.
 - 30 households, one utility, one weather station. The noise level and the size of each injected cause are choices of the generator, stated in `eval/generate.ts`.
 
 ## Tests

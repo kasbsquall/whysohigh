@@ -4,7 +4,7 @@
 // per cause: price (a bill across the 10 Apr 2026 tariff change), days (a longer
 // period), weather (a season change), usage (a jump or drop in use) and
 // billing_error (billed above or below the tariff). One household per group heats
-// with electricity, with a heating slope above what check 3 allows.
+// with electricity, with a heating slope taken from EIA RECS (see ELECTRIC_PER_HDD).
 //
 //   npm run eval:generate
 //
@@ -86,10 +86,18 @@ function periods(finalEnd: string, currentDays: number, previousDays: number): r
   return out;
 }
 
+/**
+ * Heating slope of a home that heats with electricity. EIA RECS 2020, table CE4.3 (Midwest),
+ * main heating fuel electricity: 5.20 million homes use 28 billion kWh a year for space
+ * heating, about 5,400 kWh each. Over Columbus's heating degree days from NOAA (4,244 in 2024,
+ * 5,204 in 2025) that is 1.0 to 1.3 kWh per degree day. The spread around it is the generator's choice.
+ */
+const ELECTRIC_PER_HDD = [0.7, 1.6] as const;
+
 function trueModel(heating: "gas" | "electric"): TrueModel {
   return heating === "gas"
     ? { basePerDay: round(uniform(11, 26), 2), perCdd: round(uniform(0.9, 3.2), 3), perHdd: round(uniform(0.15, 0.9), 3) }
-    : { basePerDay: round(uniform(14, 28), 2), perCdd: round(uniform(0.9, 3.2), 3), perHdd: round(uniform(2.3, 3.2), 3) };
+    : { basePerDay: round(uniform(14, 28), 2), perCdd: round(uniform(0.9, 3.2), 3), perHdd: round(uniform(...ELECTRIC_PER_HDD), 3) };
 }
 
 const totalOrNull = (tariffs: readonly Tariff[], p: Period): number | null => {

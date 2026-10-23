@@ -12,38 +12,38 @@
         "unanswered": 0,
         "meanAbsErrorUsd": {
           "price": 0.17,
-          "days": 0.01,
-          "weather": 9.64,
-          "usage": 9.68,
-          "unexplained": 0.47
+          "days": 0,
+          "weather": 2.7,
+          "usage": 2.64,
+          "unexplained": 0.38
         },
-        "meanTotalErrorUsd": 19.96,
-        "mainCauseRight": 21
+        "meanTotalErrorUsd": 5.89,
+        "mainCauseRight": 23
       },
       "weatherOnly": {
         "answered": 24,
         "unanswered": 0,
         "meanAbsErrorUsd": {
-          "price": 1.7,
+          "price": 1.49,
           "days": 10.97,
-          "weather": 26.71,
-          "usage": 19.69,
+          "weather": 26.28,
+          "usage": 19.07,
           "unexplained": 0
         },
-        "meanTotalErrorUsd": 59.07,
+        "meanTotalErrorUsd": 57.82,
         "mainCauseRight": 11
       },
       "billOnly": {
         "answered": 72,
         "unanswered": 0,
         "meanAbsErrorUsd": {
-          "price": 0.09,
-          "days": 10.82,
-          "weather": 29.59,
-          "usage": 31.29,
+          "price": 0,
+          "days": 10.89,
+          "weather": 28.87,
+          "usage": 29.75,
           "unexplained": 0
         },
-        "meanTotalErrorUsd": 71.77,
+        "meanTotalErrorUsd": 69.52,
         "mainCauseRight": 21
       }
     },
@@ -56,37 +56,37 @@
           "meanAbsErrorUsd": {
             "price": 0.67,
             "days": 0,
-            "weather": 16.83,
-            "usage": 16.84,
+            "weather": 1.24,
+            "usage": 1.24,
             "unexplained": 0.68
           },
-          "meanTotalErrorUsd": 35.02,
-          "mainCauseRight": 5
+          "meanTotalErrorUsd": 3.83,
+          "mainCauseRight": 6
         },
         "weatherOnly": {
           "answered": 6,
           "unanswered": 0,
           "meanAbsErrorUsd": {
-            "price": 6.79,
+            "price": 5.97,
             "days": 0.77,
-            "weather": 11.17,
-            "usage": 9.71,
+            "weather": 10.83,
+            "usage": 8.54,
             "unexplained": 0
           },
-          "meanTotalErrorUsd": 28.43,
+          "meanTotalErrorUsd": 26.1,
           "mainCauseRight": 3
         },
         "billOnly": {
           "answered": 18,
           "unanswered": 0,
           "meanAbsErrorUsd": {
-            "price": 0.34,
+            "price": 0.01,
             "days": 0.77,
-            "weather": 25.04,
-            "usage": 25.49,
+            "weather": 14.78,
+            "usage": 15.56,
             "unexplained": 0
           },
-          "meanTotalErrorUsd": 51.65,
+          "meanTotalErrorUsd": 31.12,
           "mainCauseRight": 3
         }
       },
@@ -98,11 +98,11 @@
           "meanAbsErrorUsd": {
             "price": 0,
             "days": 0,
-            "weather": 5.11,
-            "usage": 5.11,
+            "weather": 2.69,
+            "usage": 2.69,
             "unexplained": 0
           },
-          "meanTotalErrorUsd": 10.22,
+          "meanTotalErrorUsd": 5.38,
           "mainCauseRight": 5
         },
         "weatherOnly": {
@@ -111,8 +111,8 @@
           "meanAbsErrorUsd": {
             "price": 0,
             "days": 40.12,
-            "weather": 36.22,
-            "usage": 8.4,
+            "weather": 36.18,
+            "usage": 8.43,
             "unexplained": 0
           },
           "meanTotalErrorUsd": 84.73,
@@ -124,11 +124,11 @@
           "meanAbsErrorUsd": {
             "price": 0,
             "days": 40.12,
-            "weather": 35.01,
-            "usage": 41.29,
+            "weather": 35.35,
+            "usage": 39.59,
             "unexplained": 0
           },
-          "meanTotalErrorUsd": 116.42,
+          "meanTotalErrorUsd": 115.05,
           "mainCauseRight": 0
         }
       },
@@ -140,11 +140,11 @@
           "meanAbsErrorUsd": {
             "price": 0,
             "days": 0,
-            "weather": 4.61,
-            "usage": 4.81,
+            "weather": 2.76,
+            "usage": 2.97,
             "unexplained": 0.42
           },
-          "meanTotalErrorUsd": 9.83,
+          "meanTotalErrorUsd": 6.14,
           "mainCauseRight": 6
         },
         "weatherOnly": {
@@ -153,11 +153,11 @@
           "meanAbsErrorUsd": {
             "price": 0,
             "days": 0,
-            "weather": 6.97,
-            "usage": 6.97,
+            "weather": 6.61,
+            "usage": 6.61,
             "unexplained": 0
           },
-          "meanTotalErrorUsd": 13.93,
+          "meanTotalErrorUsd": 13.21,
           "mainCauseRight": 4
         },
         "billOnly": {
@@ -166,11 +166,11 @@
           "meanAbsErrorUsd": {
             "price": 0,
             "days": 0,
-            "weather": 25.8,
-            "usage": 25.8,
+            "weather": 29.58,
+            "usage": 29.58,
             "unexplained": 0
           },
-          "meanTotalErrorUsd": 51.61,
+          "meanTotalErrorUsd": 59.17,
           "mainCauseRight": 6
         }
       },
@@ -181,13 +181,13 @@
           "unanswered": 0,
           "meanAbsErrorUsd": {
             "price": 0,
-            "days": 0.02,
-            "weather": 12.01,
-            "usage": 11.96,
-            "unexplained": 0.78
+            "days": 0.01,
+            "weather": 4.1,
+            "usage": 3.67,
+            "unexplained": 0.42
           },
-          "meanTotalErrorUsd": 24.77,
-          "mainCauseRight": 5
+          "meanTotalErrorUsd": 8.2,
+          "mainCauseRight": 6
         },
         "weatherOnly": {
           "answered": 6,
@@ -195,11 +195,11 @@
           "meanAbsErrorUsd": {
             "price": 0,
             "days": 2.98,
-            "weather": 52.51,
-            "usage": 53.7,
+            "weather": 51.52,
+            "usage": 52.72,
             "unexplained": 0
           },
-          "meanTotalErrorUsd": 109.19,
+          "meanTotalErrorUsd": 107.22,
           "mainCauseRight": 2
         },
         "billOnly": {
@@ -207,12 +207,12 @@
           "unanswered": 0,
           "meanAbsErrorUsd": {
             "price": 0,
-            "days": 2.37,
-            "weather": 32.49,
-            "usage": 32.56,
+            "days": 2.69,
+            "weather": 35.78,
+            "usage": 34.29,
             "unexplained": 0
           },
-          "meanTotalErrorUsd": 67.43,
+          "meanTotalErrorUsd": 72.76,
           "mainCauseRight": 12
         }
       }
@@ -267,38 +267,38 @@
           "unanswered": 0,
           "meanAbsErrorUsd": {
             "price": 0,
-            "days": 0.02,
-            "weather": 43.62,
-            "usage": 44.18,
-            "unexplained": 0.54
+            "days": 0,
+            "weather": 1.97,
+            "usage": 1.97,
+            "unexplained": 0
           },
-          "meanTotalErrorUsd": 88.35,
-          "mainCauseRight": 2
+          "meanTotalErrorUsd": 3.93,
+          "mainCauseRight": 4
         },
         "weatherOnly": {
           "answered": 4,
           "unanswered": 0,
           "meanAbsErrorUsd": {
-            "price": 3.82,
+            "price": 2.58,
             "days": 11.51,
-            "weather": 30.64,
-            "usage": 27.03,
+            "weather": 28.06,
+            "usage": 23.31,
             "unexplained": 0
           },
-          "meanTotalErrorUsd": 72.99,
+          "meanTotalErrorUsd": 65.45,
           "mainCauseRight": 2
         },
         "billOnly": {
           "answered": 12,
           "unanswered": 0,
           "meanAbsErrorUsd": {
-            "price": 0.51,
-            "days": 11.04,
-            "weather": 37.34,
-            "usage": 47.89,
+            "price": 0,
+            "days": 11.51,
+            "weather": 33.06,
+            "usage": 38.7,
             "unexplained": 0
           },
-          "meanTotalErrorUsd": 96.77,
+          "meanTotalErrorUsd": 83.27,
           "mainCauseRight": 3
         }
       }
@@ -306,87 +306,69 @@
     "byAgentsConfidence": {
       "note": "Grouped by the confidence the agents report: fitted on the household's bills, or low on the Ohio prior after the critic rejected the fit.",
       "fitted": {
-        "households": 20,
+        "households": 24,
         "agents": {
-          "answered": 20,
+          "answered": 24,
           "unanswered": 0,
           "meanAbsErrorUsd": {
-            "price": 0.2,
+            "price": 0.17,
             "days": 0,
-            "weather": 2.84,
-            "usage": 2.78,
-            "unexplained": 0.46
+            "weather": 2.7,
+            "usage": 2.64,
+            "unexplained": 0.38
           },
-          "meanTotalErrorUsd": 6.28,
-          "mainCauseRight": 19
+          "meanTotalErrorUsd": 5.89,
+          "mainCauseRight": 23
         },
         "weatherOnly": {
-          "answered": 20,
+          "answered": 24,
           "unanswered": 0,
           "meanAbsErrorUsd": {
-            "price": 1.27,
-            "days": 10.86,
-            "weather": 25.93,
-            "usage": 18.22,
+            "price": 1.49,
+            "days": 10.97,
+            "weather": 26.28,
+            "usage": 19.07,
             "unexplained": 0
           },
-          "meanTotalErrorUsd": 56.29,
-          "mainCauseRight": 9
+          "meanTotalErrorUsd": 57.82,
+          "mainCauseRight": 11
         },
         "billOnly": {
-          "answered": 60,
+          "answered": 72,
           "unanswered": 0,
           "meanAbsErrorUsd": {
             "price": 0,
-            "days": 10.77,
-            "weather": 28.04,
-            "usage": 27.97,
+            "days": 10.89,
+            "weather": 28.87,
+            "usage": 29.75,
             "unexplained": 0
           },
-          "meanTotalErrorUsd": 66.77,
-          "mainCauseRight": 18
+          "meanTotalErrorUsd": 69.52,
+          "mainCauseRight": 21
         }
       },
       "low": {
-        "households": 4,
+        "households": 0,
         "agents": {
-          "answered": 4,
+          "answered": 0,
           "unanswered": 0,
-          "meanAbsErrorUsd": {
-            "price": 0,
-            "days": 0.02,
-            "weather": 43.62,
-            "usage": 44.18,
-            "unexplained": 0.54
-          },
-          "meanTotalErrorUsd": 88.35,
-          "mainCauseRight": 2
+          "meanAbsErrorUsd": null,
+          "meanTotalErrorUsd": null,
+          "mainCauseRight": 0
         },
         "weatherOnly": {
-          "answered": 4,
+          "answered": 0,
           "unanswered": 0,
-          "meanAbsErrorUsd": {
-            "price": 3.82,
-            "days": 11.51,
-            "weather": 30.64,
-            "usage": 27.03,
-            "unexplained": 0
-          },
-          "meanTotalErrorUsd": 72.99,
-          "mainCauseRight": 2
+          "meanAbsErrorUsd": null,
+          "meanTotalErrorUsd": null,
+          "mainCauseRight": 0
         },
         "billOnly": {
-          "answered": 12,
+          "answered": 0,
           "unanswered": 0,
-          "meanAbsErrorUsd": {
-            "price": 0.51,
-            "days": 11.04,
-            "weather": 37.34,
-            "usage": 47.89,
-            "unexplained": 0
-          },
-          "meanTotalErrorUsd": 96.77,
-          "mainCauseRight": 3
+          "meanAbsErrorUsd": null,
+          "meanTotalErrorUsd": null,
+          "mainCauseRight": 0
         }
       }
     }
@@ -395,12 +377,12 @@
     "note": "The 24 households without a billing error.",
     "billMatchesTariff": 24,
     "rateAnalystRetried": 1,
-    "firstClosureAccepted": 6,
+    "firstClosureAccepted": 5,
     "changeClosed": 22,
-    "weatherModelRejected": 4,
+    "weatherModelRejected": 0,
     "modelSource": {
-      "household_fit": 20,
-      "ohio_prior": 4,
+      "household_fit": 24,
+      "ohio_prior": 0,
       "none": 0
     }
   },
@@ -457,8 +439,8 @@
       },
       {
         "id": "eval-30",
-        "injectedUsd": -11.76,
-        "agentsFlaggedUsd": -11.76,
+        "injectedUsd": -11.68,
+        "agentsFlaggedUsd": -11.68,
         "billOnlyFlagged": 0
       }
     ]

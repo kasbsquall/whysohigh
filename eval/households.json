@@ -556,7 +556,7 @@
     "model": {
       "basePerDay": 25.73,
       "perCdd": 1.842,
-      "perHdd": 2.991
+      "perHdd": 1.391
     },
     "noiseSd": 0.05,
     "injected": "previous bill ends 2026-04-10, 0 days before the 10 Apr 2026 tariff change",
@@ -567,15 +567,15 @@
         "periodStart": "2025-04-15",
         "periodEnd": "2025-05-15",
         "days": 30,
-        "kwh": 1327,
-        "totalUsd": 231.66
+        "kwh": 1087,
+        "totalUsd": 193.08
       },
       {
         "periodStart": "2025-05-15",
         "periodEnd": "2025-06-15",
         "days": 31,
-        "kwh": 1371,
-        "totalUsd": 238.73
+        "kwh": 1201,
+        "totalUsd": 211.41
       },
       {
         "periodStart": "2025-06-15",
@@ -595,69 +595,69 @@
         "periodStart": "2025-08-14",
         "periodEnd": "2025-09-14",
         "days": 31,
-        "kwh": 1201,
-        "totalUsd": 211.41
+        "kwh": 1158,
+        "totalUsd": 204.5
       },
       {
         "periodStart": "2025-09-14",
         "periodEnd": "2025-10-14",
         "days": 30,
-        "kwh": 1180,
-        "totalUsd": 208.03
+        "kwh": 1116,
+        "totalUsd": 197.74
       },
       {
         "periodStart": "2025-10-14",
         "periodEnd": "2025-11-14",
         "days": 31,
-        "kwh": 2176,
-        "totalUsd": 368.04
+        "kwh": 1420,
+        "totalUsd": 246.6
       },
       {
         "periodStart": "2025-11-14",
         "periodEnd": "2025-12-13",
         "days": 29,
-        "kwh": 3393,
-        "totalUsd": 563.07
+        "kwh": 1997,
+        "totalUsd": 339.35
       },
       {
         "periodStart": "2025-12-13",
         "periodEnd": "2026-01-11",
         "days": 29,
-        "kwh": 3383,
-        "totalUsd": 561.47
+        "kwh": 1972,
+        "totalUsd": 335.33
       },
       {
         "periodStart": "2026-01-11",
         "periodEnd": "2026-02-09",
         "days": 29,
-        "kwh": 4980,
-        "totalUsd": 817.41
+        "kwh": 2729,
+        "totalUsd": 456.66
       },
       {
         "periodStart": "2026-02-09",
         "periodEnd": "2026-03-11",
         "days": 30,
-        "kwh": 2838,
-        "totalUsd": 474.12
+        "kwh": 1735,
+        "totalUsd": 297.23
       },
       {
         "periodStart": "2026-03-11",
         "periodEnd": "2026-04-10",
         "days": 30,
-        "kwh": 2110,
-        "totalUsd": 357.45
+        "kwh": 1405,
+        "totalUsd": 244.2
       },
       {
         "periodStart": "2026-04-10",
         "periodEnd": "2026-05-10",
         "days": 30,
-        "kwh": 1286,
-        "totalUsd": 234.54
+        "kwh": 990,
+        "totalUsd": 184.88
       }
     ],
-    "billedUsd": 234.54,
-    "previousBilledUsd": 357.45,
-    "billText": "Electric Service Statement\nResidential service, Columbus OH\nSAMPLE / NOT A REAL BILL\nAccount: 0000-111-222\nStatement date: 05/13/2026\nService period: 04/10/2026 - 05/10/2026\nDays in period: 30\nMeter read previous: 58,519\nMeter read current: 59,805\nEnergy used: 1,286 kWh\nRate: Residential Service (RS)\nLast month: 2,110 kWh, 30 days, $357.45\nDue date: 06/02/2026\nCustomer charge\t$18.79\nEnergy charge 1,286 kWh\t$44.72\nRiders and adjustments 1,286 kWh\t$171.03\nTotal amount due\t$234.54\n"
+    "billedUsd": 184.88,
+    "previousBilledUsd": 244.2,
+    "billText": "Electric Service Statement\nResidential service, Columbus OH\nSAMPLE / NOT A REAL BILL\nAccount: 0000-111-222\nStatement date: 05/13/2026\nService period: 04/10/2026 - 05/10/2026\nDays in period: 30\nMeter read previous: 58,519\nMeter read current: 59,509\nEnergy used: 990 kWh\nRate: Residential Service (RS)\nLast month: 1,405 kWh, 30 days, $244.20\nDue date: 06/02/2026\nCustomer charge\t$18.79\nEnergy charge 990 kWh\t$34.43\nRiders and adjustments 990 kWh\t$131.66\nTotal amount due\t$184.88\n"
   },
   {
     "id": "eval-07",
@@ -1216,7 +1216,7 @@
     "model": {
       "basePerDay": 21.84,
       "perCdd": 1.865,
-      "perHdd": 3.093
+      "perHdd": 1.493
     },
     "noiseSd": 0.05,
     "injected": "28-day bill followed by a 34-day bill",
@@ -1227,71 +1227,71 @@
         "periodStart": "2025-08-27",
         "periodEnd": "2025-09-27",
         "days": 31,
-        "kwh": 1024,
-        "totalUsd": 182.96
+        "kwh": 983,
+        "totalUsd": 176.38
       },
       {
         "periodStart": "2025-09-27",
         "periodEnd": "2025-10-28",
         "days": 31,
-        "kwh": 1415,
-        "totalUsd": 245.8
+        "kwh": 1091,
+        "totalUsd": 193.73
       },
       {
         "periodStart": "2025-10-28",
         "periodEnd": "2025-11-26",
         "days": 29,
-        "kwh": 2511,
-        "totalUsd": 421.72
+        "kwh": 1552,
+        "totalUsd": 267.82
       },
       {
         "periodStart": "2025-11-26",
         "periodEnd": "2025-12-27",
         "days": 31,
-        "kwh": 4245,
-        "totalUsd": 699.62
+        "kwh": 2430,
+        "totalUsd": 408.74
       },
       {
         "periodStart": "2025-12-27",
         "periodEnd": "2026-01-26",
         "days": 30,
-        "kwh": 3686,
-        "totalUsd": 610.03
+        "kwh": 2099,
+        "totalUsd": 355.69
       },
       {
         "periodStart": "2026-01-26",
         "periodEnd": "2026-02-26",
         "days": 31,
-        "kwh": 4430,
-        "totalUsd": 729.26
+        "kwh": 2486,
+        "totalUsd": 417.71
       },
       {
         "periodStart": "2026-02-26",
         "periodEnd": "2026-03-29",
         "days": 31,
-        "kwh": 2306,
-        "totalUsd": 388.87
+        "kwh": 1459,
+        "totalUsd": 252.87
       },
       {
         "periodStart": "2026-03-29",
         "periodEnd": "2026-04-29",
         "days": 31,
-        "kwh": 1404,
-        "totalUsd": 250.34
+        "kwh": 1090,
+        "totalUsd": 198.52
       },
       {
         "periodStart": "2026-04-29",
         "periodEnd": "2026-05-29",
         "days": 30,
-        "kwh": 1343,
-        "totalUsd": 244.1
+        "kwh": 1028,
+        "totalUsd": 191.25
       },
       {
         "periodStart": "2026-05-29",
         "periodEnd": "2026-06-29",
         "days": 31,
-        "kwh": 1073,
-        "totalUsd": 198.8
+        "kwh": 1063,
+        "totalUsd": 197.12
       },
       {
         "periodStart": "2026-06-29",
@@ -1311,13 +1311,13 @@
         "periodStart": "2026-08-27",
         "periodEnd": "2026-09-30",
         "days": 34,
-        "kwh": 1374,
-        "totalUsd": 249.3
+        "kwh": 1312,
+        "totalUsd": 238.89
       }
     ],
-    "billedUsd": 249.3,
+    "billedUsd": 238.89,
     "previousBilledUsd": 207.36,
-    "billText": "Electric Service Statement\nResidential service, Columbus OH\nSAMPLE / NOT A REAL BILL\nAccount: 0000-111-222\nStatement date: 10/03/2026\nService period: 08/27/2026 - 09/30/2026\nDays in period: 34\nMeter read previous: 28,606\nMeter read current: 29,980\nEnergy used: 1,374 kWh\nRate: Residential Service (RS)\nLast month: 1,124 kWh, 28 days, $207.36\nDue date: 10/23/2026\nCustomer charge\t$18.79\nEnergy charge 1,374 kWh\t$47.78\nRiders and adjustments 1,374 kWh\t$182.73\nTotal amount due\t$249.30\n"
+    "billText": "Electric Service Statement\nResidential service, Columbus OH\nSAMPLE / NOT A REAL BILL\nAccount: 0000-111-222\nStatement date: 10/03/2026\nService period: 08/27/2026 - 09/30/2026\nDays in period: 34\nMeter read previous: 28,606\nMeter read current: 29,918\nEnergy used: 1,312 kWh\nRate: Residential Service (RS)\nLast month: 1,124 kWh, 28 days, $207.36\nDue date: 10/23/2026\nCustomer charge\t$18.79\nEnergy charge 1,312 kWh\t$45.62\nRiders and adjustments 1,312 kWh\t$174.48\nTotal amount due\t$238.89\n"
   },
   {
     "id": "eval-13",
@@ -1876,7 +1876,7 @@
     "model": {
       "basePerDay": 20.07,
       "perCdd": 2.084,
-      "perHdd": 2.44
+      "perHdd": 0.84
     },
     "noiseSd": 0.05,
     "injected": "no injection: the change comes from the weather between the two periods",
@@ -1887,71 +1887,71 @@
         "periodStart": "2025-09-19",
         "periodEnd": "2025-10-20",
         "days": 31,
-        "kwh": 1037,
-        "totalUsd": 185.05
+        "kwh": 917,
+        "totalUsd": 165.76
       },
       {
         "periodStart": "2025-10-20",
         "periodEnd": "2025-11-18",
         "days": 29,
-        "kwh": 1838,
-        "totalUsd": 313.79
+        "kwh": 1006,
+        "totalUsd": 180.07
       },
       {
         "periodStart": "2025-11-18",
         "periodEnd": "2025-12-18",
         "days": 30,
-        "kwh": 2914,
-        "totalUsd": 486.3
+        "kwh": 1390,
+        "totalUsd": 241.78
       },
       {
         "periodStart": "2025-12-18",
         "periodEnd": "2026-01-18",
         "days": 31,
-        "kwh": 2766,
-        "totalUsd": 462.59
+        "kwh": 1348,
+        "totalUsd": 235.03
       },
       {
         "periodStart": "2026-01-18",
         "periodEnd": "2026-02-17",
         "days": 30,
-        "kwh": 3920,
-        "totalUsd": 647.53
+        "kwh": 1741,
+        "totalUsd": 298.2
       },
       {
         "periodStart": "2026-02-17",
         "periodEnd": "2026-03-18",
         "days": 29,
-        "kwh": 1879,
-        "totalUsd": 320.38
+        "kwh": 1008,
+        "totalUsd": 180.39
       },
       {
         "periodStart": "2026-03-18",
         "periodEnd": "2026-04-16",
         "days": 29,
-        "kwh": 1459,
-        "totalUsd": 255.08
+        "kwh": 948,
+        "totalUsd": 172.2
       },
       {
         "periodStart": "2026-04-16",
         "periodEnd": "2026-05-15",
         "days": 29,
-        "kwh": 1202,
-        "totalUsd": 220.44
+        "kwh": 819,
+        "totalUsd": 156.19
       },
       {
         "periodStart": "2026-05-15",
         "periodEnd": "2026-06-16",
         "days": 32,
-        "kwh": 1096,
-        "totalUsd": 202.66
+        "kwh": 1039,
+        "totalUsd": 193.1
       },
       {
         "periodStart": "2026-06-16",
         "periodEnd": "2026-07-16",
         "days": 30,
-        "kwh": 1225,
-        "totalUsd": 224.3
+        "kwh": 1223,
+        "totalUsd": 223.97
       },
       {
         "periodStart": "2026-07-16",
@@ -1964,20 +1964,20 @@
         "periodStart": "2026-08-16",
         "periodEnd": "2026-09-15",
         "days": 30,
-        "kwh": 1205,
-        "totalUsd": 220.94
+        "kwh": 1202,
+        "totalUsd": 220.44
       },
       {
         "periodStart": "2026-09-15",
         "periodEnd": "2026-10-15",
         "days": 30,
-        "kwh": 1099,
-        "totalUsd": 203.17
+        "kwh": 948,
+        "totalUsd": 177.83
       }
     ],
-    "billedUsd": 203.17,
-    "previousBilledUsd": 220.94,
-    "billText": "Electric Service Statement\nResidential service, Columbus OH\nSAMPLE / NOT A REAL BILL\nAccount: 0000-111-222\nStatement date: 10/18/2026\nService period: 09/15/2026 - 10/15/2026\nDays in period: 30\nMeter read previous: 87,276\nMeter read current: 88,375\nEnergy used: 1,099 kWh\nRate: Residential Service (RS)\nLast month: 1,205 kWh, 30 days, $220.94\nDue date: 11/07/2026\nCustomer charge\t$18.79\nEnergy charge 1,099 kWh\t$38.22\nRiders and adjustments 1,099 kWh\t$146.16\nTotal amount due\t$203.17\n"
+    "billedUsd": 177.83,
+    "previousBilledUsd": 220.44,
+    "billText": "Electric Service Statement\nResidential service, Columbus OH\nSAMPLE / NOT A REAL BILL\nAccount: 0000-111-222\nStatement date: 10/18/2026\nService period: 09/15/2026 - 10/15/2026\nDays in period: 30\nMeter read previous: 87,276\nMeter read current: 88,224\nEnergy used: 948 kWh\nRate: Residential Service (RS)\nLast month: 1,202 kWh, 30 days, $220.44\nDue date: 11/07/2026\nCustomer charge\t$18.79\nEnergy charge 948 kWh\t$32.97\nRiders and adjustments 948 kWh\t$126.07\nTotal amount due\t$177.83\n"
   },
   {
     "id": "eval-19",
@@ -2536,82 +2536,82 @@
     "model": {
       "basePerDay": 21.51,
       "perCdd": 1.044,
-      "perHdd": 2.518
+      "perHdd": 0.918
     },
     "noiseSd": 0.05,
     "injected": "use multiplied by 0.72 on the last bill",
-    "injectedUsageKwh": -279,
+    "injectedUsageKwh": -244,
     "overchargeUsd": 0,
     "bills": [
       {
         "periodStart": "2025-09-10",
         "periodEnd": "2025-10-12",
         "days": 32,
-        "kwh": 994,
-        "totalUsd": 178.13
+        "kwh": 938,
+        "totalUsd": 169.14
       },
       {
         "periodStart": "2025-10-12",
         "periodEnd": "2025-11-10",
         "days": 29,
-        "kwh": 1597,
-        "totalUsd": 275.05
+        "kwh": 979,
+        "totalUsd": 175.73
       },
       {
         "periodStart": "2025-11-10",
         "periodEnd": "2025-12-12",
         "days": 32,
-        "kwh": 3020,
-        "totalUsd": 503.29
+        "kwh": 1543,
+        "totalUsd": 266.37
       },
       {
         "periodStart": "2025-12-12",
         "periodEnd": "2026-01-13",
         "days": 32,
-        "kwh": 2935,
-        "totalUsd": 489.67
+        "kwh": 1475,
+        "totalUsd": 255.44
       },
       {
         "periodStart": "2026-01-13",
         "periodEnd": "2026-02-11",
         "days": 29,
-        "kwh": 4215,
-        "totalUsd": 694.81
+        "kwh": 1948,
+        "totalUsd": 331.47
       },
       {
         "periodStart": "2026-02-11",
         "periodEnd": "2026-03-13",
         "days": 30,
-        "kwh": 2387,
-        "totalUsd": 401.85
+        "kwh": 1298,
+        "totalUsd": 226.99
       },
       {
         "periodStart": "2026-03-13",
         "periodEnd": "2026-04-11",
         "days": 29,
-        "kwh": 1535,
-        "totalUsd": 265.47
+        "kwh": 933,
+        "totalUsd": 168.57
       },
       {
         "periodStart": "2026-04-11",
         "periodEnd": "2026-05-12",
         "days": 31,
-        "kwh": 1352,
-        "totalUsd": 245.6
+        "kwh": 969,
+        "totalUsd": 181.36
       },
       {
         "periodStart": "2026-05-12",
         "periodEnd": "2026-06-10",
         "days": 29,
-        "kwh": 854,
-        "totalUsd": 162.06
+        "kwh": 766,
+        "totalUsd": 147.3
       },
       {
         "periodStart": "2026-06-10",
         "periodEnd": "2026-07-11",
         "days": 31,
-        "kwh": 1058,
-        "totalUsd": 196.28
+        "kwh": 1053,
+        "totalUsd": 195.45
       },
       {
         "periodStart": "2026-07-11",
@@ -2631,13 +2631,13 @@
         "periodStart": "2026-09-09",
         "periodEnd": "2026-10-10",
         "days": 31,
-        "kwh": 718,
-        "totalUsd": 139.25
+        "kwh": 627,
+        "totalUsd": 123.97
       }
     ],
-    "billedUsd": 139.25,
+    "billedUsd": 123.97,
     "previousBilledUsd": 187.39,
-    "billText": "Electric Service Statement\nResidential service, Columbus OH\nSAMPLE / NOT A REAL BILL\nAccount: 0000-111-222\nStatement date: 10/13/2026\nService period: 09/09/2026 - 10/10/2026\nDays in period: 31\nMeter read previous: 68,238\nMeter read current: 68,956\nEnergy used: 718 kWh\nRate: Residential Service (RS)\nLast month: 1,005 kWh, 30 days, $187.39\nDue date: 11/02/2026\nCustomer charge\t$18.79\nEnergy charge 718 kWh\t$24.97\nRiders and adjustments 718 kWh\t$95.49\nTotal amount due\t$139.25\n"
+    "billText": "Electric Service Statement\nResidential service, Columbus OH\nSAMPLE / NOT A REAL BILL\nAccount: 0000-111-222\nStatement date: 10/13/2026\nService period: 09/09/2026 - 10/10/2026\nDays in period: 31\nMeter read previous: 68,238\nMeter read current: 68,865\nEnergy used: 627 kWh\nRate: Residential Service (RS)\nLast month: 1,005 kWh, 30 days, $187.39\nDue date: 11/02/2026\nCustomer charge\t$18.79\nEnergy charge 627 kWh\t$21.80\nRiders and adjustments 627 kWh\t$83.38\nTotal amount due\t$123.97\n"
   },
   {
     "id": "eval-25",
@@ -3196,82 +3196,82 @@
     "model": {
       "basePerDay": 23.86,
       "perCdd": 1.262,
-      "perHdd": 2.523
+      "perHdd": 0.923
     },
     "noiseSd": 0.05,
-    "injected": "billed below the tariff by 11.76 USD (-6%)",
+    "injected": "billed below the tariff by 11.68 USD (-6%)",
     "injectedUsageKwh": 0,
-    "overchargeUsd": -11.76,
+    "overchargeUsd": -11.68,
     "bills": [
       {
         "periodStart": "2025-08-13",
         "periodEnd": "2025-09-14",
         "days": 32,
-        "kwh": 1051,
-        "totalUsd": 187.29
+        "kwh": 1009,
+        "totalUsd": 180.55
       },
       {
         "periodStart": "2025-09-14",
         "periodEnd": "2025-10-13",
         "days": 29,
-        "kwh": 936,
-        "totalUsd": 168.82
+        "kwh": 878,
+        "totalUsd": 159.49
       },
       {
         "periodStart": "2025-10-13",
         "periodEnd": "2025-11-14",
         "days": 32,
-        "kwh": 1843,
-        "totalUsd": 314.59
+        "kwh": 1117,
+        "totalUsd": 197.91
       },
       {
         "periodStart": "2025-11-14",
         "periodEnd": "2025-12-16",
         "days": 32,
-        "kwh": 3394,
-        "totalUsd": 563.23
+        "kwh": 1750,
+        "totalUsd": 299.65
       },
       {
         "periodStart": "2025-12-16",
         "periodEnd": "2026-01-16",
         "days": 31,
-        "kwh": 3095,
-        "totalUsd": 515.32
+        "kwh": 1613,
+        "totalUsd": 277.62
       },
       {
         "periodStart": "2026-01-16",
         "periodEnd": "2026-02-17",
         "days": 32,
-        "kwh": 4046,
-        "totalUsd": 667.72
+        "kwh": 1923,
+        "totalUsd": 327.45
       },
       {
         "periodStart": "2026-02-17",
         "periodEnd": "2026-03-21",
         "days": 32,
-        "kwh": 2353,
-        "totalUsd": 396.39
+        "kwh": 1343,
+        "totalUsd": 234.23
       },
       {
         "periodStart": "2026-03-21",
         "periodEnd": "2026-04-22",
         "days": 32,
-        "kwh": 1634,
-        "totalUsd": 285.47
+        "kwh": 1133,
+        "totalUsd": 203.62
       },
       {
         "periodStart": "2026-04-22",
         "periodEnd": "2026-05-21",
         "days": 29,
-        "kwh": 1231,
-        "totalUsd": 225.31
+        "kwh": 911,
+        "totalUsd": 171.62
       },
       {
         "periodStart": "2026-05-21",
         "periodEnd": "2026-06-22",
         "days": 32,
-        "kwh": 1048,
-        "totalUsd": 194.6
+        "kwh": 1016,
+        "totalUsd": 189.24
       },
       {
         "periodStart": "2026-06-22",
@@ -3291,12 +3291,12 @@
         "periodStart": "2026-08-23",
         "periodEnd": "2026-09-22",
         "days": 30,
-        "kwh": 1056,
-        "totalUsd": 184.19
+        "kwh": 1048,
+        "totalUsd": 182.92
       }
     ],
-    "billedUsd": 184.19,
+    "billedUsd": 182.92,
     "previousBilledUsd": 206.52,
-    "billText": "Electric Service Statement\nResidential service, Columbus OH\nSAMPLE / NOT A REAL BILL\nAccount: 0000-111-222\nStatement date: 09/25/2026\nService period: 08/23/2026 - 09/22/2026\nDays in period: 30\nMeter read previous: 57,913\nMeter read current: 58,969\nEnergy used: 1,056 kWh\nRate: Residential Service (RS)\nLast month: 1,119 kWh, 31 days, $206.52\nDue date: 10/15/2026\nCustomer charge\t$18.79\nEnergy charge 1,056 kWh\t$24.96\nRiders and adjustments 1,056 kWh\t$140.44\nTotal amount due\t$184.19\n"
+    "billText": "Electric Service Statement\nResidential service, Columbus OH\nSAMPLE / NOT A REAL BILL\nAccount: 0000-111-222\nStatement date: 09/25/2026\nService period: 08/23/2026 - 09/22/2026\nDays in period: 30\nMeter read previous: 57,913\nMeter read current: 58,961\nEnergy used: 1,048 kWh\nRate: Residential Service (RS)\nLast month: 1,119 kWh, 31 days, $206.52\nDue date: 10/15/2026\nCustomer charge\t$18.79\nEnergy charge 1,048 kWh\t$24.76\nRiders and adjustments 1,048 kWh\t$139.37\nTotal amount due\t$182.92\n"
   }
 ]
