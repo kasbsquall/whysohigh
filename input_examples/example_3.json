@@ -1,0 +1,22 @@
+{
+  "_note": "Synthetic. A winter bill billed 18.40 USD above the published tariff, with no earlier bills, and a disconnection notice.",
+  "household": {
+    "householdSize": 4,
+    "annualIncomeUsd": 38000,
+    "electricHeat": false,
+    "oldestMemberAge": 52,
+    "disconnectionNotice": true
+  },
+  "bill": {
+    "fields": {
+      "period_start": "01/12/2026",
+      "period_end": "02/10/2026",
+      "days": 29,
+      "kwh": 1520,
+      "total_usd": 281.07,
+      "prev_kwh": 1450,
+      "prev_days": 33,
+      "prev_total_usd": 251.42
+    }
+  }
+}

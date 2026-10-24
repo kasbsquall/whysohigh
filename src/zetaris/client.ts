@@ -5,13 +5,17 @@
 
 import { randomUUID } from "node:crypto";
 import type { Config } from "../config.ts";
-import type { ResponseCache } from "../cache.ts";
+import { SampleMissError, type ResponseCache } from "../cache.ts";
 import type { RunLogger } from "../log.ts";
 
 export type Row = readonly string[];
 
 export interface SqlClient {
-  run(agent: string, sql: string, limit?: number): Promise<readonly Row[]>;
+  /**
+   * offline computes the same rows from saved public data. Sample mode uses it
+   * only when the statement was never recorded, and logs the source as "snapshot".
+   */
+  run(agent: string, sql: string, limit?: number, offline?: () => readonly Row[]): Promise<readonly Row[]>;
 }
 
 const TIMEOUT_MS = 300_000;
@@ -120,17 +124,27 @@ export function createSqlClient(deps: SqlDeps): SqlClient {
     }
   };
   return {
-    async run(agent: string, sql: string, limit = 1000): Promise<readonly Row[]> {
+    async run(agent: string, sql: string, limit = 1000, offline?: () => readonly Row[]): Promise<readonly Row[]> {
       const started = Date.now();
       const request = { sql, limit };
-      const rows = config.sampleMode
-        ? cache.read<Row[]>("sql", request)
-        : await liveRun(agent, sql, limit);
+      let source: "sample" | "snapshot" | "live" = config.sampleMode ? "sample" : "live";
+      let rows: readonly Row[];
+      if (!config.sampleMode) {
+        rows = await liveRun(agent, sql, limit);
+      } else {
+        try {
+          rows = cache.read<Row[]>("sql", request);
+        } catch (error: unknown) {
+          if (!(error instanceof SampleMissError) || !offline) throw error;
+          rows = offline();
+          source = "snapshot";
+        }
+      }
       if (config.recordSamples) cache.write("sql", request, rows);
       logger.log({
         agent,
         step: "sql",
-        source: config.sampleMode ? "sample" : "live",
+        source,
         sql,
         rowCount: rows.length,
         latencyMs: Date.now() - started,

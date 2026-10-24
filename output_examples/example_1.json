@@ -1,0 +1,372 @@
+{
+  "run_id": "20261024T073504-2d466585",
+  "sample_mode": true,
+  "log_file": "logs\\20261024T073504-2d466585.jsonl",
+  "status": "success",
+  "output": {
+    "bill": {
+      "periodStart": "08/14/2026",
+      "periodEnd": "09/15/2026",
+      "days": 32,
+      "kwh": 1717,
+      "totalUsd": 306.84,
+      "previous": {
+        "kwh": 1379,
+        "days": 30,
+        "totalUsd": 250.13
+      },
+      "lineItems": []
+    },
+    "history": [
+      {
+        "periodStart": "2025-11-13",
+        "periodEnd": "2025-12-14",
+        "days": 31,
+        "kwh": 1014,
+        "weatherDays": 31,
+        "cdd": 0,
+        "hdd": 892.5
+      },
+      {
+        "periodStart": "2025-12-14",
+        "periodEnd": "2026-01-13",
+        "days": 30,
+        "kwh": 1070,
+        "weatherDays": 30,
+        "cdd": 0,
+        "hdd": 911.5
+      },
+      {
+        "periodStart": "2026-01-13",
+        "periodEnd": "2026-02-13",
+        "days": 31,
+        "kwh": 1222,
+        "weatherDays": 31,
+        "cdd": 0,
+        "hdd": 1437
+      },
+      {
+        "periodStart": "2026-02-13",
+        "periodEnd": "2026-03-15",
+        "days": 30,
+        "kwh": 992,
+        "weatherDays": 30,
+        "cdd": 2.5,
+        "hdd": 627.5
+      },
+      {
+        "periodStart": "2026-03-15",
+        "periodEnd": "2026-04-15",
+        "days": 31,
+        "kwh": 900,
+        "weatherDays": 31,
+        "cdd": 33,
+        "hdd": 381.5
+      },
+      {
+        "periodStart": "2026-04-15",
+        "periodEnd": "2026-05-15",
+        "days": 30,
+        "kwh": 872,
+        "weatherDays": 30,
+        "cdd": 24.5,
+        "hdd": 238
+      },
+      {
+        "periodStart": "2026-05-15",
+        "periodEnd": "2026-06-15",
+        "days": 31,
+        "kwh": 1076,
+        "weatherDays": 31,
+        "cdd": 168,
+        "hdd": 33.5
+      },
+      {
+        "periodStart": "2026-06-15",
+        "periodEnd": "2026-07-15",
+        "days": 30,
+        "kwh": 1457,
+        "weatherDays": 30,
+        "cdd": 324,
+        "hdd": 3
+      },
+      {
+        "periodStart": "2026-07-15",
+        "periodEnd": "2026-08-14",
+        "days": 30,
+        "kwh": 1379,
+        "weatherDays": 30,
+        "cdd": 314,
+        "hdd": 0
+      },
+      {
+        "periodStart": "2026-08-14",
+        "periodEnd": "2026-09-15",
+        "days": 32,
+        "kwh": 1717,
+        "weatherDays": 32,
+        "cdd": 315.5,
+        "hdd": 1.5
+      }
+    ],
+    "rate": {
+      "estimate": {
+        "strategy": "period_end",
+        "period": {
+          "start": "2026-08-14",
+          "end": "2026-09-15"
+        },
+        "kwh": 1717,
+        "charges": {
+          "lines": [
+            {
+              "label": "Customer charge",
+              "usd": 18.79
+            },
+            {
+              "label": "Energy charge 1717 kWh",
+              "usd": 59.71
+            },
+            {
+              "label": "Riders and adjustments 1717 kWh",
+              "usd": 228.34
+            }
+          ],
+          "totalUsd": 306.84,
+          "segments": [
+            {
+              "tariff": {
+                "label": "69dd1b5381bf8b311c0576a8",
+                "name": "Residential Service Bundled Ohio Power Rate Zone (RS)",
+                "start": "2026-04-10",
+                "end": null,
+                "approved": true,
+                "fixedMonthlyUsd": 18.788,
+                "tiers": [
+                  {
+                    "maxKwh": 2000,
+                    "ratePerKwh": 0.0347738,
+                    "adjPerKwh": 0.13299
+                  },
+                  {
+                    "maxKwh": 15000,
+                    "ratePerKwh": 0.0347738,
+                    "adjPerKwh": 0.13253
+                  },
+                  {
+                    "maxKwh": null,
+                    "ratePerKwh": 0.0347738,
+                    "adjPerKwh": 0.13197
+                  }
+                ]
+              },
+              "days": 32
+            }
+          ]
+        },
+        "tariffLabels": [
+          "69dd1b5381bf8b311c0576a8"
+        ]
+      },
+      "verdicts": [
+        {
+          "check": "bill_recompute",
+          "accepted": true,
+          "reason": "Published tariff gives 306.84 USD, billed 306.84 USD (0.0% apart).",
+          "gapUsd": 0
+        }
+      ],
+      "closed": true,
+      "possibleBillingErrorUsd": null,
+      "priceEffectUsd": 0
+    },
+    "change": {
+      "memoryEffect": null,
+      "decomposition": {
+        "usageStrategy": "calibrated",
+        "calibratedTo": "2026-07-15",
+        "model": {
+          "source": "household_fit",
+          "calibrationPerDay": -0.5700849109261222,
+          "basePerDay": 23.15986234004216,
+          "perCdd": 2.178994043945017,
+          "perHdd": 0.3511066769694857,
+          "r2": 0.9657875690959019,
+          "billsUsed": 9,
+          "confidence": "fitted"
+        },
+        "fromUsd": 250.13,
+        "toUsd": 306.84,
+        "changeUsd": 56.71,
+        "components": [
+          {
+            "key": "price",
+            "kwh": null,
+            "usd": 0
+          },
+          {
+            "key": "days",
+            "kwh": 91.9,
+            "usd": 15.43
+          },
+          {
+            "key": "weather",
+            "kwh": -41.8,
+            "usd": -7.01
+          },
+          {
+            "key": "usage",
+            "kwh": 287.9,
+            "usd": 48.29
+          },
+          {
+            "key": "unexplained",
+            "kwh": null,
+            "usd": 0
+          }
+        ]
+      },
+      "verdicts": [
+        {
+          "check": "freshness",
+          "accepted": true,
+          "reason": "Published tariff and NOAA weather cover every day of the 2 bills compared.",
+          "gapUsd": 0
+        },
+        {
+          "check": "bill_recompute",
+          "accepted": true,
+          "reason": "Published tariff gives 250.13 USD, billed 250.13 USD (0.0% apart).",
+          "gapUsd": 0
+        },
+        {
+          "check": "weather_model",
+          "accepted": true,
+          "reason": "The fit on 9 bills has 23.7 kWh per day of base use and slopes within 4 times the Ohio ones.",
+          "gapUsd": 0
+        },
+        {
+          "check": "closure",
+          "accepted": false,
+          "reason": "2.87 USD of the 56.71 USD change is not explained, more than the 2.84 USD allowed (5% of the change, at least 1 USD). Usage was measured against the household_fit weather model, which may not fit this household.",
+          "gapUsd": 2.87
+        },
+        {
+          "check": "weather_model",
+          "accepted": true,
+          "reason": "The fit on 9 bills, calibrated by -0.57 kWh per day, has 23.2 kWh per day of base use and slopes within 4 times the Ohio ones.",
+          "gapUsd": 0
+        },
+        {
+          "check": "closure",
+          "accepted": true,
+          "reason": "Price, days, weather and usage explain the 56.71 USD change; 0.00 USD is left, within the 2.84 USD allowed.",
+          "gapUsd": 0
+        }
+      ],
+      "closed": true,
+      "skipped": null
+    },
+    "actions": {
+      "asOf": "2026-09-15",
+      "actions": [
+        {
+          "id": "pipp_plus",
+          "why": "Pay a share of your income each month instead of the full electric bill, all year. With gas heat, another 5% of income goes to the gas company.",
+          "amount": {
+            "kind": "monthly",
+            "usd": 171,
+            "insteadOfUsd": 306.84
+          },
+          "status": "recommended",
+          "verdict": {
+            "check": "eligibility",
+            "accepted": true,
+            "reason": "41,000 USD a year is under the 47,810 USD limit for 3 people.",
+            "gapUsd": 0
+          },
+          "taken": null
+        },
+        {
+          "id": "heap",
+          "why": "A one-time credit on your bill for the heating season. Households also on PIPP Plus get 75% less.",
+          "amount": {
+            "kind": "range",
+            "minUsd": 31,
+            "maxUsd": 546
+          },
+          "status": "rejected",
+          "verdict": {
+            "check": "eligibility",
+            "accepted": false,
+            "reason": "Not open yet: HEAP takes applications from Oct 1, 2026 to Apr 30, 2027.",
+            "gapUsd": 0
+          },
+          "taken": null
+        },
+        {
+          "id": "summer_crisis",
+          "why": "Help paying a summer bill, for households with someone 60 or older or a disconnection notice.",
+          "amount": {
+            "kind": "up_to",
+            "usd": 1300
+          },
+          "status": "rejected",
+          "verdict": {
+            "check": "eligibility",
+            "accepted": false,
+            "reason": "Needs someone 60 or older at home, a doctor's note that cooling is needed, or a disconnection notice.",
+            "gapUsd": 0
+          },
+          "taken": null
+        },
+        {
+          "id": "winter_crisis",
+          "why": "Help to keep or restore service in winter, once there is a disconnection notice.",
+          "amount": {
+            "kind": "up_to",
+            "usd": 1200
+          },
+          "status": "rejected",
+          "verdict": {
+            "check": "eligibility",
+            "accepted": false,
+            "reason": "Not open yet: Winter Crisis Program takes applications from Nov 1, 2026 to Mar 31, 2027.",
+            "gapUsd": 0
+          },
+          "taken": null
+        },
+        {
+          "id": "usage_note",
+          "why": "Your own use added 48.29 USD to this bill, more than price, days and weather explain.",
+          "amount": {
+            "kind": "share_of_change",
+            "usd": 48.29
+          },
+          "status": "recommended",
+          "verdict": {
+            "check": "eligibility",
+            "accepted": true,
+            "reason": "Anyone can do this; it has no income or date rules.",
+            "gapUsd": 0
+          },
+          "taken": null
+        }
+      ],
+      "notProposed": [
+        {
+          "id": "puco_complaint",
+          "name": "PUCO complaint",
+          "reason": "This bill matches AEP Ohio's published tariff, so there is nothing to question."
+        },
+        {
+          "id": "budget_billing",
+          "name": "AEP Ohio Average Monthly Payment",
+          "reason": "It averages the last 12 months to set a flat amount; we have 10 of your bills, so we cannot work out that amount yet."
+        }
+      ]
+    },
+    "memory": null
+  },
+  "execution_time_seconds": 0.1
+}

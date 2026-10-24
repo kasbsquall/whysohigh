@@ -26,7 +26,8 @@ import {
 } from "./memory/householdMemory.ts";
 import type { Runtime } from "./runtime.ts";
 import type { BillPeriod, Tariff } from "./tariff/tariff.ts";
-import { billWeather, type BillWeather } from "./zetaris/queries.ts";
+import { historyForBill, noaaSnapshot } from "./input.ts";
+import { billWeather, billWeatherFor, type BillWeather, type HistoryBill } from "./zetaris/queries.ts";
 
 export const ORCHESTRATOR = "Orchestrator";
 
@@ -142,12 +143,32 @@ export interface ExplainOptions {
   readonly memoryDir: string | null;
   /** What the household told us about itself (size, income, heating); null if nothing. */
   readonly facts?: HouseholdFacts | null;
+  /**
+   * Earlier bills brought with the request. When set, the history is these bills
+   * plus the previous and current bill, joined with NOAA in one query, instead of
+   * the household's rows in the database.
+   */
+  readonly earlierBills?: readonly HistoryBill[];
 }
 
-export async function explain(runtime: Runtime, billPath: string, options: ExplainOptions): Promise<Explanation> {
+async function billFor(runtime: Runtime, source: string | Bill): Promise<Bill> {
+  if (typeof source === "string") return readBill(runtime.llm, runtime.logger, source);
+  runtime.logger.log({ agent: "BillReader", step: "fields_given", reason: "The request carried the bill fields, so no model reads an image.", bill: source });
+  return source;
+}
+
+async function historyOf(runtime: Runtime, bill: Bill, options: ExplainOptions): Promise<readonly BillWeather[]> {
+  if (options.earlierBills) {
+    return billWeatherFor(runtime.sql, "WeatherAnalyst", historyForBill(bill, options.earlierBills), noaaSnapshot);
+  }
+  return options.householdId ? billWeather(runtime.sql, "WeatherAnalyst", options.householdId) : [];
+}
+
+/** source is a bill image path for BillReader, or bill fields already read. */
+export async function explain(runtime: Runtime, source: string | Bill, options: ExplainOptions): Promise<Explanation> {
   const { householdId, memoryDir } = options;
-  const bill = await readBill(runtime.llm, runtime.logger, billPath);
-  const history = householdId ? await billWeather(runtime.sql, "WeatherAnalyst", householdId) : [];
+  const bill = await billFor(runtime, source);
+  const history = await historyOf(runtime, bill, options);
   const tariffs = await loadTariffs(runtime.sql);
   const rate = analyzeRate(runtime, tariffs, bill, history);
   const { start, end } = rate.estimate.period;

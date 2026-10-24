@@ -1,0 +1,221 @@
+{
+  "run_id": "20261024T073511-09a1007a",
+  "sample_mode": true,
+  "log_file": "logs\\20261024T073511-09a1007a.jsonl",
+  "status": "success",
+  "output": {
+    "bill": {
+      "periodStart": "01/12/2026",
+      "periodEnd": "02/10/2026",
+      "days": 29,
+      "kwh": 1520,
+      "totalUsd": 281.07,
+      "previous": {
+        "kwh": 1450,
+        "days": 33,
+        "totalUsd": 251.42
+      },
+      "lineItems": []
+    },
+    "history": [
+      {
+        "periodStart": "2025-12-10",
+        "periodEnd": "2026-01-12",
+        "days": 33,
+        "kwh": 1450,
+        "weatherDays": 33,
+        "cdd": 0,
+        "hdd": 1016
+      },
+      {
+        "periodStart": "2026-01-12",
+        "periodEnd": "2026-02-10",
+        "days": 29,
+        "kwh": 1520,
+        "weatherDays": 29,
+        "cdd": 0,
+        "hdd": 1371.5
+      }
+    ],
+    "rate": {
+      "estimate": {
+        "strategy": "prorated",
+        "period": {
+          "start": "2026-01-12",
+          "end": "2026-02-10"
+        },
+        "kwh": 1520,
+        "charges": {
+          "lines": [
+            {
+              "label": "Customer charge",
+              "usd": 18.38
+            },
+            {
+              "label": "Energy charge 1520 kWh",
+              "usd": 39.99
+            },
+            {
+              "label": "Riders and adjustments 1520 kWh",
+              "usd": 204.3
+            }
+          ],
+          "totalUsd": 262.67,
+          "segments": [
+            {
+              "tariff": {
+                "label": "678845d8e2a8067b170af699",
+                "name": "Residential Service Bundled Ohio Power Rate Zone (RS)",
+                "start": "2025-01-01",
+                "end": "2026-04-09",
+                "approved": true,
+                "fixedMonthlyUsd": 18.38,
+                "tiers": [
+                  {
+                    "maxKwh": 2000,
+                    "ratePerKwh": 0.0263125,
+                    "adjPerKwh": 0.13441
+                  },
+                  {
+                    "maxKwh": 15000,
+                    "ratePerKwh": 0.0263125,
+                    "adjPerKwh": 0.13395
+                  },
+                  {
+                    "maxKwh": null,
+                    "ratePerKwh": 0.0263125,
+                    "adjPerKwh": 0.23451
+                  }
+                ]
+              },
+              "days": 29
+            }
+          ]
+        },
+        "tariffLabels": [
+          "678845d8e2a8067b170af699"
+        ]
+      },
+      "verdicts": [
+        {
+          "check": "bill_recompute",
+          "accepted": false,
+          "reason": "Published tariff gives 262.67 USD but the bill says 281.07 USD: 18.40 USD (6.5%) more than the 2% allowed.",
+          "gapUsd": 18.4
+        },
+        {
+          "check": "bill_recompute",
+          "accepted": false,
+          "reason": "Published tariff gives 262.67 USD but the bill says 281.07 USD: 18.40 USD (6.5%) more than the 2% allowed.",
+          "gapUsd": 18.4
+        }
+      ],
+      "closed": false,
+      "possibleBillingErrorUsd": 18.4,
+      "priceEffectUsd": 0
+    },
+    "change": {
+      "memoryEffect": null,
+      "decomposition": null,
+      "verdicts": [],
+      "closed": false,
+      "skipped": "This bill does not match the published tariff, so its change cannot be split until that gap is resolved."
+    },
+    "actions": {
+      "asOf": "2026-02-10",
+      "actions": [
+        {
+          "id": "pipp_plus",
+          "why": "Pay a share of your income each month instead of the full electric bill, all year. With gas heat, another 5% of income goes to the gas company.",
+          "amount": {
+            "kind": "monthly",
+            "usd": 158,
+            "insteadOfUsd": 281.07
+          },
+          "status": "recommended",
+          "verdict": {
+            "check": "eligibility",
+            "accepted": true,
+            "reason": "38,000 USD a year is under the 57,750 USD limit for 4 people.",
+            "gapUsd": 0
+          },
+          "taken": null
+        },
+        {
+          "id": "heap",
+          "why": "A one-time credit on your bill for the heating season. Households also on PIPP Plus get 75% less.",
+          "amount": {
+            "kind": "range",
+            "minUsd": 31,
+            "maxUsd": 546
+          },
+          "status": "rejected",
+          "verdict": {
+            "check": "eligibility",
+            "accepted": false,
+            "reason": "Not open yet: HEAP takes applications from Oct 1, 2026 to Apr 30, 2027.",
+            "gapUsd": 0
+          },
+          "taken": null
+        },
+        {
+          "id": "summer_crisis",
+          "why": "Help paying a summer bill, for households with someone 60 or older or a disconnection notice.",
+          "amount": {
+            "kind": "up_to",
+            "usd": 1300
+          },
+          "status": "rejected",
+          "verdict": {
+            "check": "eligibility",
+            "accepted": false,
+            "reason": "Not open yet: Summer Crisis Program takes applications from Jul 1, 2026 to Sep 30, 2026.",
+            "gapUsd": 0
+          },
+          "taken": null
+        },
+        {
+          "id": "winter_crisis",
+          "why": "Help to keep or restore service in winter, once there is a disconnection notice.",
+          "amount": {
+            "kind": "up_to",
+            "usd": 1200
+          },
+          "status": "rejected",
+          "verdict": {
+            "check": "eligibility",
+            "accepted": false,
+            "reason": "Not open yet: Winter Crisis Program takes applications from Nov 1, 2026 to Mar 31, 2027.",
+            "gapUsd": 0
+          },
+          "taken": null
+        },
+        {
+          "id": "puco_complaint",
+          "why": "Your bill is 18.40 USD above what AEP Ohio's published tariff gives for the same use. Ask AEP Ohio to explain the difference first; it may be a charge the published tariff does not list.",
+          "amount": {
+            "kind": "disputed",
+            "usd": 18.4
+          },
+          "status": "recommended",
+          "verdict": {
+            "check": "eligibility",
+            "accepted": true,
+            "reason": "Anyone can do this; it has no income or date rules.",
+            "gapUsd": 0
+          },
+          "taken": null
+        }
+      ],
+      "notProposed": [
+        {
+          "id": "budget_billing",
+          "name": "AEP Ohio Average Monthly Payment",
+          "reason": "It averages the last 12 months to set a flat amount; we have 2 of your bills, so we cannot work out that amount yet."
+        }
+      ]
+    },
+    "memory": null
+  },
+  "execution_time_seconds": 0
+}

@@ -6,12 +6,14 @@
   "license": "Apache-2.0",
   "scope": "AEP Ohio residential customers in Columbus, Ohio",
   "entry_points": {
+    "your_own_bill": "npm run explain -- --input input_examples/example_1.json",
+    "http": "POST http://127.0.0.1:8787/api/run with a request like input_examples/example_1.json (after npm run serve)",
     "explain_one_bill": "npm run explain -- --bill samples/linda-2026-09.png --household samples/linda.json",
     "two_month_demo": "npm run demo",
     "web": "npm run web:build && npm run serve",
     "evaluation": "npm run eval"
   },
-  "sample_mode": "SAMPLE_MODE=true is the default with no .env. The agent code runs unchanged on model and SQL responses recorded from a live run in samples/cache/, so it reproduces the recorded runs and cannot read a bill that was never recorded.",
+  "sample_mode": "SAMPLE_MODE=true is the default with no .env. The agent code runs unchanged on model and SQL responses recorded from a live run in samples/cache/. A new request with bill fields also runs: its weather join is computed from the NOAA copy in data/snapshot/ and logged as source snapshot. A bill image that was never recorded needs the live stack.",
   "agents": [
     { "name": "BillReader", "kind": "model", "role": "Reads the bill image into structured fields with Nemotron; falls back to the bill's text layer with a Nemotron text model" },
     { "name": "WeatherAnalyst", "kind": "code", "role": "Joins the household's bills with NOAA daily weather in one federated Zetaris query and fits or picks the weather model" },

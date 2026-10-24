@@ -1,0 +1,65 @@
+{
+  "_note": "Synthetic. A gas-heated home that used 20% more than its weather response in August-September; the bill matches the published tariff.",
+  "household": {
+    "id": "example-1",
+    "householdSize": 3,
+    "annualIncomeUsd": 41000,
+    "electricHeat": false,
+    "oldestMemberAge": 44,
+    "disconnectionNotice": false
+  },
+  "bill": {
+    "fields": {
+      "period_start": "08/14/2026",
+      "period_end": "09/15/2026",
+      "days": 32,
+      "kwh": 1717,
+      "total_usd": 306.84,
+      "prev_kwh": 1379,
+      "prev_days": 30,
+      "prev_total_usd": 250.13
+    }
+  },
+  "history": [
+    {
+      "period_start": "11/13/2025",
+      "period_end": "12/14/2025",
+      "kwh": 1014
+    },
+    {
+      "period_start": "12/14/2025",
+      "period_end": "01/13/2026",
+      "kwh": 1070
+    },
+    {
+      "period_start": "01/13/2026",
+      "period_end": "02/13/2026",
+      "kwh": 1222
+    },
+    {
+      "period_start": "02/13/2026",
+      "period_end": "03/15/2026",
+      "kwh": 992
+    },
+    {
+      "period_start": "03/15/2026",
+      "period_end": "04/15/2026",
+      "kwh": 900
+    },
+    {
+      "period_start": "04/15/2026",
+      "period_end": "05/15/2026",
+      "kwh": 872
+    },
+    {
+      "period_start": "05/15/2026",
+      "period_end": "06/15/2026",
+      "kwh": 1076
+    },
+    {
+      "period_start": "06/15/2026",
+      "period_end": "07/15/2026",
+      "kwh": 1457
+    }
+  ]
+}

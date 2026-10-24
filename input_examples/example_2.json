@@ -1,0 +1,60 @@
+{
+  "_note": "Synthetic. An electric-heated home whose spring bill crosses AEP Ohio's 10 Apr 2026 tariff change.",
+  "household": {
+    "id": "example-2",
+    "householdSize": 2,
+    "annualIncomeUsd": 26500,
+    "electricHeat": true,
+    "oldestMemberAge": 67,
+    "disconnectionNotice": false
+  },
+  "bill": {
+    "fields": {
+      "period_start": "04/01/2026",
+      "period_end": "05/01/2026",
+      "days": 30,
+      "kwh": 1060,
+      "total_usd": 194.26,
+      "prev_kwh": 1135,
+      "prev_days": 30,
+      "prev_total_usd": 200.8
+    }
+  },
+  "history": [
+    {
+      "period_start": "08/01/2025",
+      "period_end": "08/31/2025",
+      "kwh": 1024
+    },
+    {
+      "period_start": "08/31/2025",
+      "period_end": "10/01/2025",
+      "kwh": 847
+    },
+    {
+      "period_start": "10/01/2025",
+      "period_end": "10/31/2025",
+      "kwh": 961
+    },
+    {
+      "period_start": "10/31/2025",
+      "period_end": "12/01/2025",
+      "kwh": 1336
+    },
+    {
+      "period_start": "12/01/2025",
+      "period_end": "12/31/2025",
+      "kwh": 1797
+    },
+    {
+      "period_start": "12/31/2025",
+      "period_end": "01/31/2026",
+      "kwh": 2014
+    },
+    {
+      "period_start": "01/31/2026",
+      "period_end": "03/02/2026",
+      "kwh": 1881
+    }
+  ]
+}

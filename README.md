@@ -13,6 +13,32 @@ npm install
 npm run explain -- --bill samples/linda-2026-09.png --household samples/linda.json
 ```
 
+### Try your own bill
+
+No keys needed. Write the numbers printed on an AEP Ohio residential bill into a request like `input_examples/example_1.json` and run it:
+
+```bash
+npm run explain -- --input input_examples/example_1.json
+```
+
+The same request works over HTTP once `npm run serve` is running:
+
+```bash
+curl -X POST http://127.0.0.1:8787/api/run -H "Content-Type: application/json" -d @input_examples/example_1.json
+```
+
+A request has three parts. `household` holds what the action plan needs (`householdSize`, `annualIncomeUsd`, `electricHeat`, `oldestMemberAge`, `disconnectionNotice`; all optional, and a missing fact rejects the programs that need it). `bill.fields` holds the bill as printed: `period_start` and `period_end` (MM/DD/YYYY), `days`, `kwh`, `total_usd`, and the previous period's `prev_kwh`, `prev_days` and `prev_total_usd`. `history` is optional: earlier bills as `period_start`, `period_end` and `kwh`; with 6 or more, the weather model is fitted to the household instead of the Ohio average. Dates start on 1 Jan 2024, where the weather and tariff data start; each period is 1 to 62 days; earlier bills go oldest first and may not overlap; up to 36 of them. The answer is JSON with `status`, the full explanation under `output`, and the trace file under `log_file`. A request the agents cannot use gets HTTP 400 and `status: "error"` with the reason; the endpoint takes `Content-Type: application/json` only, up to 256 KB.
+
+The three examples take different paths, and their outputs and traces are in `output_examples/`:
+
+| Request | What happens |
+|---|---|
+| `example_1.json` | A gas-heated home that used 20% more than its weather response. The bill matches the tariff; the critic rejects the first split, the model is calibrated to the previous bill, and the second split closes. |
+| `example_2.json` | An electric-heated home whose spring bill crosses the 10 Apr 2026 tariff change. The bill is within 2% of the tariff; 2.06 USD of the change stays unexplained and is reported as such. |
+| `example_3.json` | A winter bill 18.40 USD above the published tariff, with no earlier bills. It is flagged as a possible billing error with the amount. |
+
+Live, the weather join runs in Zetaris with the bills written into the query. In sample mode, a request that was never recorded uses a copy of the same NOAA table saved in `data/snapshot/` (`scripts/export-snapshot.ts`, exported from Zetaris on 23 Oct 2026, weather up to 18 Oct 2026), and the trace marks that query `"source":"snapshot"`. The tariff query is the recorded one. Reading a bill image always needs the live stack, so the HTTP endpoint takes `bill.fields` only; the CLI takes `--bill <image>`.
+
 The two-month demo, from an empty memory:
 
 ```bash
@@ -126,7 +152,7 @@ What is particular to this build: the models do one job, reading a document a pe
 - Agent framework: none. The orchestrator is plain TypeScript; the analysts, the critic and the planner are deterministic code, so the same bill fields always give the same diagnosis and every number can be traced to a query or a tariff line.
 - Libraries: none at runtime beyond Node 22's standard library. TypeScript runs through tsx; Vite builds the page and Vitest runs the tests.
 - Development: the code, tests and documentation were written with Claude Code (Anthropic) and reviewed and run by the author. Cursor was not used.
-- Sample mode: with no `.env`, `SAMPLE_MODE=true` runs the same agent code on model and SQL responses recorded from a live run (`samples/cache/`), with no network access. It reproduces the recorded runs; a bill that was never recorded needs the live stack.
+- Sample mode: with no `.env`, `SAMPLE_MODE=true` runs the same agent code on model and SQL responses recorded from a live run (`samples/cache/`), with no network access. A new request with bill fields runs too: its weather join is computed from the saved NOAA copy in `data/snapshot/`, and the trace says so. A bill image that was never recorded needs the live stack.
 - `metadata.json` lists the agents, models, sources and evaluation figures in one place.
 
 ## Data and licensing
@@ -148,7 +174,7 @@ No real customer data is used anywhere.
 - One utility and one city: AEP Ohio residential customers, weather from the Columbus airport station.
 - Not yet tried on real AEP Ohio bills. The recomputation uses the tariff as URDB publishes it; a charge that URDB does not list would make a real bill look like a possible billing error.
 - BillReader is not measured: the evaluation gives the agents the bill fields directly.
-- Sample mode replays recorded responses, so it cannot read a new bill without Nightshift and Zetaris.
+- Sample mode cannot read a new bill image without Nightshift; a new bill given as fields works, with weather from the saved NOAA copy, which ends on 18 Oct 2026.
 - With fewer than 6 earlier bills, the split between weather and usage rests on the statewide prior and is marked low confidence.
 - Billing errors under the critic's 2% tolerance are not flagged.
 - Program rules were read on 22 Oct 2026; the income table covers Jul 2026 to May 2027 and households of 1 to 7 people.
