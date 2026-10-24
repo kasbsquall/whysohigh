@@ -62,7 +62,7 @@ export function createZetarisRest(config: Config["zetaris"], fetchImpl: typeof f
     return found;
   }
 
-  const post = (sql: string, limit: number, bearer: string): Promise<Response> =>
+  const post = (sql: string, limit: number, bearer: string, queryId: string): Promise<Response> =>
     fetchImpl(`${config.apiUrl}/sql-editor/sqls/run`, {
       method: "POST",
       headers: {
@@ -71,17 +71,18 @@ export function createZetarisRest(config: Config["zetaris"], fetchImpl: typeof f
         "X-Request-ID": randomUUID(),
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ queryId: randomUUID(), sql, source: "SqlEditor", limit }),
+      body: JSON.stringify({ queryId, sql, source: "SqlEditor", limit }),
       signal: AbortSignal.timeout(TIMEOUT_MS),
     });
 
-  async function run(sql: string, limit = 1000): Promise<readonly Row[]> {
+  /** queryId is the id Zetaris keeps for the statement in its query history; the run log records it. */
+  async function run(sql: string, limit = 1000, queryId: string = randomUUID()): Promise<readonly Row[]> {
     token ??= await login();
-    let response = await post(sql, limit, token);
+    let response = await post(sql, limit, token, queryId);
     if (response.status === 401) {
       // The session token expired or Zetaris restarted: sign in again once.
       token = await login();
-      response = await post(sql, limit, token);
+      response = await post(sql, limit, token, queryId);
     }
     if (!response.ok) {
       const raw = await readError(response);
@@ -112,15 +113,17 @@ const RETRY_MS = 2_000;
 export function createSqlClient(deps: SqlDeps): SqlClient {
   const { config, cache, logger } = deps;
   const rest = createZetarisRest(config.zetaris, deps.fetchImpl);
-  const liveRun = async (agent: string, sql: string, limit: number): Promise<readonly Row[]> => {
+  const liveRun = async (agent: string, sql: string, limit: number): Promise<{ rows: readonly Row[]; queryId: string }> => {
+    const first = randomUUID();
     try {
-      return await rest.run(sql, limit);
+      return { rows: await rest.run(sql, limit, first), queryId: first };
     } catch (error: unknown) {
       if (!(error instanceof ZetarisError)) throw error;
       const waitMs = deps.retryMs ?? RETRY_MS;
-      logger.log({ agent, step: "sql_retry", waitMs, reason: error.message.slice(0, 200) });
+      logger.log({ agent, step: "sql_retry", waitMs, failedQueryId: first, reason: error.message.slice(0, 200) });
       await new Promise((resolve) => setTimeout(resolve, waitMs));
-      return rest.run(sql, limit);
+      const second = randomUUID();
+      return { rows: await rest.run(sql, limit, second), queryId: second };
     }
   };
   return {
@@ -129,8 +132,9 @@ export function createSqlClient(deps: SqlDeps): SqlClient {
       const request = { sql, limit };
       let source: "sample" | "snapshot" | "live" = config.sampleMode ? "sample" : "live";
       let rows: readonly Row[];
+      let zetarisQueryId: string | undefined;
       if (!config.sampleMode) {
-        rows = await liveRun(agent, sql, limit);
+        ({ rows, queryId: zetarisQueryId } = await liveRun(agent, sql, limit));
       } else {
         try {
           rows = cache.read<Row[]>("sql", request);
@@ -145,6 +149,7 @@ export function createSqlClient(deps: SqlDeps): SqlClient {
         agent,
         step: "sql",
         source,
+        ...(zetarisQueryId ? { zetarisQueryId } : {}),
         sql,
         rowCount: rows.length,
         latencyMs: Date.now() - started,

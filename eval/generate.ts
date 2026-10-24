@@ -8,10 +8,12 @@
 //
 //   npm run eval:generate
 //
-// Writes eval/households.json and infra/household-db/init/03_seed_eval.sql. Load
-// the seed into the running database with the command printed at the end.
+// Writes eval/households.json, infra/household-db/init/03_seed_eval.sql and each
+// household's last bill as eval/bills/<id>.html (rendered to PNG for the
+// BillReader evaluation by scripts/render-bills.py). Load the seed into the
+// running database with the command printed at the end.
 
-import { writeFileSync } from "node:fs";
+import { mkdirSync, writeFileSync } from "node:fs";
 import { loadTariffs } from "../src/agents/rateAnalyst.ts";
 import { createRuntime } from "../src/runtime.ts";
 import { periodDays, type Tariff } from "../src/tariff/tariff.ts";
@@ -108,7 +110,7 @@ const totalOrNull = (tariffs: readonly Tariff[], p: Period): number | null => {
   }
 };
 
-function household(index: number, weather: DailyMean, tariffs: readonly Tariff[]): EvalHousehold {
+function household(index: number, weather: DailyMean, tariffs: readonly Tariff[]): EvalHousehold & { readonly billHtml: string } {
   const cause = CAUSES[Math.floor(index / 6)];
   const slot = index % 6;
   const heating = slot === 5 ? "electric" : "gas";
@@ -164,6 +166,7 @@ function household(index: number, weather: DailyMean, tariffs: readonly Tariff[]
     billedUsd: bill.totalUsd,
     previousBilledUsd: bill.previousTotalUsd,
     billText: bill.text,
+    billHtml: bill.html,
   };
 }
 
@@ -193,7 +196,10 @@ const tariffs = await loadTariffs(runtime.sql);
 const daily = await runtime.sql.run(AGENT, "SELECT DATE, TMAX, TMIN FROM noaa_ncei.cmh_daily_from_2024 ORDER BY DATE", 1200);
 const weather: DailyMean = new Map(daily.map(([date, tmax, tmin]) => [date, (Number(tmax) + Number(tmin)) / 2]));
 
-const households = Array.from({ length: 30 }, (_, i) => household(i, weather, tariffs));
+const generated = Array.from({ length: 30 }, (_, i) => household(i, weather, tariffs));
+mkdirSync("eval/bills", { recursive: true });
+for (const h of generated) writeFileSync(`eval/bills/${h.id}.html`, h.billHtml, "utf8");
+const households: readonly EvalHousehold[] = generated.map(({ billHtml: _html, ...h }) => h);
 writeFileSync("eval/households.json", `${JSON.stringify(households, null, 2)}\n`, "utf8");
 writeFileSync("infra/household-db/init/03_seed_eval.sql", seedSql(households), "utf8");
 for (const h of households) {

@@ -119,6 +119,25 @@ describe("live SQL client", () => {
     expect(logger.events.map((e) => e.step)).toEqual(["sql_retry", "sql"]);
   });
 
+  it("logs the query id it sent, so the run can be found in Zetaris' query history", async () => {
+    const logger = memoryLogger();
+    const calls: Captured[] = [];
+    const sql = createSqlClient({
+      config: live,
+      cache: cache(),
+      logger,
+      retryMs: 0,
+      fetchImpl: fakeFetch([json({ idToken: "x" }), new Response("Bad Request", { status: 400 }), json({ data: [["1"]] })], calls),
+    });
+    await sql.run("WeatherAnalyst", "SELECT 1");
+    const sent = calls.slice(1).map((c) => (JSON.parse(String(c.init.body)) as { queryId: string }).queryId);
+    expect(sent[0]).not.toBe(sent[1]);
+    expect(logger.events).toMatchObject([
+      { step: "sql_retry", failedQueryId: sent[0] },
+      { step: "sql", source: "live", zetarisQueryId: sent[1] },
+    ]);
+  });
+
   it("gives up after the second failure", async () => {
     const sql = createSqlClient({
       config: live,

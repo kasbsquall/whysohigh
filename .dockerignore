@@ -1,0 +1,11 @@
+.git
+node_modules
+.env
+.env.*
+!.env.example
+logs
+out
+.memory
+.ui-direcciones
+.impeccable
+web/dist
