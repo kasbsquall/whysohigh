@@ -59,7 +59,7 @@ export async function recordRun(
     type: "utility",
     externalKey: { system: "eia", id: AEP_OHIO_EIA },
     name: "AEP Ohio (Ohio Power Co)",
-    source: { kind: "api", by: "Zetaris EIA_API", at },
+    source: { kind: "api", by: "Zetaris OPENEI_URDB", at },
   });
   const station = await wm.upsertEntity({
     type: "weather_station",
