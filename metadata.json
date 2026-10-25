@@ -51,7 +51,13 @@
     "households": 30,
     "mean_error_usd": { "agents": 5.89, "it_was_the_weather": 57.82, "nemotron_bill_only": 69.52 },
     "main_cause_right": { "agents": "23/24", "it_was_the_weather": "11/24", "nemotron_bill_only": "21/72" },
-    "billing_errors_flagged": "5 of 6, precision 1.00"
+    "billing_errors_flagged": "5 of 6, precision 1.00",
+    "bill_reader": {
+      "file": "eval/results/billreader.json",
+      "bills": 30,
+      "all_fields_right": "30/30",
+      "note": "Clean renders of one synthetic bill layout, live run of 25 Oct 2026 through Nightshift; not photos of real bills"
+    }
   },
   "pre_existing_components": [
     "Meterless H-MEM and World Model engines (Apache-2.0), vendored unchanged from github.com/Meterless/Meterless at commit 1742dec, listed in engines/VENDORED.md"

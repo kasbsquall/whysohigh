@@ -111,7 +111,7 @@ With no `.env` this replays the recorded run and writes the same files that are 
 
 **The households.** `npm run eval:generate` builds 30 synthetic AEP Ohio households (`eval/households.json`), each with 13 monthly bills made from a weather response the agents never see (base use per day, kWh per cooling and per heating degree day), NOAA's real Columbus weather, 5% monthly noise, and one cause injected in the last bill. There are six households per cause: a bill across the 10 Apr 2026 tariff change, a longer billing period, a change of season with nothing injected, a jump or drop in use, and a billing error (1, 3, 5, 8, 12 and -6% of the correct total). The bills are loaded into the household Postgres and read through the same federated Zetaris query as any household.
 
-**The truth.** The same dollar accounting the agents use (price from the published tariff, then days, weather and usage in waterfall order), applied with the household's true weather response calibrated to its previous bill. So the evaluation measures whether the agents recover that response from 12 noisy bills, and whether the critic catches a bill that does not match the tariff. It does not measure BillReader: the agents get the bill fields directly.
+**The truth.** The same dollar accounting the agents use (price from the published tariff, then days, weather and usage in waterfall order), applied with the household's true weather response calibrated to its previous bill. So the evaluation measures whether the agents recover that response from 12 noisy bills, and whether the critic catches a bill that does not match the tariff. It does not measure BillReader: the agents get the bill fields directly. BillReader is measured on its own, below.
 
 **The baselines.** (a) "It was the weather": the whole change goes to weather. (b) Nemotron 3 Ultra 550B through Nightshift with the bill's text and no tools, asked for the same four-part split and whether it suspects a billing error, 3 repetitions per household at temperature 0.6, with one retry when the reply is not the JSON asked for (the same treatment BillReader gets).
 
@@ -130,6 +130,8 @@ The 4 households that heat with electricity come out at 3.93 USD and 4/4, the 20
 Billing errors, all 30 households: the agents flag 5 of the 6 with the exact amount and flag none of the other 24 (precision 1.00, recall 0.83). The one missed is the 1% error, under the critic's 2% tolerance on purpose. Nemotron with the bill only suspected a billing error in none of its 90 answers.
 
 The agents give the same result in 3 runs per household. The critic closed 22 of the 24 changes. The other two are bills across the tariff change, where the agents report 2.04 and 1.44 USD as not explained instead of hiding them. The first closure check, before calibrating to the previous bill, passed 5 times out of 24.
+
+**BillReader.** `npm run eval:billreader` reads the last bill of each of the 30 households as an image (`eval/bills/png/`, rendered from `eval/bills/<id>.html` by `scripts/render-bills.py`) with Nemotron 3.5 Super VL through Nightshift, and compares every printed field with what the generator printed: both period dates, days, kWh, total, last month's kWh, days and total, and whether the line items add up to the total. There is no text layer next to these images, so a vision failure would count as a failure. In the live run of 25 Oct 2026 (03:36 UTC, trace in `eval/results/billreader-live.trace.jsonl`) it read 30 of 30 bills with every field right, each on the first attempt, with a median of 4.3 s per bill. With no `.env` the command replays that run and gives the same result (`eval/results/billreader.json`). These are clean renders of one synthetic layout, not phone photos of real AEP Ohio bills, so the result says the model reads this layout reliably and nothing yet about a crumpled photo or AEP's own bill design.
 
 **Limits of this evaluation.**
 
@@ -173,7 +175,7 @@ No real customer data is used anywhere.
 
 - One utility and one city: AEP Ohio residential customers, weather from the Columbus airport station.
 - Not yet tried on real AEP Ohio bills. The recomputation uses the tariff as URDB publishes it; a charge that URDB does not list would make a real bill look like a possible billing error.
-- BillReader is not measured: the evaluation gives the agents the bill fields directly.
+- BillReader is measured on 30 clean renders of one synthetic bill layout (30 of 30 correct), not on photos of real bills.
 - Sample mode cannot read a new bill image without Nightshift; a new bill given as fields works, with weather from the saved NOAA copy, which ends on 18 Oct 2026.
 - With fewer than 6 earlier bills, the split between weather and usage rests on the statewide prior and is marked low confidence.
 - Billing errors under the critic's 2% tolerance are not flagged.

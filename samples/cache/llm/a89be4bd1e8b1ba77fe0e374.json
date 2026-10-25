@@ -1,0 +1,14 @@
+{
+  "key": "a89be4bd1e8b1ba77fe0e374",
+  "response": {
+    "text": "{\n  \"period_start\": \"12/10/2025\",\n  \"period_end\": \"01/09/2026\",\n  \"days\": 30,\n  \"kwh\": 993,\n  \"total_usd\": 186.88,\n  \"prev_kwh\": 920,\n  \"prev_days\": 30,\n  \"prev_total_usd\": 166.25,\n  \"line_items\": [\n    {\"label\": \"Customer charge\", \"usd\": 18.38},\n    {\"label\": \"Energy charge 993 kWh\", \"usd\": 35.03},\n    {\"label\": \"Riders and adjustments 993 kWh\", \"usd\": 133.47}\n  ]\n}",
+    "reasoning": "",
+    "modelRequested": "nvidia/nemotron-3.5-super-vl-120b-a12b",
+    "modelServed": "nvidia/nemotron-3.5-super-vl-120b-a12b",
+    "usage": {
+      "prompt_tokens": 2193,
+      "completion_tokens": 582,
+      "total_tokens": 2775
+    }
+  }
+}
