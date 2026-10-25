@@ -1,358 +1,385 @@
 ---
 name: Why So High
-description: An electricity bill explained cause by cause, each step of the agents' reasoning printed as a flight coupon in a ticket wallet.
+description: An electricity bill explained cause by cause, set like a forecast office's daily report for Columbus, with the real daily weather as the visible backbone.
 colors:
-  cover-navy: "oklch(30% .09 262)"
-  void-red: "oklch(52% .2 27)"
-  carbon-violet: "oklch(42% .12 300)"
-  carbon-paper: "oklch(95% .025 300)"
-  confidence-amber: "oklch(85% .12 80)"
-  wallet-ground: "oklch(93% .015 262)"
-  coupon-white: "oklch(98.5% .004 260)"
-  ink: "oklch(22% .03 262)"
-  ink-muted: "oklch(40% .03 262)"
-  perforation-line: "oklch(84% .02 262)"
-  on-navy: "oklch(95% .012 262)"
-  on-navy-muted: "oklch(82% .03 262)"
-  bar-track: "oklch(91% .015 262)"
-  table-head: "oklch(96% .01 262)"
-  void-wash: "oklch(96.5% .02 27)"
-  memory-wash: "oklch(96.5% .02 300)"
+  ground: "oklch(97.5% .008 230)"
+  surface: "oklch(99.2% .004 230)"
+  band: "oklch(94.5% .014 235)"
+  line: "oklch(24% .03 245 / .12)"
+  line-strong: "oklch(24% .03 245 / .24)"
+  ink: "oklch(24% .03 245)"
+  ink-2: "oklch(40% .03 245)"
+  service: "oklch(38% .09 245)"
+  service-deep: "oklch(31% .08 245)"
+  link: "oklch(41% .11 245)"
+  on-service: "oklch(97.5% .008 230)"
+  on-service-2: "oklch(86% .03 235)"
+  heat: "oklch(66% .16 45)"
+  heat-ink: "oklch(48% .14 42)"
+  cold: "oklch(62% .11 235)"
+  cold-ink: "oklch(44% .11 240)"
+  reject: "oklch(55% .19 25)"
+  reject-ink: "oklch(46% .18 25)"
+  reject-bg: "oklch(95.5% .028 25)"
+  on-reject: "oklch(98% .01 25)"
+  temp-1: "oklch(48% .12 245)"
+  temp-2: "oklch(60% .11 235)"
+  temp-3: "oklch(68% .07 200)"
+  temp-4: "oklch(70% .11 75)"
+  temp-5: "oklch(64% .15 50)"
+  temp-6: "oklch(55% .17 35)"
 typography:
-  display:
-    fontFamily: "Barlow Condensed, Libre Franklin, sans-serif"
-    fontSize: "80px"
-    fontWeight: 600
-    lineHeight: 0.9
-    letterSpacing: "-0.01em"
-    fontFeature: "tnum, lnum"
-  amount:
-    fontFamily: "Barlow Condensed, Libre Franklin, sans-serif"
-    fontSize: "40px"
-    fontWeight: 600
-    lineHeight: 1
+  change-figure:
+    fontFamily: "Public Sans, Atkinson Hyperlegible Next, sans-serif"
+    fontSize: "108px"
+    fontWeight: 800
+    lineHeight: 0.86
+    letterSpacing: "-0.04em"
     fontFeature: "tnum, lnum"
   headline:
-    fontFamily: "Barlow Condensed, Libre Franklin, sans-serif"
-    fontSize: "36px"
-    fontWeight: 600
-    lineHeight: 1.05
-    letterSpacing: "-0.005em"
-  statement:
-    fontFamily: "Libre Franklin, sans-serif"
+    fontFamily: "Public Sans, Atkinson Hyperlegible Next, sans-serif"
     fontSize: "30px"
     fontWeight: 600
-    lineHeight: 1.3
+    lineHeight: 1.15
+    letterSpacing: "-0.017em"
+  section-title:
+    fontFamily: "Public Sans, Atkinson Hyperlegible Next, sans-serif"
+    fontSize: "31px"
+    fontWeight: 700
+    lineHeight: 1.15
+    letterSpacing: "-0.02em"
+  card-title:
+    fontFamily: "Public Sans, Atkinson Hyperlegible Next, sans-serif"
+    fontSize: "25px"
+    fontWeight: 700
+    lineHeight: 1.2
+    letterSpacing: "-0.015em"
+  action-figure:
+    fontFamily: "Public Sans, Atkinson Hyperlegible Next, sans-serif"
+    fontSize: "44px"
+    fontWeight: 800
+    lineHeight: 1
+    letterSpacing: "-0.03em"
+    fontFeature: "tnum, lnum"
+  amount:
+    fontFamily: "Public Sans, Atkinson Hyperlegible Next, sans-serif"
+    fontSize: "24px"
+    fontWeight: 700
+    lineHeight: 1.2
+    letterSpacing: "-0.01em"
+    fontFeature: "tnum, lnum"
   title:
-    fontFamily: "Libre Franklin, sans-serif"
+    fontFamily: "Public Sans, Atkinson Hyperlegible Next, sans-serif"
     fontSize: "19px"
-    fontWeight: 600
-    lineHeight: 1.3
+    fontWeight: 700
+    lineHeight: 1.25
+    letterSpacing: "-0.008em"
   body:
-    fontFamily: "Libre Franklin, sans-serif"
+    fontFamily: "WSH Figures, Atkinson Hyperlegible Next, Public Sans, sans-serif"
     fontSize: "18px"
     fontWeight: 400
     lineHeight: 1.55
     fontFeature: "tnum, lnum"
   body-small:
-    fontFamily: "Libre Franklin, sans-serif"
-    fontSize: "17px"
+    fontFamily: "WSH Figures, Atkinson Hyperlegible Next, Public Sans, sans-serif"
+    fontSize: "16px"
     fontWeight: 400
-    lineHeight: 1.55
-  stub-label:
-    fontFamily: "Libre Franklin, sans-serif"
-    fontSize: "14px"
-    fontWeight: 600
-    letterSpacing: "0.06em"
-  route-label:
-    fontFamily: "Barlow Condensed, Libre Franklin, sans-serif"
-    fontSize: "22px"
+    lineHeight: 1.4
+  control:
+    fontFamily: "Public Sans, Atkinson Hyperlegible Next, sans-serif"
+    fontSize: "17px"
     fontWeight: 600
     lineHeight: 1
-    letterSpacing: "0.06em"
-  stamp:
-    fontFamily: "Barlow Condensed, Libre Franklin, sans-serif"
-    fontSize: "38px"
-    fontWeight: 700
-    lineHeight: 1.1
-    letterSpacing: "0.08em"
-  code:
-    fontFamily: "IBM Plex Mono, monospace"
+  chart-label:
+    fontFamily: "Public Sans, Atkinson Hyperlegible Next, sans-serif"
     fontSize: "14px"
+    fontWeight: 600
+    lineHeight: 1.25
+  code:
+    fontFamily: "Atkinson Hyperlegible Mono, monospace"
+    fontSize: "16px"
     fontWeight: 400
+    lineHeight: 1.6
 rounded:
-  hairline: "4px"
-  pill: "6px"
-  card: "8px"
-  switch: "16px"
-  pin: "50%"
+  box: "4px"
+  mark: "2px"
+  bar: "1px"
+  pill: "999px"
 spacing:
-  tight: "4px"
-  stack: "12px"
-  card-x: "22px"
-  card-y: "18px"
-  block: "28px"
-  gutter: "32px"
-  column: "56px"
-  section: "104px"
-  page-end: "120px"
+  s1: "4px"
+  s2: "8px"
+  s3: "12px"
+  s4: "16px"
+  s5: "24px"
+  s6: "32px"
+  s7: "48px"
+  s8: "64px"
+  s9: "96px"
 components:
-  coupon:
-    backgroundColor: "{colors.coupon-white}"
-    textColor: "{colors.ink}"
-    rounded: "{rounded.card}"
-    padding: "18px 22px 18px 20px"
-  coupon-stub:
-    backgroundColor: "{colors.coupon-white}"
-    textColor: "{colors.ink-muted}"
-    typography: "{typography.stub-label}"
-    padding: "18px 18px 18px 22px"
-    width: "196px"
-  critic-check:
-    backgroundColor: "{colors.coupon-white}"
-    textColor: "{colors.ink}"
-    rounded: "{rounded.card}"
-    padding: "16px 18px"
-  critic-check-void:
-    backgroundColor: "{colors.void-wash}"
-    textColor: "{colors.void-red}"
-    rounded: "{rounded.card}"
-  stamp-void:
-    textColor: "{colors.void-red}"
-    typography: "{typography.stamp}"
-    rounded: "{rounded.pill}"
-  stamp-validated:
-    textColor: "{colors.cover-navy}"
-    rounded: "{rounded.pill}"
-  memory-note:
-    backgroundColor: "{colors.carbon-paper}"
-    textColor: "{colors.ink}"
-    rounded: "{rounded.card}"
-    padding: "20px 22px"
-  memory-switch-on:
-    backgroundColor: "{colors.carbon-violet}"
-    rounded: "{rounded.switch}"
-    width: "56px"
-    height: "32px"
-  memory-switch-off:
-    backgroundColor: "oklch(78% .02 262)"
-    rounded: "{rounded.switch}"
-    width: "56px"
-    height: "32px"
-  change-pill:
-    backgroundColor: "{colors.coupon-white}"
-    textColor: "{colors.void-red}"
-    rounded: "{rounded.pill}"
-    padding: "0 10px"
-  confidence-badge:
-    backgroundColor: "{colors.confidence-amber}"
-    textColor: "{colors.cover-navy}"
-    rounded: "{rounded.pill}"
-    padding: "0 10px"
+  shell:
+    backgroundColor: "{colors.service}"
+    textColor: "{colors.on-service}"
   tab:
-    textColor: "{colors.on-navy-muted}"
-    typography: "{typography.body}"
-    rounded: "{rounded.card}"
-    padding: "14px 18px 16px"
+    textColor: "{colors.on-service-2}"
+    typography: "{typography.control}"
+    rounded: "{rounded.box}"
+    padding: "14px 14px 15px"
     height: "48px"
   tab-selected:
-    textColor: "{colors.on-navy}"
-  comparison-table:
-    backgroundColor: "{colors.coupon-white}"
+    backgroundColor: "{colors.ground}"
+    textColor: "{colors.service-deep}"
+  box:
+    backgroundColor: "{colors.surface}"
     textColor: "{colors.ink}"
-    rounded: "{rounded.card}"
-    padding: "12px 16px"
-  evidence-accordion:
-    backgroundColor: "{colors.coupon-white}"
-    textColor: "{colors.ink}"
-    rounded: "{rounded.card}"
-    padding: "16px 18px"
-    height: "56px"
+    rounded: "{rounded.box}"
+    padding: "16px"
   action-card:
-    backgroundColor: "{colors.coupon-white}"
+    backgroundColor: "{colors.surface}"
     textColor: "{colors.ink}"
-    rounded: "{rounded.card}"
-    padding: "20px 22px"
-  button:
-    backgroundColor: "{colors.wallet-ground}"
-    textColor: "{colors.ink-muted}"
-    rounded: "{rounded.card}"
-    padding: "13px 18px"
-    height: "48px"
+    rounded: "{rounded.box}"
+    padding: "32px"
+  button-solid:
+    backgroundColor: "{colors.service}"
+    textColor: "{colors.on-service}"
+    typography: "{typography.control}"
+    rounded: "{rounded.box}"
+    padding: "10px 16px"
+    height: "44px"
+  button-solid-hover:
+    backgroundColor: "{colors.service-deep}"
+  button-line:
+    backgroundColor: "{colors.surface}"
+    textColor: "{colors.link}"
+    typography: "{typography.control}"
+    rounded: "{rounded.box}"
+    padding: "10px 16px"
+    height: "44px"
+  button-line-hover:
+    backgroundColor: "{colors.band}"
+  weather-toggle-pressed:
+    backgroundColor: "{colors.service}"
+    textColor: "{colors.on-service}"
+    rounded: "{rounded.box}"
+    padding: "8px 12px"
+    height: "40px"
+  status-chip:
+    backgroundColor: "{colors.band}"
+    textColor: "{colors.ink}"
+    typography: "{typography.body-small}"
+    rounded: "{rounded.box}"
+    padding: "6px 10px"
+  check-rejected:
+    backgroundColor: "{colors.reject-bg}"
+    textColor: "{colors.ink}"
+    rounded: "{rounded.box}"
+  check-rejected-head:
+    backgroundColor: "{colors.reject-ink}"
+    textColor: "{colors.on-reject}"
+    padding: "8px 16px"
+  switch-track-off:
+    backgroundColor: "{colors.surface}"
+    rounded: "{rounded.pill}"
+    width: "56px"
+    height: "32px"
+  switch-track-on:
+    backgroundColor: "{colors.service}"
+    rounded: "{rounded.pill}"
+    width: "56px"
+    height: "32px"
+  thumb-tag:
+    backgroundColor: "{colors.service}"
+    textColor: "{colors.on-service}"
+    rounded: "{rounded.mark}"
+    padding: "5px 8px"
 ---
 
 # Design System: Why So High
 
 ## Overview
 
-**Creative North Star: "The Jet-Age Ticket Wallet"**
+**Creative North Star: "The Forecast Office"**
 
-Every step of the agents' reasoning is printed as a flight coupon. A navy cover holds the route of the bill (FROM one total TO the next) in tall condensed figures, and below it the wallet opens: white coupons on a pale blue-grey ground, each with a perforated stub on the right that names the agent who worked out or checked that line and the source it used. The critic's trail sits beside the coupons as its own column of tickets, and a rejected pass is stamped VOID in red while the re-issued pass is stamped VALIDATED in navy. Anything that came from the household's memory is printed on violet carbon paper.
+The page reads like a weather service's daily report for Columbus. A full-bleed service-blue bar carries the brand and the two bill tabs; under it, on a cool pale ground, the change in the bill is set at forecast-headline scale, and the real daily temperatures of both billing periods run as a chart of one bar per day. Everything else is set as plain report furniture: ruled lists, a few bordered boxes, tabular figures, and short sentences for a reader of 71 with the paper bill beside her.
 
-The screen is calm and readable for a 71-year-old reader with the paper bill beside her: body text at 18px, amounts large and tabular, every dollar paired with kWh or a unit, and color never the only signal (each amount also carries a verb such as Added, Took off or No change). Density is moderate. Space is grouped tight inside a coupon and opened wide between areas, from 4px inside a figure stack to 104px between the reasoning and the evidence.
+Density is moderate and calm. Running text is 18px (17px on phones) and never drops below 16px; only chart labels go to 14px. Colors are few and each has a job: service blue for the shell and the system's marks, a warm/cool pair for the direction of money, a six-step temperature scale for the weather bars, and one red for the checker's rejection. Surfaces are flat: there are no shadows.
 
-The world was chosen on 22 Oct 2026 as direction C of three (seed key 835f0fee). The build matches the contract on palette, type pairing, coupon stub, stamps and carbon violet. Where the build differs from the contract, this file records the build.
+This file was written from the shipped build of `web/index.html` (styles in `web/src/styles.css`, markup in `web/src/view.ts`) on 25 Oct 2026. It replaces the 22 Oct record of an earlier direction (the ticket wallet); none of that system is in the build. The earlier files are kept in `.impeccable/` as `DESIGN.superseded-2026-10-22.md` and `design.superseded-2026-10-22.json`. The rendered page was not inspected for this record; where a claim depends on the render, it says so.
 
 **Key Characteristics:**
-- Navy cover over a pale blue-grey wallet ground; coupon-white cards carry all content.
-- Barlow Condensed for figures, route labels, area titles and stamps; Libre Franklin for everything a person reads as a sentence; IBM Plex Mono only for identifiers and SQL.
-- Perforation as structure: dashed rules and punched half-circle notches separate a coupon from its stub.
-- Two stamps, VOID and VALIDATED, are the only rotated elements in the system.
-- Carbon violet is reserved for household memory.
-- Phosphor Light icons on every cause, check, evidence row and action.
+- Service-blue shell over a cool pale ground; one 4px corner radius for every box.
+- Public Sans for headings and figures, Atkinson Hyperlegible Next for sentences, Atkinson Hyperlegible Mono only for SQL and identifiers.
+- Digits inside sentences come from a self-hosted Public Sans subset ("WSH Figures"), so no slashed zero reaches the reader.
+- The weather strip, one bar per day colored by that day's average temperature, is the signature component.
+- Flat surfaces: 1px borders and ruled lines, no shadows.
+- Phosphor Light icons on causes, agents, checks, actions, evidence rows and states.
+- Agents carry plain names on screen; code names appear only in the evidence area.
 
 ## Colors
 
-A cool navy and blue-grey paper palette with one hot red for money going up and for rejection, and one violet reserved for memory.
+A cool blue-grey report palette with one service blue, a warm and a cool ink for the direction of money, a six-step temperature scale for weather, and one red reserved for rejection.
 
 ### Primary
-- **Cover Navy** (`cover-navy`): the cover band behind the route, the VALIDATED stamp and its card ring, money going down (amounts, bars, the down change pill), the selected-coupon pins on the timeline, icon color on coupons and action cards, links.
+- **Service Blue** (`service`): the shell bar behind the brand and tabs, the solid button, the switch track when on, the pressed weather toggle, the "on" segment of the confidence meter, the ring drawn around the total on the bill thumbnail and its "Sample" tag, the bill markers in the running-total column, the 65°F base line and the bill shading on the weather chart, the noted-month bracket, the live-column underline in the comparison table, the "Accepted" status in the checks, and the icon color on causes, agents, action titles and evidence rows. Section headings themselves are set in Ink, so "section ink" in practice means icons and marks, not heading text.
+- **Service Deep** (`service-deep`): the selected tab's text and the solid button's hover.
+- **Link Blue** (`link`): links, line buttons, the chart's text buttons and the "Open it full size" cue.
+- **On Service** (`on-service`) and **On Service Muted** (`on-service-2`): text on the shell. Muted carries the household name and unselected tabs.
 
 ### Secondary
-- **Void Red** (`void-red`): money going up (amounts, bars, the up change pill), the rejected critic check (ring, status, VOID stamp, "sent back" line), the selected-tab underline, and the global focus outline (3px solid, 3px offset). A lighter tint, oklch(78% .14 27), is used only for the critic-note icon on navy.
-- **Void Wash** (`void-wash`): the background of a rejected critic check.
+- **Heat** (`heat`) and **Heat Ink** (`heat-ink`): money added. Heat fills the upward segments of the running-total column and the phone running-total chart; Heat Ink colors added amounts in the cause table and the up arrow beside the change figure. Heat also fills the mercury of the logo. Heat Ink is also the global focus ring (see the rule below).
+- **Cold** (`cold`) and **Cold Ink** (`cold-ink`): money taken off, in the same places, and the down arrow beside the change figure.
 
 ### Tertiary
-- **Carbon Violet** (`carbon-violet`): household memory. The memory note label and icon, the switch track when on, the "With the note" table column, the ring on a coupon whose cause came from the note, and the dashed "Preview" chip on the actions area.
-- **Carbon Paper** (`carbon-paper`): the memory note background. **Memory Wash** (`memory-wash`) shades comparison rows that change when the note is used.
-- **Confidence Amber** (`confidence-amber`): only the confidence level badge (LOW) on the cover. Single use.
+- **Temperature scale** (`temp-1` to `temp-6`, cool blue through teal and amber to brick): the fill of each day's bar on the weather strip, by average temperature: under 60°F, 60 to 65, 65 to 70, 70 to 75, 75 to 80, 80 and up. The same six swatches appear in the strip's mini scale and its legend. Nothing else uses them.
+- **Rejection Red** (`reject-ink`, `reject-bg`, `on-reject`): the rejected check only. Reject Ink fills its header bar and colors its number and the "Sent back to ... to try again" line; Reject Background fills the check; On Reject is the header text. `reject` is the base hue: it appears only as a literal at 55% opacity on the rejected check's border, never through the custom property.
 
 ### Neutral
-- **Wallet Ground** (`wallet-ground`): page background, notch fill, code chip background, secondary button background.
-- **Coupon White** (`coupon-white`): every card surface (coupon, check, accordion, action card, table, reading panel) and the change pill on navy.
-- **Ink** (`ink`) and **Ink Muted** (`ink-muted`): primary and secondary text. Muted carries stub text, detail lines, kWh, captions.
-- **Perforation Line** (`perforation-line`): dashed perforations and button borders.
-- **On Navy** (`on-navy`) and **On Navy Muted** (`on-navy-muted`): text on the cover. Translucent on-navy (8% fill, 25% border) builds the confidence panel; 20% builds the tab baseline.
-- **Bar Track** (`bar-track`) and **Table Head** (`table-head`): the empty track behind cause bars and the comparison table header row.
+- **Ground** (`ground`): the page background and the selected tab, so the selected tab reads as part of the page.
+- **Surface** (`surface`): every bordered box (weather strip, cause table, comparison table, note panel, action cards, bill thumbnail, dialog, failure card), the switch track when off, and form fields.
+- **Band** (`band`): table header rows, the rule box under the checks, status chips, hover fills on line and text buttons, the off segment of the meter, changed rows in the comparison table, the noted month on the chart, skeletons and the footer.
+- **Ink** (`ink`) and **Ink Muted** (`ink-2`): primary and secondary text. Muted carries dates, sources, kWh lines, captions and the previous bill's amount.
+- **Line** (`line`) and **Line Strong** (`line-strong`): Line draws box borders, table rules and list rules; Line Strong draws control borders, the thumbnail border, the chart baseline and the confidence divider.
 
 ### Named Rules
-**The Direction Has a Color Rule.** Red means the bill went up or a pass was rejected; navy means it went down or was accepted. Every colored amount also carries a sign and a verb, so color is never the only carrier.
+**The Weather Owns The Scale Rule.** The six temperature steps color weather bars and their legend, nothing else. Money uses Heat and Cold, which are separate tokens.
 
-**The Carbon Is Memory Rule.** Violet appears only on things that came from what the household told HouseholdMemory, plus the preview chip. Do not use it as a general accent.
+**The Direction Has A Temperature Rule.** Added money is warm, money taken off is cool, and the change figure itself stays Ink; only its arrow takes the color. Every colored amount also carries a sign and a verb (Added, Took off, No change, Nothing left), so color is never the only signal.
+
+**The One Rejection Rule.** Rejection red marks the checker's rejection and nothing else.
+
+**Where the build breaks these rules.** Recorded here so they are not copied:
+- The global focus ring (`:focus-visible`, 3px solid) and the `:target` outline on checks and action cards use Heat Ink. This is a deliberate, reused, legible choice in the build and is kept as the focus color, but it is a warm temperature ink outside money and weather, which the direction contract did not provide for.
+- The shell's "Sample bill, made-up data" label is tinted with Heat at 22% and bordered with oklch(80% .1 55 / .55). That is a temperature color on the shell for a non-weather meaning. Not canonized.
+- The failure card's warning icon uses Reject Ink, outside the checker's rejection. Not canonized.
+- Text selection uses a warm oklch(85% .08 60). One-off, not a token.
 
 ## Typography
 
-**Display Font:** Barlow Condensed 500/600/700 (fallback Libre Franklin, sans-serif)
-**Body Font:** Libre Franklin 400/500/600/700 (fallback sans-serif)
-**Label/Mono Font:** IBM Plex Mono 400, for table names, run IDs, tariff labels and SQL
+**Display Font:** Public Sans 400 to 800 (fallback Atkinson Hyperlegible Next, sans-serif)
+**Body Font:** "WSH Figures" for digits, then Atkinson Hyperlegible Next 400/500/700 (fallback Public Sans, sans-serif)
+**Label/Mono Font:** Atkinson Hyperlegible Mono 400/500, only for SQL and identifiers
 
-**Character:** Barlow Condensed reads like the printed figures on a ticket or a departures board; Libre Franklin keeps sentences warm and plain at large sizes. All numbers are tabular and lining (`font-variant-numeric: tabular-nums lining-nums` on body).
+**Character:** Public Sans is a plain government sans that suits a weather service report; Atkinson Hyperlegible Next keeps sentences easy to read at large sizes. Atkinson draws a slashed zero, which reads as a letter to this reader, so digits in running text are taken from Public Sans.
+
+**WSH Figures.** A face declared in the stylesheet from the self-hosted `/fonts/public-sans-latin.woff2`, weights 400 to 800, `unicode-range: U+0030-0039` (digits only), `size-adjust: 92%` so the digits sit at the height of Atkinson's capitals, `font-display: swap`. It heads the text stack, so letters fall through to Atkinson and digits come from Public Sans. The file is preloaded in `index.html`. Public Sans itself, Atkinson Next and Atkinson Mono load from Google Fonts. Figures set on their own (amounts, the change figure) use Public Sans directly through the figure class.
+
+**Tabular figures.** The body sets `font-variant-numeric: tabular-nums lining-nums`, and the figure class repeats it, so every number on the page is tabular and lining.
 
 ### Hierarchy
-- **Display** (Barlow Condensed 600, 80px, line-height 0.9, -0.01em; 50px under 640px): the FROM and TO bill totals on the cover only.
-- **Amount** (Barlow Condensed 600, 40px, line-height 1; 48px on bill coupons; 34px and 38px under 640px): the dollar figure on each coupon. Action amounts use 32px.
-- **Headline** (Barlow Condensed 600, 36px, line-height 1.05; 30px under 640px): area titles such as "How the change adds up". The table caption, failure title and brand use the same face at 30px.
-- **Statement** (Libre Franklin 600, 30px, line-height 1.3; 24px under 640px): the cover sentence "Your bill went up ... Here is why." It is the h1.
-- **Title** (Libre Franklin 600, 19-20px, line-height 1.3): coupon causes, check titles, action names, the memory reading.
-- **Body** (Libre Franklin 400, 18px, line-height 1.55): base text. Card body copy is 17px. Meta lines and captions sit at 15-16px.
-- **Stub label** (Libre Franklin 600, 14px, 0.06em, uppercase in the markup): the field names on a stub (READ BY, CHECKED BY, WORKED OUT BY, FROM YOUR NOTE, SOURCE). Route labels FROM and TO use Barlow Condensed 600 at 22px, 0.06em.
-- **Code** (IBM Plex Mono 400, 13-15px): identifiers inside stubs and evidence.
+- **Change figure** (Public Sans 800, 108px, line-height 0.86, -0.04em; 72px at 760px and under): the dollar change in the headline only. The arrow beside it is 50px (36px on phones). The direction contract asked for 76 to 88px; the build ships 108px on wide screens.
+- **Headline** (Public Sans 600, 30px, 1.15, -0.017em; 26px on phones): "Your bill went up", the first line of the h1. "Here is why." is the same face at 24px 600.
+- **Section title** (Public Sans 700, 31px for page sections and 27px for the cause and check columns, -0.02em; 26px and 24px on phones).
+- **Card title** (Public Sans 700, 25px, -0.015em; 22px on phones): action cards. The comparison and not-offered headings use 21px, the note panel 19px, the dialog 22px.
+- **Action figure** (Public Sans 800, 44px, -0.03em; 32px on secondary cards; 34px and 28px on phones).
+- **Amount** (Public Sans 700, 24px): the two bill totals. Cause amounts are 23px (bill rows 26px), 21px on phones.
+- **Title** (Public Sans 700, 19px): cause names. Check titles are 18px.
+- **Body** (Atkinson Next with WSH Figures, 18px, line-height 1.55; 17px under 760px): base text. Card body and notices use 17px.
+- **Body small** (16px): captions, sources, kWh lines, check text, meter labels, chips, evidence tables. This is the floor for any text a person reads.
+- **Control** (Public Sans 600, 17px): buttons. Tabs use 17px 500 (16px on phones); text buttons on the chart use the text face at 16px 500.
+- **Chart label** (Public Sans 600, 14px): the averages and hottest-day labels on the weather chart, its y-axis, and the phone running-total chart. Nothing outside a chart is set at 14px.
+- **Code** (Atkinson Mono 400, 16px, line-height 1.6): SQL blocks in the evidence; inline identifiers at 1em.
 
 ### Named Rules
-**The Condensed Is For Figures Rule.** Barlow Condensed sets numbers, the route labels, area titles and stamps. Sentences, even short ones, stay in Libre Franklin.
+**The 16px Floor Rule.** Running text is never below 16px. Chart labels are the only text at 14px.
 
-**The 14px Floor Rule.** Reading text never drops below 14px. The only smaller text is the 13px SQL block in evidence and the 12px RE-ISSUED line inside the VALIDATED stamp.
+**The Figures Are Public Sans Rule.** Headings and every figure, standalone or inside a sentence, are Public Sans. Sentences are Atkinson Hyperlegible Next.
+
+**The Mono Is Evidence Rule.** Atkinson Hyperlegible Mono appears only in SQL blocks and inline identifiers (table names, station id, rate label, run id, model name, agent code names), all inside the evidence area.
 
 ## Layout
 
-A centered column, max 1280px with 32px side padding (16px under 640px). The cover band is full-bleed navy. Under the topbar sit two tabs (one per bill), then the route: a two-column grid (flexible, 360px) with the FROM and TO legs and the headline on the left and the confidence panel aligned to the bottom right.
+A centered column, max 1240px with 32px side padding (16px at 760px and under). The shell is full bleed.
 
-Main content runs in two grids. The upper grid is 1.6fr / 1fr with a 56px gap: the coupon timeline on the left, the critic trail on the right. In the October view the memory note, switch and reading sit above it (max 860px) and the comparison table follows the timeline. The lower grid is 5fr / 7fr with a 64px gap and 104px above it: evidence on the left, actions on the right. Main padding is 64px top, 120px bottom.
+The lead is a three-column grid (flexible, 340px, 236px; gap 24px by 40px): the headline block spans two rows on the left; the two bill totals sit in the middle column; the bill thumbnail sits on the right; the confidence block runs under both side columns. The weather strip follows the lead at full width. Then the work area: a 1.55fr / 1fr grid with a 48px gap, the cause table on the left and the checks on the right. At 1101px and wider the checks column is sticky: it scrolls with the page until its last line shows, then stays (its height is written to `--ck-h` by `main.ts`). Actions and evidence follow as full-width sections 96px apart (64px on phones). Actions use a 7fr / 5fr grid (8fr / 4fr when there is one card on the side).
 
-The timeline is an ordered list with a 2px dashed navy spine at 40% opacity and 14px pins; bill coupons have filled pins, cause coupons hollow ones. Cards in a list are separated by 12px.
+Spacing runs on a nine-step scale from 4px to 96px (ratio 1:24). Inside a row, gaps are 4 to 12px; between boxes 24px; between sections 96px; the page ends with 96px of bottom padding.
 
-Breakpoints: at 1020px both grids and the route collapse to one column (lower grid margin becomes 72px). At 640px the coupon stub moves below the main part with a horizontal perforation, the timeline spine and pins are hidden, the plane arrow between legs disappears, stamps move to the top left of the check, and actions stack. At 420px the coupon amount drops under the text.
+Breakpoints: at 1100px the lead drops to two columns (thumbnail under the totals, confidence full width) and the work area stacks. At 860px the lead becomes one column in the order headline, totals, thumbnail, confidence; the weather strip stacks its side panel over the chart; actions stack. At 760px body text drops to 17px, tab dates hide, the chart shrinks from 180px to 140px tall and hides the hottest-day label in favor of a written summary, the cause table becomes stacked rows, its running-total column is replaced by a compact running-total chart above the table, and the bill dialog shows the bill at 900px inside a sideways scroll.
+
+**Placement against the contract.** The contract's first viewport put the weather strip as a full-width band after the cause table and checks. The build places it directly under the lead, before the cause table. Whether the cause table and checks still start in the first viewport was not checked in a render.
 
 ## Elevation & Depth
 
-Paper on a table. Cards are lifted by one shared shadow, a 1px tinted base line plus a soft navy drop; there is no other elevation level. State is expressed with rings (a 0 0 0 Npx spread shadow) layered on that shadow, never by lifting higher. All shadow color is navy or the card's own hue, never black.
-
-### Shadow Vocabulary
-- **Card on table** (`box-shadow: 0 1px 0 oklch(82% .025 262), 0 10px 22px -12px oklch(30% .09 262 / .38)`): every coupon, check, accordion, action card, table and reading panel.
-- **Validated ring** (`box-shadow: 0 0 0 2px oklch(30% .09 262), <card on table>`): the accepted check that carries the VALIDATED stamp.
-- **Void ring** (`0 0 0 2px oklch(52% .2 27)` with a red-tinted drop `0 10px 22px -12px oklch(52% .2 27 / .4)`): the rejected check.
-- **Memory ring** (`0 0 0 1.5px oklch(42% .12 300 / .45), <card on table>`): a coupon whose cause came from the household note. The memory note itself uses the ring at 35% with no drop.
-- **Switch knob** (`0 1px 3px oklch(30% .09 262 / .35)`).
+Flat. `--shadow` is declared as `none` and no surface casts a shadow. Depth comes from the ground and surface steps (Ground, Surface, Band), 1px borders, and ruled lines. The only `box-shadow` in the build is an inset 3px service-blue underline marking the live column header in the comparison table, a rule rather than elevation. The dialog sits over a backdrop of Ink at 55%.
 
 ### Named Rules
-**The One Lift Rule.** There is one card shadow. Emphasis is a ring, not a bigger shadow.
+**The Box Or Rule Rule.** A box (1px border, no shadow) holds one thing read or used as a whole: the weather chart, the cause table, an action card, the notes. Lists are ruled lines: checks, the not-offered list, evidence rows.
 
 ## Shapes
 
-One corner radius for every card, tab top and button (8px). Small inline pills and stamps use 6px, bars and code chips 4px, the switch track 16px, pins and notches are circles. Borders are rare: dashed 2px perforation lines, a dashed 1.5px violet preview chip, a 1.5px sample badge on navy and the 3px stamp border.
+One corner radius (4px) for every box, button, chip, tab top and field. Small marks use 2px (the thumbnail tag, chart segments, brackets, skeleton lines, the focus ring corner); bars and swatches use 1px (weather bars, meter segments, legend swatches, bill markers). The switch track is a full pill and its knob a circle; the hottest-day marker and zero markers are circles. Borders are 1px solid; dashed lines mark the running-total origin, the 65°F base line, the noted month's bracket and the "checked by" footer of action cards.
 
-The recurring silhouette is the punched ticket: a 14px circle in the ground color cut out at the top and bottom of the perforation line between coupon and stub (and at both ends of the action-card stub), so the card reads as a coupon with a tear-off. On mobile the notches move to the two ends of the horizontal perforation, drawn with radial gradients.
+**The logo.** A thermometer whose tip is an upward arrow, drawn on a 32 by 32 grid: one outlined path (stroke 2.1, round joins) forms the arrowhead, the stem and the bulb; a 2px rounded bar and a 3.2-radius circle form the mercury, filled in Heat; two short tick marks (stroke 1.7, round caps) sit to the right of the stem. In the page it is an inline SVG symbol whose outline takes `currentColor` (On Service in the shell at 28px, Service Blue in the footer at 24px) and whose mercury takes Heat through a class. The standalone files in `web/public` use fixed hex approximations: `logo-mark.svg` and `logo.svg` (mark plus the "Why So High" wordmark as outlined paths) use #09466f, #df6c32 and #13212d; `favicon.svg` puts the mark in pale #f2f8fb on a #09466f square with 6px corners. The page's `theme-color` is #09466f.
 
 ## Components
 
-### Coupon (cause and bill)
-Ticket paper with a tear-off stub. The heart of the system.
-- **Structure:** a two-column grid, main part flexible and stub 196px, coupon-white, 8px radius, card-on-table shadow. The main part is a three-column grid: 28px Phosphor icon in navy, title and detail, amount block on the right (amount, signed kWh, verb). An 8px bar under the text shows the share of the change, `scaleX(--w)` from the left, red for up and navy for down; price and unexplained coupons have no bar.
-- **Stub:** separated by a 2px dashed perforation with two punched notches. Holds the stub label (role), the agent name (600, not translated) and the source line.
-- **Bill variant:** the first and last coupons are the two bills; 48px navy amount, filled timeline pin, stub "READ BY BillReader".
-- **Memory variant:** cause from the household note gets the memory ring and a violet icon.
-- **Zero:** amounts at $0.00 render in ink-muted.
-- **Stacking:** list items use a -4px bottom margin and every even coupon shifts 6px right, intended as overlapping tickets in a wallet. In the render they read as stacked cards touching edge to edge, not as overlapping coupons. The 640px breakpoint removes both and uses a 10px gap.
+### Icons
+Phosphor Light, loaded as the Phosphor web light stylesheet (version 2.1.1 from unpkg), sized at 1.15em of the surrounding text and nudged down 0.14em. Icons are decorative (`aria-hidden`); the text next to them carries the meaning. Each agent has its own icon (scan, receipt, cloud-sun, calculator, list-checks, notebook, hand-heart), each cause has one (tag, notebook, calendar-dots, thermometer-simple, plug, question), and each action has one. Icons on causes, agents, action titles and evidence rows are Service Blue; icons in the not-offered list are Ink Muted.
 
-### Critic check
-A column of numbered tickets showing what ReconciliationCritic accepted and rejected.
-- **Structure:** coupon-white card, 16px 18px padding, two-column grid: the number (Barlow Condensed 22px, ink-muted) and the content (status line with Phosphor seal-check or x-circle, title, text, optional meta).
-- **Accepted:** navy status text, no ring.
-- **Rejected:** void-wash background, void ring, red status and a "Sent back to <agent> to try again" line with an arrow icon. Carries the **VOID stamp**: Barlow Condensed 700 at 38px, 0.08em, 3px red border, 6px radius, rotated -11deg, top right.
-- **Re-issued and accepted:** validated ring and the **VALIDATED stamp**: 21px navy, rotated -7deg, with a 12px RE-ISSUED line above.
-- **Target:** each check has an id and is reachable from the cover's critic note link; on `:target` or focus it gets a 3px red outline at 4px offset.
-- Stamps are `aria-hidden`; the status line carries the meaning in text.
-- Under the list, a ruler-icon line states the thresholds the critic uses.
+### Top bar and tabs
+The shell holds the brand (28px mark plus a 21px 700 wordmark), the household name in On Service Muted at 16px pushed right, and the sample-data label. Below it, two tabs, one per bill, each with a file-text icon, the bill name and its dates (16px 400, hidden on phones). Unselected tabs are transparent with muted text; hover brightens the text and adds an 8% pale fill, press 14%. The selected tab takes the Ground color with Service Deep 700 text, so it joins the page below. Tab focus draws an On Service outline inset 4px; the selected tab's focus uses Heat Ink. While loading, tabs show skeleton lines and are `aria-disabled`.
 
-### Memory note and switch
-- **Note:** carbon-paper card, 20px 22px, memory ring at 35%. Notebook icon, a violet 15px label naming who told HouseholdMemory and when, then the quote as a 20px blockquote.
-- **Switch:** a `role="switch"` button, 48px tall. Track 56 x 32px, radius 16px, oklch(78% .02 262) off and carbon violet on; 24px coupon-white knob slides 24px. Label plus an On/Off word (violet when on, ink-muted when off). Hover darkens the track.
-- **Reading:** a coupon-white panel under the switch. "With the note" in navy with seal-check, "Without the note" in red with warning.
+### Change headline
+The h1 holds "Your bill went up" (or down) and the change figure with a Phosphor arrow colored Heat Ink or Cold Ink; the number stays Ink. Under it: "Here is why." (on the second bill, the memory switch sits beside it), a notice line with a Service Blue seal-check that says the answer was checked twice and links to the rejected check, and a "Next step" line at 19px with an arrow-circle-down icon linking to the first offered action. Beside it, the two bill totals as a definition list: previous amount in Ink Muted, current in Ink, each with the bill name and its dates, then a one-line explanation of kWh.
 
-### Comparison table
-"Same bill, with and without the note." Coupon-white, 8px radius, card shadow, 17px. Caption in Barlow Condensed 30px. Header row on table-head, 15px 700 ink-muted, the "With the note" header in violet. Row headers left, amounts right-aligned and tabular with kWh in a 15px second line. Rows that change get the memory wash; missing causes read "Not shown" in italic ink-muted. A note under the table explains the shading.
+### Bill thumbnail and dialog
+A button holding an SVG that places the household's bill image and draws a Service Blue ellipse (stroke 6) around the printed total. 1px Line Strong border, 4px radius, zoom-in cursor; hover turns the border Service Blue, press scales to 0.98. A "Sample" tag (Public Sans 700, 16px, Service Blue, 2px radius) sits bottom-left. The caption says which bill and total are circled and offers "Open it full size". The dialog is a native `dialog` on Surface with a 1px border and 4px radius, up to 920px wide, with a 22px title and a line "Close" button; it shows a crop of the printed part. On phones the bill renders 900px wide in a scroll box with a "Slide the bill sideways" hint.
 
-### Evidence accordion
-Native `details` elements styled as coupons, 12px apart. Summary 56px tall with a Phosphor icon, title and a caret that rotates 180deg (200ms). Body is indented 52px (18px on mobile), 17px ink-muted, with mono code chips on the ground color and SQL in a `pre` block. Outbound links carry an arrow-square-out icon and turn red on hover.
+### Confidence meter
+"How sure we are" with a gauge icon. Two segments in a 1fr / 2fr grid, 8px tall, 3px apart, 1px corners: Service Blue when reached, Band when not. Labels under them ("Low", "Higher, once we have N of your bills"); the current one is Public Sans 800 Ink, the other Ink Muted. The reason sits beside it in a second column (under it on phones). Separated from the totals by a Line Strong rule.
 
-### Action card with source stub
-Help the household could ask for, in two columns (one under 640px). Coupon-white, 20px 22px. Title with a 26px navy icon, the full program name in ink-muted, body text and the amount in Barlow Condensed 32px navy. The bottom is a source stub: a 2px dashed perforation spanning the card edge to edge with punched notches at both ends, a SOURCE label and an outbound link. The area header carries a dashed violet "Preview, amounts to be confirmed" chip.
+### Weather strip (signature)
+A box with a 236px side panel and the chart. The side panel holds the title ("Columbus weather, day by day" with a cloud-sun icon), a readout of the day under the pointer (16px Ink Muted), a mini scale of the six temperature swatches between "cooler" and "hotter", a "How to read this chart" text button and a "Clear the shading" button that keeps its space while hidden.
 
-### Cover pieces
-- **Tabs:** transparent on navy, 18px 600, 48px tall, top corners 8px. Hover lifts the text to on-navy with a 7% fill; the selected tab gets a 4px red underline inset 12px. Focus outline switches to on-navy.
-- **Change pill:** coupon-white inline pill with arrow icon and amount, red when up, navy when down.
-- **Confidence panel:** translucent navy-light panel with a gauge icon and the amber level badge (Barlow Condensed 700, 26px).
-- **Critic note:** an underlined link under the headline with a light red x-circle, pointing to the rejected check.
+The chart is a 180px plot (140px on phones) behind a 44px y-axis. Each day is a bar from its low to its high, filled by the temperature step of its average, 3px apart (1px on phones). The plot is a keyboard slider (`role="slider"`), with a crosshair cursor; the picked day gets a 2px Ink outline. A dashed Service Blue line at 55% marks 65°F, and the 65°F axis label is Service Blue 700. Each bill's average is a 2px Ink line at 80% with a 14px label tied to it by a dotted tick; the hottest day gets a 5px Ink dot and a 14px label (replaced by a written summary on phones). Brackets under the chart name each bill and its dates; a month the household marked as unusual gets a dashed Service Blue bracket and a Band shading on the chart. When the weather toggle in the cause table is pressed, both bills are shaded in Service Blue at 10% and 18% and the brackets thicken to 2.5px Service Blue. "How to read this chart" opens a panel with the full legend, the meaning of the lines and degree days, each bill's need, and a footer naming the Weather check.
 
-### Buttons
-Only the retry button on the failure card is live: 48px, 8px radius, 1.5px perforation-line border, 17px 600, icon plus label; hover turns the border navy. A disabled style exists but no disabled button ships.
+### Cause table
+A real table in a box. Header row on Band, 16px 600 Public Sans Ink Muted. Rows: the previous bill, each cause, the current bill. A cause cell holds its icon, title (19px 700), a 16px detail line and a "who" line: the agent's plain name in bold with its icon, and the source under it. The change column is right-aligned: amount in Public Sans 700 at 23px (Heat Ink when added, Cold Ink when taken off), signed kWh, and a verb with an arrow or equals icon. A 190px running-total column draws a dashed origin, a Heat or Cold segment per cause, a ring for zero, and Service Blue markers for the two bills; the caption states that the scale does not start at $0. Bill rows are tinted Band at 55%. The weather row carries a line button, "Shade both bills on the weather chart" (`aria-pressed`; pressed fills Service Blue), that shades the strip and brings it into view. On phones the table becomes stacked rows and the running-total column becomes a separate compact chart above the table.
+
+### The checker's checks
+Introduced by a line naming The checker with its icon. Checks are a ruled ordered list grouped by pass ("First pass", "Second pass, after <agent> tried again"). Each check has a 28px number column (Public Sans 700, 19px, Ink Muted), a status line ("Accepted", Service Blue with check-circle), an 18px title and 16px text. The rejected check becomes a box: Reject Background fill, a red border at 55%, 4px radius, a Reject Ink header bar reading "Rejected, first pass" with a warning-octagon icon, a Reject Ink number and a bold Reject Ink "Sent back to ... to try again" line. A Band box under the list states the checker's thresholds with a ruler icon. Checks are link targets; on `:target` or focus they get a 3px Heat Ink outline.
+
+### Action cards
+The first offered action is the primary card (left column, Line Strong border); others stack on the right. A card is a box with 32px padding (24px on phones): a 25px title with a Service Blue icon, the program's full name, a 17px body, the amount at 44px (32px on secondary cards) with its context, a "fits" line, a "Next step." line, buttons (solid "Apply or read more" opening in a new tab, line button with the phone number) and a footer under a dashed rule naming who checked it and at which date. The usage-note card adds a "Write a note" button and a form: label, a 17px textarea with a 4px radius, a preview button and a Band result box, plus a line saying the demo does not save notes.
+
+**Open now card.** A program that opened after the bill's date and is open today sits with the actions. It has a Band status chip, "Open now, since <date>", with a calendar-check icon, the smaller amount size, and a footer saying the checker judged it at the bill's date, before it opened, so the card claims no eligibility.
+
+**Taken card.** An action the household said it already took: transparent, 16px by 24px padding, a 20px title, a status chip with a notebook icon, and the household's quote.
+
+### Memory switch
+On the second bill, beside "Here is why.". A `role="switch"` button at least 44px tall: a 56 by 32px pill track with a 1px Line Strong border (Surface when off, Service Blue when on), a 24px knob (Ink Muted, then On Service) that slides 24px, the label "Use what you told us" in Public Sans 600 18px and an On/Off word. Hover turns the track border Service Blue; press shrinks the knob to 0.94. One 16px line under it says what turning it off changes. In the cause column, a note panel lists the dated notes, says where they are kept, and gives a reading line (check-circle in Service Blue when on, warning in Ink Muted when off), followed by the "Same bill, with and without your notes" table, whose live column header carries the inset Service Blue underline and whose changed rows are Band with an arrows icon.
+
+### Not-offered list
+"Looked at and not offered (N)", a two-column ruled list (one column on phones). Each row: a 22px Ink Muted icon, the program name in Public Sans 18px, the reason at 16px, and a small line naming who checked it and at which date, plus today's date when that changes the answer.
+
+### Evidence area
+"Where the numbers come from", a ruled list of native `details`. Each summary is at least 48px tall: a Service Blue icon, a 19px 600 Public Sans title (Link Blue on hover) and a caret that rotates 180deg. Bodies are indented 38px (none on phones), 17px Ink Muted, up to 60ch, with SQL in a `pre` block (Atkinson Mono 16px on Ink at 4.5%, 1px border, 4px radius, wrapped) and inline identifiers in mono. The last block is a table, "On this page / In the code / What it does".
+
+**Agent names.** On screen agents are Bill reader, Price check, Weather check, Usage math, The checker, Your notes and Help finder. The CamelCase code names (BillReader, RateAnalyst, WeatherAnalyst, UsageAnalyst, ReconciliationCritic, HouseholdMemory, ActionPlanner) appear only in the evidence area, in the agents table's code column. Every other place goes through the plain-name lookup. That lookup falls back to the code name for an agent it does not know, so a new agent would show its code name until it is added to the list.
 
 ### Loading and failure
-Skeleton coupons (96px, 14px lines on oklch(90% .015 262), pulsing 1.2s) with a plane icon and a plain sentence; skeleton bars on the cover use on-navy at 14%. Failure is a coupon-white card with a red Barlow title and the retry button.
+While loading, skeleton lines and boxes on Band pulse in opacity (pale at 16% on the shell), with an hourglass icon and a plain sentence; no default values are drawn. A failure is a box with a 25px title, a warning icon (in Reject Ink, see the drift note under Colors), a plain message and a solid "Try again" button.
 
 ### Motion
-One easing, `cubic-bezier(0.23, 1, 0.32, 1)`. Coupons and checks rise in (opacity plus 6px translate, 240ms, delay 180ms plus 30ms per item, index capped at 7). Bars grow with `scaleX` (280ms, 260ms plus 70ms per item). Stamps thump in from scale 1.25 (220ms, at 420ms; VALIDATED at 520ms). Caret and switch transitions run 200ms. `prefers-reduced-motion: reduce` turns all of it off.
-
-### Known gaps in the build
-- The coupons do not visually overlap. The -4px margin and 6px shift on even coupons are in the stylesheet, but the render shows stacked cards that touch.
-- The rejected check also draws a violet sheet 7px behind it (`7px 7px 0 0` carbon paper plus a 1.5px violet edge), meant as the carbon copy of the voided coupon. It is a hard offset shadow and is not part of this system; treat it as pending review, and do not reuse it.
-- `--marino-2` (oklch(36% .09 262)) is declared in `:root` and never used, so it is not recorded as a token.
-- The secondary button has a disabled style, but no disabled button ships.
+One easing, `cubic-bezier(0.23, 1, 0.32, 1)`. Blocks rise in (opacity plus a 6px lift, 260ms) at 60ms steps by block index; table rows rise in at 240ms, from 200ms plus 30ms per row, index capped at 7. Running-total segments grow with `scaleX` (260ms, from 260ms plus 70ms per row); bill markers rise at 200ms. Weather bars grow with `scaleY` from the bottom (240ms, from 240ms plus 4ms per day). Hover and color transitions run 160ms, press transforms 120ms (buttons scale to 0.97, the thumbnail to 0.98), the switch and the evidence caret 180ms, the chart shading and brackets 200ms. Skeletons pulse over 1.2s. When the page re-renders the same bill (turning the memory switch), entrance animations are skipped. Under `prefers-reduced-motion: reduce` every animation and transition is turned off, and the script scrolls to the weather strip without smooth scrolling.
 
 ## Do's and Don'ts
 
 ### Do:
-- **Do** print every reasoning step as a coupon with a stub that names the agent and the source.
-- **Do** pair every amount with a sign, a unit (kWh or $) and a verb, and keep numbers tabular.
-- **Do** use red for up or rejected and navy for down or accepted, nothing else.
-- **Do** keep violet for what came from household memory.
-- **Do** use the one card shadow and express emphasis with a 1.5-2px ring.
-- **Do** keep reading text at 17-18px Libre Franklin and touch targets at 44-48px.
-- **Do** use Phosphor Light icons on causes, checks, evidence rows, actions and states.
+- **Do** set every figure in Public Sans with tabular, lining numbers, and keep digits inside sentences on the WSH Figures face.
+- **Do** keep running text at 16px or larger (18px body, 17px on phones) and chart labels at 14px.
+- **Do** color added money Heat or Heat Ink and money taken off Cold or Cold Ink, and pair every amount with a sign, a unit and a verb.
+- **Do** use the six temperature steps only for weather bars and their legend.
+- **Do** keep rejection red for the checker's rejection.
+- **Do** use one 4px radius for boxes, buttons, chips and fields, 2px for small marks and 1px for bars.
+- **Do** hold a whole thing in a bordered box and set lists as ruled lines.
+- **Do** use Phosphor Light icons, with the meaning carried by the text beside them.
+- **Do** name agents by their plain names and keep code names in the evidence area.
+- **Do** keep touch targets at 44 to 48px and the 3px Heat Ink focus ring.
 
 ### Don't:
-- **Don't** rotate anything except the VOID and VALIDATED stamps.
-- **Don't** set sentences in Barlow Condensed.
-- **Don't** let color carry meaning alone; the status text and verbs must say it too.
-- **Don't** introduce a second card radius or a second card shadow.
+- **Don't** add shadows; `--shadow` is `none`.
+- **Don't** color the change figure itself; only its arrow takes Heat Ink or Cold Ink.
+- **Don't** use Atkinson Hyperlegible Mono outside SQL and identifiers.
+- **Don't** reuse the Heat tint of the sample-data label or the Reject Ink icon of the failure card; both are drift, not rules.
+- **Don't** show a CamelCase agent name outside the evidence area.
 - **Don't** use emojis anywhere.

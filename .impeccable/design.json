@@ -1,167 +1,721 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-10-22T16:30:00-05:00",
+  "generatedAt": "2026-10-25T05:38:35.532Z",
   "title": "Design System: Why So High",
   "extensions": {
     "colorMeta": {
-      "cover-navy": { "role": "primary", "displayName": "Cover Navy", "canonical": "oklch(30% .09 262)", "tonalRamp": ["oklch(15% .09 262)", "oklch(22% .09 262)", "oklch(30% .09 262)", "oklch(40% .09 262)", "oklch(52% .09 262)", "oklch(65% .07 262)", "oklch(80% .04 262)", "oklch(93% .015 262)"] },
-      "void-red": { "role": "secondary", "displayName": "Void Red", "canonical": "oklch(52% .2 27)", "tonalRamp": ["oklch(22% .1 27)", "oklch(32% .14 27)", "oklch(42% .18 27)", "oklch(52% .2 27)", "oklch(64% .17 27)", "oklch(78% .14 27)", "oklch(88% .07 27)", "oklch(96.5% .02 27)"] },
-      "carbon-violet": { "role": "tertiary", "displayName": "Carbon Violet", "canonical": "oklch(42% .12 300)", "tonalRamp": ["oklch(18% .08 300)", "oklch(28% .1 300)", "oklch(36% .12 300)", "oklch(42% .12 300)", "oklch(55% .11 300)", "oklch(70% .08 300)", "oklch(85% .045 300)", "oklch(95% .025 300)"] },
-      "carbon-paper": { "role": "tertiary", "displayName": "Carbon Paper", "canonical": "oklch(95% .025 300)" },
-      "memory-wash": { "role": "tertiary", "displayName": "Memory Wash", "canonical": "oklch(96.5% .02 300)" },
-      "confidence-amber": { "role": "tertiary", "displayName": "Confidence Amber", "canonical": "oklch(85% .12 80)" },
-      "void-wash": { "role": "secondary", "displayName": "Void Wash", "canonical": "oklch(96.5% .02 27)" },
-      "wallet-ground": { "role": "neutral", "displayName": "Wallet Ground", "canonical": "oklch(93% .015 262)" },
-      "coupon-white": { "role": "neutral", "displayName": "Coupon White", "canonical": "oklch(98.5% .004 260)" },
-      "ink": { "role": "neutral", "displayName": "Ink", "canonical": "oklch(22% .03 262)", "tonalRamp": ["oklch(15% .03 262)", "oklch(22% .03 262)", "oklch(30% .03 262)", "oklch(40% .03 262)", "oklch(55% .03 262)", "oklch(70% .025 262)", "oklch(84% .02 262)", "oklch(93% .015 262)"] },
-      "ink-muted": { "role": "neutral", "displayName": "Ink Muted", "canonical": "oklch(40% .03 262)" },
-      "perforation-line": { "role": "neutral", "displayName": "Perforation Line", "canonical": "oklch(84% .02 262)" },
-      "on-navy": { "role": "neutral", "displayName": "On Navy", "canonical": "oklch(95% .012 262)" },
-      "on-navy-muted": { "role": "neutral", "displayName": "On Navy Muted", "canonical": "oklch(82% .03 262)" },
-      "bar-track": { "role": "neutral", "displayName": "Bar Track", "canonical": "oklch(91% .015 262)" },
-      "table-head": { "role": "neutral", "displayName": "Table Head", "canonical": "oklch(96% .01 262)" }
+      "ground": {
+        "role": "neutral",
+        "displayName": "Ground",
+        "canonical": "oklch(97.5% .008 230)",
+        "cssVariable": "--bg",
+        "tonalRamp": [
+          "oklch(15% .008 230)",
+          "oklch(25% .008 230)",
+          "oklch(35% .008 230)",
+          "oklch(45% .008 230)",
+          "oklch(55% .008 230)",
+          "oklch(65% .008 230)",
+          "oklch(80% .008 230)",
+          "oklch(95% .008 230)"
+        ]
+      },
+      "surface": {
+        "role": "neutral",
+        "displayName": "Surface",
+        "canonical": "oklch(99.2% .004 230)",
+        "cssVariable": "--surface",
+        "tonalRamp": [
+          "oklch(15% .004 230)",
+          "oklch(25% .004 230)",
+          "oklch(35% .004 230)",
+          "oklch(45% .004 230)",
+          "oklch(55% .004 230)",
+          "oklch(65% .004 230)",
+          "oklch(80% .004 230)",
+          "oklch(95% .004 230)"
+        ]
+      },
+      "band": {
+        "role": "neutral",
+        "displayName": "Band",
+        "canonical": "oklch(94.5% .014 235)",
+        "cssVariable": "--band",
+        "tonalRamp": [
+          "oklch(15% .014 235)",
+          "oklch(25% .014 235)",
+          "oklch(35% .014 235)",
+          "oklch(45% .014 235)",
+          "oklch(55% .014 235)",
+          "oklch(65% .014 235)",
+          "oklch(80% .014 235)",
+          "oklch(95% .014 235)"
+        ]
+      },
+      "line": {
+        "role": "neutral",
+        "displayName": "Line",
+        "canonical": "oklch(24% .03 245 / .12)",
+        "cssVariable": "--line",
+        "tonalRamp": [
+          "oklch(15% .03 245)",
+          "oklch(25% .03 245)",
+          "oklch(35% .03 245)",
+          "oklch(45% .03 245)",
+          "oklch(55% .03 245)",
+          "oklch(65% .03 245)",
+          "oklch(80% .03 245)",
+          "oklch(95% .03 245)"
+        ]
+      },
+      "line-strong": {
+        "role": "neutral",
+        "displayName": "Line Strong",
+        "canonical": "oklch(24% .03 245 / .24)",
+        "cssVariable": "--line-strong",
+        "tonalRamp": [
+          "oklch(15% .03 245)",
+          "oklch(25% .03 245)",
+          "oklch(35% .03 245)",
+          "oklch(45% .03 245)",
+          "oklch(55% .03 245)",
+          "oklch(65% .03 245)",
+          "oklch(80% .03 245)",
+          "oklch(95% .03 245)"
+        ]
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Ink",
+        "canonical": "oklch(24% .03 245)",
+        "cssVariable": "--ink",
+        "tonalRamp": [
+          "oklch(15% .03 245)",
+          "oklch(25% .03 245)",
+          "oklch(35% .03 245)",
+          "oklch(45% .03 245)",
+          "oklch(55% .03 245)",
+          "oklch(65% .03 245)",
+          "oklch(80% .03 245)",
+          "oklch(95% .03 245)"
+        ]
+      },
+      "ink-2": {
+        "role": "neutral",
+        "displayName": "Ink Muted",
+        "canonical": "oklch(40% .03 245)",
+        "cssVariable": "--ink-2",
+        "tonalRamp": [
+          "oklch(15% .03 245)",
+          "oklch(25% .03 245)",
+          "oklch(35% .03 245)",
+          "oklch(45% .03 245)",
+          "oklch(55% .03 245)",
+          "oklch(65% .03 245)",
+          "oklch(80% .03 245)",
+          "oklch(95% .03 245)"
+        ]
+      },
+      "service": {
+        "role": "primary",
+        "displayName": "Service Blue",
+        "canonical": "oklch(38% .09 245)",
+        "cssVariable": "--service",
+        "tonalRamp": [
+          "oklch(15% .09 245)",
+          "oklch(25% .09 245)",
+          "oklch(35% .09 245)",
+          "oklch(45% .09 245)",
+          "oklch(55% .09 245)",
+          "oklch(65% .09 245)",
+          "oklch(80% .09 245)",
+          "oklch(95% .03 245)"
+        ]
+      },
+      "service-deep": {
+        "role": "primary",
+        "displayName": "Service Deep",
+        "canonical": "oklch(31% .08 245)",
+        "cssVariable": "--service-deep",
+        "tonalRamp": [
+          "oklch(15% .08 245)",
+          "oklch(25% .08 245)",
+          "oklch(35% .08 245)",
+          "oklch(45% .08 245)",
+          "oklch(55% .08 245)",
+          "oklch(65% .08 245)",
+          "oklch(80% .08 245)",
+          "oklch(95% .03 245)"
+        ]
+      },
+      "link": {
+        "role": "primary",
+        "displayName": "Link Blue",
+        "canonical": "oklch(41% .11 245)",
+        "cssVariable": "--link",
+        "tonalRamp": [
+          "oklch(15% .11 245)",
+          "oklch(25% .11 245)",
+          "oklch(35% .11 245)",
+          "oklch(45% .11 245)",
+          "oklch(55% .11 245)",
+          "oklch(65% .11 245)",
+          "oklch(80% .11 245)",
+          "oklch(95% .03 245)"
+        ]
+      },
+      "on-service": {
+        "role": "primary",
+        "displayName": "On Service",
+        "canonical": "oklch(97.5% .008 230)",
+        "cssVariable": "--on-service",
+        "tonalRamp": [
+          "oklch(15% .008 230)",
+          "oklch(25% .008 230)",
+          "oklch(35% .008 230)",
+          "oklch(45% .008 230)",
+          "oklch(55% .008 230)",
+          "oklch(65% .008 230)",
+          "oklch(80% .008 230)",
+          "oklch(95% .008 230)"
+        ]
+      },
+      "on-service-2": {
+        "role": "primary",
+        "displayName": "On Service Muted",
+        "canonical": "oklch(86% .03 235)",
+        "cssVariable": "--on-service-2",
+        "tonalRamp": [
+          "oklch(15% .03 235)",
+          "oklch(25% .03 235)",
+          "oklch(35% .03 235)",
+          "oklch(45% .03 235)",
+          "oklch(55% .03 235)",
+          "oklch(65% .03 235)",
+          "oklch(80% .03 235)",
+          "oklch(95% .03 235)"
+        ]
+      },
+      "heat": {
+        "role": "secondary",
+        "displayName": "Heat",
+        "canonical": "oklch(66% .16 45)",
+        "cssVariable": "--heat",
+        "tonalRamp": [
+          "oklch(15% .16 45)",
+          "oklch(25% .16 45)",
+          "oklch(35% .16 45)",
+          "oklch(45% .16 45)",
+          "oklch(55% .16 45)",
+          "oklch(65% .16 45)",
+          "oklch(80% .16 45)",
+          "oklch(95% .03 45)"
+        ]
+      },
+      "heat-ink": {
+        "role": "secondary",
+        "displayName": "Heat Ink",
+        "canonical": "oklch(48% .14 42)",
+        "cssVariable": "--heat-ink",
+        "tonalRamp": [
+          "oklch(15% .14 42)",
+          "oklch(25% .14 42)",
+          "oklch(35% .14 42)",
+          "oklch(45% .14 42)",
+          "oklch(55% .14 42)",
+          "oklch(65% .14 42)",
+          "oklch(80% .14 42)",
+          "oklch(95% .03 42)"
+        ]
+      },
+      "cold": {
+        "role": "secondary",
+        "displayName": "Cold",
+        "canonical": "oklch(62% .11 235)",
+        "cssVariable": "--cold",
+        "tonalRamp": [
+          "oklch(15% .11 235)",
+          "oklch(25% .11 235)",
+          "oklch(35% .11 235)",
+          "oklch(45% .11 235)",
+          "oklch(55% .11 235)",
+          "oklch(65% .11 235)",
+          "oklch(80% .11 235)",
+          "oklch(95% .03 235)"
+        ]
+      },
+      "cold-ink": {
+        "role": "secondary",
+        "displayName": "Cold Ink",
+        "canonical": "oklch(44% .11 240)",
+        "cssVariable": "--cold-ink",
+        "tonalRamp": [
+          "oklch(15% .11 240)",
+          "oklch(25% .11 240)",
+          "oklch(35% .11 240)",
+          "oklch(45% .11 240)",
+          "oklch(55% .11 240)",
+          "oklch(65% .11 240)",
+          "oklch(80% .11 240)",
+          "oklch(95% .03 240)"
+        ]
+      },
+      "reject": {
+        "role": "tertiary",
+        "displayName": "Rejection Red (base hue)",
+        "canonical": "oklch(55% .19 25)",
+        "cssVariable": "--reject",
+        "tonalRamp": [
+          "oklch(15% .19 25)",
+          "oklch(25% .19 25)",
+          "oklch(35% .19 25)",
+          "oklch(45% .19 25)",
+          "oklch(55% .19 25)",
+          "oklch(65% .19 25)",
+          "oklch(80% .19 25)",
+          "oklch(95% .03 25)"
+        ]
+      },
+      "reject-ink": {
+        "role": "tertiary",
+        "displayName": "Reject Ink",
+        "canonical": "oklch(46% .18 25)",
+        "cssVariable": "--reject-ink",
+        "tonalRamp": [
+          "oklch(15% .18 25)",
+          "oklch(25% .18 25)",
+          "oklch(35% .18 25)",
+          "oklch(45% .18 25)",
+          "oklch(55% .18 25)",
+          "oklch(65% .18 25)",
+          "oklch(80% .18 25)",
+          "oklch(95% .03 25)"
+        ]
+      },
+      "reject-bg": {
+        "role": "tertiary",
+        "displayName": "Reject Background",
+        "canonical": "oklch(95.5% .028 25)",
+        "cssVariable": "--reject-bg",
+        "tonalRamp": [
+          "oklch(15% .028 25)",
+          "oklch(25% .028 25)",
+          "oklch(35% .028 25)",
+          "oklch(45% .028 25)",
+          "oklch(55% .028 25)",
+          "oklch(65% .028 25)",
+          "oklch(80% .028 25)",
+          "oklch(95% .028 25)"
+        ]
+      },
+      "on-reject": {
+        "role": "tertiary",
+        "displayName": "On Reject",
+        "canonical": "oklch(98% .01 25)",
+        "cssVariable": "--on-reject",
+        "tonalRamp": [
+          "oklch(15% .01 25)",
+          "oklch(25% .01 25)",
+          "oklch(35% .01 25)",
+          "oklch(45% .01 25)",
+          "oklch(55% .01 25)",
+          "oklch(65% .01 25)",
+          "oklch(80% .01 25)",
+          "oklch(95% .01 25)"
+        ]
+      },
+      "temp-1": {
+        "role": "tertiary",
+        "displayName": "Temperature 1, under 60°F",
+        "canonical": "oklch(48% .12 245)",
+        "cssVariable": "--t1",
+        "tonalRamp": [
+          "oklch(15% .12 245)",
+          "oklch(25% .12 245)",
+          "oklch(35% .12 245)",
+          "oklch(45% .12 245)",
+          "oklch(55% .12 245)",
+          "oklch(65% .12 245)",
+          "oklch(80% .12 245)",
+          "oklch(95% .03 245)"
+        ]
+      },
+      "temp-2": {
+        "role": "tertiary",
+        "displayName": "Temperature 2, 60 to 65°F",
+        "canonical": "oklch(60% .11 235)",
+        "cssVariable": "--t2",
+        "tonalRamp": [
+          "oklch(15% .11 235)",
+          "oklch(25% .11 235)",
+          "oklch(35% .11 235)",
+          "oklch(45% .11 235)",
+          "oklch(55% .11 235)",
+          "oklch(65% .11 235)",
+          "oklch(80% .11 235)",
+          "oklch(95% .03 235)"
+        ]
+      },
+      "temp-3": {
+        "role": "tertiary",
+        "displayName": "Temperature 3, 65 to 70°F",
+        "canonical": "oklch(68% .07 200)",
+        "cssVariable": "--t3",
+        "tonalRamp": [
+          "oklch(15% .07 200)",
+          "oklch(25% .07 200)",
+          "oklch(35% .07 200)",
+          "oklch(45% .07 200)",
+          "oklch(55% .07 200)",
+          "oklch(65% .07 200)",
+          "oklch(80% .07 200)",
+          "oklch(95% .03 200)"
+        ]
+      },
+      "temp-4": {
+        "role": "tertiary",
+        "displayName": "Temperature 4, 70 to 75°F",
+        "canonical": "oklch(70% .11 75)",
+        "cssVariable": "--t4",
+        "tonalRamp": [
+          "oklch(15% .11 75)",
+          "oklch(25% .11 75)",
+          "oklch(35% .11 75)",
+          "oklch(45% .11 75)",
+          "oklch(55% .11 75)",
+          "oklch(65% .11 75)",
+          "oklch(80% .11 75)",
+          "oklch(95% .03 75)"
+        ]
+      },
+      "temp-5": {
+        "role": "tertiary",
+        "displayName": "Temperature 5, 75 to 80°F",
+        "canonical": "oklch(64% .15 50)",
+        "cssVariable": "--t5",
+        "tonalRamp": [
+          "oklch(15% .15 50)",
+          "oklch(25% .15 50)",
+          "oklch(35% .15 50)",
+          "oklch(45% .15 50)",
+          "oklch(55% .15 50)",
+          "oklch(65% .15 50)",
+          "oklch(80% .15 50)",
+          "oklch(95% .03 50)"
+        ]
+      },
+      "temp-6": {
+        "role": "tertiary",
+        "displayName": "Temperature 6, 80°F and up",
+        "canonical": "oklch(55% .17 35)",
+        "cssVariable": "--t6",
+        "tonalRamp": [
+          "oklch(15% .17 35)",
+          "oklch(25% .17 35)",
+          "oklch(35% .17 35)",
+          "oklch(45% .17 35)",
+          "oklch(55% .17 35)",
+          "oklch(65% .17 35)",
+          "oklch(80% .17 35)",
+          "oklch(95% .03 35)"
+        ]
+      }
     },
     "typographyMeta": {
-      "display": { "displayName": "Display", "purpose": "FROM and TO bill totals on the cover only. 50px under 640px." },
-      "amount": { "displayName": "Amount", "purpose": "Dollar figure on each coupon; 48px on bill coupons, 32px on action cards." },
-      "headline": { "displayName": "Headline", "purpose": "Area titles; 30px for the table caption, failure title and brand." },
-      "statement": { "displayName": "Statement", "purpose": "The cover h1, 'Your bill went up ... Here is why.' 24px under 640px." },
-      "title": { "displayName": "Title", "purpose": "Coupon causes, check titles, action names." },
-      "body": { "displayName": "Body", "purpose": "Base reading text; 17px inside cards." },
-      "body-small": { "displayName": "Body small", "purpose": "Card copy, coupon details, evidence bodies." },
-      "stub-label": { "displayName": "Stub label", "purpose": "Uppercase field names on coupon and action stubs." },
-      "route-label": { "displayName": "Route label", "purpose": "FROM and TO above the cover figures." },
-      "stamp": { "displayName": "Stamp", "purpose": "VOID stamp at 38px; VALIDATED at 21px." },
-      "code": { "displayName": "Code", "purpose": "Identifiers, run IDs, tariff labels and SQL (13px in pre blocks)." }
+      "change-figure": {
+        "displayName": "Change figure",
+        "purpose": "The dollar change in the headline only. 72px at 760px and under."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "First line of the h1; 26px on phones."
+      },
+      "section-title": {
+        "displayName": "Section title",
+        "purpose": "Page sections at 31px, the cause and check columns at 27px."
+      },
+      "card-title": {
+        "displayName": "Card title",
+        "purpose": "Action card titles; 22px on phones."
+      },
+      "action-figure": {
+        "displayName": "Action figure",
+        "purpose": "Program amounts on action cards; 32px on secondary cards."
+      },
+      "amount": {
+        "displayName": "Amount",
+        "purpose": "The two bill totals in the lead; cause amounts use 23px."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Cause names; check titles use 18px."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Running text, Atkinson Hyperlegible Next with digits from WSH Figures; 17px under 760px."
+      },
+      "body-small": {
+        "displayName": "Body small",
+        "purpose": "Captions, sources, kWh lines, check text. The floor for readable text."
+      },
+      "control": {
+        "displayName": "Control",
+        "purpose": "Buttons at 600; tabs at 500."
+      },
+      "chart-label": {
+        "displayName": "Chart label",
+        "purpose": "Weather chart labels, y-axis and the phone running-total chart only."
+      },
+      "code": {
+        "displayName": "Code",
+        "purpose": "SQL blocks and inline identifiers in the evidence area only."
+      }
     },
-    "shadows": [
-      { "name": "card-on-table", "value": "0 1px 0 oklch(82% .025 262), 0 10px 22px -12px oklch(30% .09 262 / .38)", "purpose": "The single card elevation for coupons, checks, accordions, action cards, table and reading panel." },
-      { "name": "validated-ring", "value": "0 0 0 2px oklch(30% .09 262), 0 1px 0 oklch(82% .025 262), 0 10px 22px -12px oklch(30% .09 262 / .38)", "purpose": "Accepted check carrying the VALIDATED stamp." },
-      { "name": "void-ring", "value": "0 0 0 2px oklch(52% .2 27), 0 10px 22px -12px oklch(52% .2 27 / .4)", "purpose": "Rejected check carrying the VOID stamp." },
-      { "name": "memory-ring", "value": "0 0 0 1.5px oklch(42% .12 300 / .45), 0 1px 0 oklch(82% .025 262), 0 10px 22px -12px oklch(30% .09 262 / .38)", "purpose": "Coupon whose cause came from the household note." },
-      { "name": "switch-knob", "value": "0 1px 3px oklch(30% .09 262 / .35)", "purpose": "Knob of the memory switch." }
+    "fontFaces": [
+      {
+        "family": "WSH Figures",
+        "source": "web/public/fonts/public-sans-latin.woff2",
+        "declaration": "@font-face{font-family:\"WSH Figures\"; src:url(\"/fonts/public-sans-latin.woff2\") format(\"woff2\"); font-weight:400 800; font-style:normal; font-display:swap; unicode-range:U+0030-0039; size-adjust:92%}",
+        "purpose": "Public Sans digits inside Atkinson Hyperlegible Next sentences, scaled with size-adjust 92% to Atkinson's cap height."
+      }
     ],
+    "shadows": [
+      {
+        "name": "none",
+        "value": "none",
+        "purpose": "--shadow is none; the system is flat. The only box-shadow in the build is an inset underline on the live comparison column header: inset 0 -3px 0 var(--service)."
+      }
+    ],
+    "focus": {
+      "value": "outline: 3px solid var(--heat-ink); outline-offset: 2px",
+      "note": "Heat Ink as the focus color is recorded as built; it sits outside the direction contract's temperature rule."
+    },
     "motion": [
-      { "name": "ease", "value": "cubic-bezier(0.23, 1, 0.32, 1)", "purpose": "The only easing in the build." },
-      { "name": "rise", "value": "240ms, opacity 0 to 1 and translateY(6px) to 0, delay 180ms + 30ms per item (index capped at 7)", "purpose": "Entrance of coupons, checks, the route and the memory panel." },
-      { "name": "grow", "value": "280ms, scaleX(0) to scaleX(--w), delay 260ms + 70ms per item", "purpose": "Cause bars." },
-      { "name": "thump", "value": "220ms, scale 1.25 to 1 with the stamp rotation, delay 420ms (VALIDATED 520ms)", "purpose": "Stamps landing." },
-      { "name": "state", "value": "200ms", "purpose": "Accordion caret rotation, switch track color and knob slide." },
-      { "name": "pulse", "value": "1.2s ease-in-out infinite alternate, opacity .55 to 1", "purpose": "Skeleton lines while loading." },
-      { "name": "reduced-motion", "value": "prefers-reduced-motion: reduce disables all transitions and animations", "purpose": "Accessibility." }
+      {
+        "name": "ease-out",
+        "value": "cubic-bezier(0.23, 1, 0.32, 1)",
+        "purpose": "The only easing in the build, for entrances and state transitions."
+      },
+      {
+        "name": "block-rise",
+        "value": "rise 260ms cubic-bezier(0.23, 1, 0.32, 1), delay block index x 60ms",
+        "purpose": "Page blocks enter with opacity and a 6px lift."
+      },
+      {
+        "name": "row-rise",
+        "value": "rise 240ms cubic-bezier(0.23, 1, 0.32, 1), delay 200ms + row index x 30ms, index capped at 7",
+        "purpose": "Cause table rows."
+      },
+      {
+        "name": "segment-grow",
+        "value": "scaleX 260ms cubic-bezier(0.23, 1, 0.32, 1), delay 260ms + row index x 70ms",
+        "purpose": "Running-total segments."
+      },
+      {
+        "name": "bar-grow",
+        "value": "scaleY 240ms cubic-bezier(0.23, 1, 0.32, 1), delay 240ms + day index x 4ms",
+        "purpose": "Weather bars, growing from the bottom."
+      },
+      {
+        "name": "hover",
+        "value": "160ms cubic-bezier(0.23, 1, 0.32, 1)",
+        "purpose": "Color and background transitions."
+      },
+      {
+        "name": "press",
+        "value": "120ms cubic-bezier(0.23, 1, 0.32, 1)",
+        "purpose": "Press transforms: buttons scale(.97), thumbnail scale(.98)."
+      },
+      {
+        "name": "switch-and-caret",
+        "value": "180ms cubic-bezier(0.23, 1, 0.32, 1)",
+        "purpose": "Switch knob and track, evidence caret rotation."
+      },
+      {
+        "name": "chart-shading",
+        "value": "200ms cubic-bezier(0.23, 1, 0.32, 1)",
+        "purpose": "Bill shading opacity and bracket color on the weather chart."
+      },
+      {
+        "name": "skeleton-pulse",
+        "value": "pulse 1.2s ease-in-out infinite alternate",
+        "purpose": "Loading skeletons, opacity 1 to .55."
+      },
+      {
+        "name": "reduced-motion",
+        "value": "@media (prefers-reduced-motion: reduce){*, *::before, *::after{animation:none !important; transition:none !important; scroll-behavior:auto !important}}",
+        "purpose": "Turns off every animation and transition; the script also scrolls to the chart without smoothing."
+      }
     ],
     "breakpoints": [
-      { "name": "stack", "value": "1020px" },
-      { "name": "mobile", "value": "640px" },
-      { "name": "narrow", "value": "420px" }
+      {
+        "name": "sticky-checks",
+        "value": "min-width: 1101px"
+      },
+      {
+        "name": "lead-two-columns",
+        "value": "max-width: 1100px"
+      },
+      {
+        "name": "one-column",
+        "value": "max-width: 860px"
+      },
+      {
+        "name": "phone",
+        "value": "max-width: 760px"
+      }
+    ],
+    "drift": [
+      "Sample-data label in the shell uses Heat at 22% with a warm border: a temperature color outside weather and money. Not canonized.",
+      "Failure card warning icon uses Reject Ink outside the checker's rejection. Not canonized.",
+      "--reject is declared but used only as a literal copy at 55% opacity on the rejected check border.",
+      "--shadow is declared as none and never referenced.",
+      "Change figure is 108px on wide screens; the direction contract asked for 76 to 88px.",
+      "Weather strip sits before the cause table; the direction contract put it after the cause table and checks.",
+      "Section headings are Ink; service blue reaches sections only through icons and marks."
     ]
   },
   "components": [
     {
-      "name": "Coupon with perforated stub",
-      "kind": "card",
-      "refersTo": "coupon",
-      "description": "One cause of the change: icon, title, detail, signed amount with kWh and verb, share bar, and a stub naming the agent and source.",
-      "html": "<div class=\"ds-coupon\"><div class=\"ds-c-main\"><span class=\"ds-c-ico\"><svg width=\"28\" height=\"28\" viewBox=\"0 0 256 256\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><rect x=\"40\" y=\"40\" width=\"176\" height=\"176\" rx=\"8\"/><line x1=\"176\" y1=\"24\" x2=\"176\" y2=\"56\"/><line x1=\"80\" y1=\"24\" x2=\"80\" y2=\"56\"/><line x1=\"40\" y1=\"88\" x2=\"216\" y2=\"88\"/></svg></span><div><h3 class=\"ds-c-title\">4 more days in this bill</h3><p class=\"ds-c-detail\">33 days this time, 29 last time.</p></div><div class=\"ds-c-amt\"><span class=\"ds-usd\">+$20.86</span><span class=\"ds-kwh\">+124.4 kWh</span><span class=\"ds-dir\">Added</span></div><div class=\"ds-bar\"><i style=\"transform:scaleX(.44)\"></i></div></div><div class=\"ds-c-stub\"><span class=\"ds-k\">WORKED OUT BY</span><span class=\"ds-who\">UsageAnalyst</span><span>Bill dates read by BillReader</span></div></div>",
-      "css": ".ds-coupon{display:grid;grid-template-columns:minmax(0,1fr) 196px;background:var(--cupon,oklch(98.5% .004 260));border-radius:8px;box-shadow:0 1px 0 oklch(82% .025 262),0 10px 22px -12px oklch(30% .09 262 / .38);position:relative;font-family:'Libre Franklin',sans-serif;color:oklch(22% .03 262);font-variant-numeric:tabular-nums lining-nums;max-width:640px}.ds-coupon::before,.ds-coupon::after{content:'';position:absolute;right:189px;width:14px;height:14px;border-radius:50%;background:oklch(93% .015 262)}.ds-coupon::before{top:-7px}.ds-coupon::after{bottom:-7px}.ds-c-main{padding:18px 22px 18px 20px;display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:4px 14px;align-items:start}.ds-c-ico{color:oklch(30% .09 262);padding-top:2px}.ds-c-title{margin:0;font-size:19px;font-weight:600;line-height:1.3}.ds-c-detail{margin:2px 0 0;font-size:17px;color:oklch(40% .03 262)}.ds-c-amt{text-align:right;white-space:nowrap}.ds-usd{font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:40px;line-height:1;display:block;color:oklch(52% .2 27)}.ds-kwh{display:block;font-size:16px;color:oklch(40% .03 262);margin-top:4px}.ds-dir{display:block;font-size:15px;font-weight:600;color:oklch(52% .2 27);margin-top:2px}.ds-bar{grid-column:2 / 4;height:8px;background:oklch(91% .015 262);border-radius:4px;margin-top:10px;overflow:hidden}.ds-bar i{display:block;height:100%;background:oklch(52% .2 27);transform-origin:left;border-radius:4px}.ds-c-stub{position:relative;padding:18px 18px 18px 22px;font-size:15px;line-height:1.4;color:oklch(40% .03 262);display:flex;flex-direction:column;gap:4px}.ds-c-stub::before{content:'';position:absolute;left:0;top:14px;bottom:14px;border-inline-start:2px dashed oklch(84% .02 262)}.ds-k{font-size:14px;letter-spacing:.06em;font-weight:600}.ds-who{font-weight:600;color:oklch(22% .03 262)}"
+      "name": "Solid Button",
+      "kind": "button",
+      "refersTo": "button-solid",
+      "description": "Primary action: apply, write a note, try again.",
+      "html": "<button class=\"ds-btn ds-btn-solid\" type=\"button\">Apply or read more</button>",
+      "css": ":host{--bg:oklch(97.5% .008 230);--surface:oklch(99.2% .004 230);--band:oklch(94.5% .014 235);--line:oklch(24% .03 245 / .12);--line-strong:oklch(24% .03 245 / .24);--ink:oklch(24% .03 245);--ink-2:oklch(40% .03 245);--service:oklch(38% .09 245);--service-deep:oklch(31% .08 245);--link:oklch(41% .11 245);--on-service:oklch(97.5% .008 230);--on-service-2:oklch(86% .03 235);--heat:oklch(66% .16 45);--heat-ink:oklch(48% .14 42);--cold:oklch(62% .11 235);--cold-ink:oklch(44% .11 240);--reject:oklch(55% .19 25);--reject-ink:oklch(46% .18 25);--reject-bg:oklch(95.5% .028 25);--on-reject:oklch(98% .01 25);--t1:oklch(48% .12 245);--t2:oklch(60% .11 235);--t3:oklch(68% .07 200);--t4:oklch(70% .11 75);--t5:oklch(64% .15 50);--t6:oklch(55% .17 35);--font-display:\"Public Sans\",\"Atkinson Hyperlegible Next\",sans-serif;--font-text:\"Atkinson Hyperlegible Next\",\"Public Sans\",sans-serif;--font-mono:\"Atkinson Hyperlegible Mono\",monospace;--radius:4px;--ease-out:cubic-bezier(0.23,1,0.32,1)} .ds-btn{display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:10px 16px;border-radius:var(--radius);font:600 17px/1 var(--font-display);cursor:pointer;border:1px solid transparent;transition:transform 120ms var(--ease-out),background-color 160ms var(--ease-out)} .ds-btn:active{transform:scale(.97)} .ds-btn-solid{background:var(--service);color:var(--on-service)} .ds-btn-solid:hover{background:var(--service-deep)} .ds-btn:focus-visible{outline:3px solid var(--heat-ink);outline-offset:2px}"
     },
     {
-      "name": "Critic check, VOID",
-      "kind": "card",
-      "refersTo": "critic-check-void",
-      "description": "A rejected first pass: void wash, red ring, rotated VOID stamp, and the agent it was sent back to.",
-      "html": "<div class=\"ds-check ds-bad\"><span class=\"ds-n\">4</span><span class=\"ds-st\">Rejected, first pass</span><h3 class=\"ds-ck\">Too much left unexplained</h3><p class=\"ds-p\">$12.60 of the $47.30 change is not explained, more than the $2.36 allowed.</p><span class=\"ds-sentback\">Sent back to UsageAnalyst to try again</span><span class=\"ds-stamp\" aria-hidden=\"true\">VOID</span></div>",
-      "css": ".ds-check{background:oklch(98.5% .004 260);border-radius:8px;padding:16px 18px;display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 12px;position:relative;font-family:'Libre Franklin',sans-serif;color:oklch(22% .03 262);max-width:420px;font-variant-numeric:tabular-nums lining-nums}.ds-bad{background:oklch(96.5% .02 27);box-shadow:0 0 0 2px oklch(52% .2 27),0 10px 22px -12px oklch(52% .2 27 / .4)}.ds-n{font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:22px;color:oklch(40% .03 262);line-height:1.1}.ds-st{font-weight:700;font-size:17px;color:oklch(52% .2 27)}.ds-ck{grid-column:2;margin:2px 0 0;font-size:19px;font-weight:600;line-height:1.3;padding-right:96px}.ds-p{grid-column:2;margin:0;font-size:17px;padding-right:96px}.ds-sentback{grid-column:2;margin-top:6px;font-size:16px;font-weight:600;color:oklch(52% .2 27)}.ds-stamp{position:absolute;top:14px;right:12px;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:38px;letter-spacing:.08em;color:oklch(52% .2 27);border:3px solid currentColor;border-radius:6px;padding:2px 10px 0;line-height:1.1;transform:rotate(-11deg)}.ds-check:focus-visible{outline:3px solid oklch(52% .2 27);outline-offset:4px}"
+      "name": "Line Button",
+      "kind": "button",
+      "refersTo": "button-line",
+      "description": "Secondary action: phone number, close, preview.",
+      "html": "<button class=\"ds-btn-line\" type=\"button\">Close</button>",
+      "css": ":host{--bg:oklch(97.5% .008 230);--surface:oklch(99.2% .004 230);--band:oklch(94.5% .014 235);--line:oklch(24% .03 245 / .12);--line-strong:oklch(24% .03 245 / .24);--ink:oklch(24% .03 245);--ink-2:oklch(40% .03 245);--service:oklch(38% .09 245);--service-deep:oklch(31% .08 245);--link:oklch(41% .11 245);--on-service:oklch(97.5% .008 230);--on-service-2:oklch(86% .03 235);--heat:oklch(66% .16 45);--heat-ink:oklch(48% .14 42);--cold:oklch(62% .11 235);--cold-ink:oklch(44% .11 240);--reject:oklch(55% .19 25);--reject-ink:oklch(46% .18 25);--reject-bg:oklch(95.5% .028 25);--on-reject:oklch(98% .01 25);--t1:oklch(48% .12 245);--t2:oklch(60% .11 235);--t3:oklch(68% .07 200);--t4:oklch(70% .11 75);--t5:oklch(64% .15 50);--t6:oklch(55% .17 35);--font-display:\"Public Sans\",\"Atkinson Hyperlegible Next\",sans-serif;--font-text:\"Atkinson Hyperlegible Next\",\"Public Sans\",sans-serif;--font-mono:\"Atkinson Hyperlegible Mono\",monospace;--radius:4px;--ease-out:cubic-bezier(0.23,1,0.32,1)} .ds-btn-line{display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:10px 16px;border-radius:var(--radius);font:600 17px/1 var(--font-display);cursor:pointer;border:1px solid var(--line-strong);color:var(--link);background:var(--surface);transition:transform 120ms var(--ease-out),background-color 160ms var(--ease-out)} .ds-btn-line:hover{background:var(--band)} .ds-btn-line:active{transform:scale(.97)} .ds-btn-line:focus-visible{outline:3px solid var(--heat-ink);outline-offset:2px}"
     },
     {
-      "name": "Critic check, VALIDATED",
-      "kind": "card",
-      "refersTo": "critic-check",
-      "description": "The re-issued pass that the critic accepted: navy ring and the smaller VALIDATED stamp with a RE-ISSUED line.",
-      "html": "<div class=\"ds-check2\"><span class=\"ds-n2\">6</span><span class=\"ds-st2\">Accepted, second pass</span><h3 class=\"ds-ck2\">The change adds up</h3><p class=\"ds-p2\">Price, days, weather and usage explain the $47.30 change; $0.00 is left.</p><span class=\"ds-stamp2\" aria-hidden=\"true\"><small>RE-ISSUED</small>VALIDATED</span></div>",
-      "css": ".ds-check2{background:oklch(98.5% .004 260);border-radius:8px;padding:16px 18px;display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 12px;position:relative;font-family:'Libre Franklin',sans-serif;color:oklch(22% .03 262);max-width:420px;box-shadow:0 0 0 2px oklch(30% .09 262),0 1px 0 oklch(82% .025 262),0 10px 22px -12px oklch(30% .09 262 / .38)}.ds-n2{font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:22px;color:oklch(40% .03 262);line-height:1.1}.ds-st2{font-weight:700;font-size:17px;color:oklch(30% .09 262)}.ds-ck2{grid-column:2;margin:2px 0 0;font-size:19px;font-weight:600;line-height:1.3;padding-right:96px}.ds-p2{grid-column:2;margin:0;font-size:17px;padding-right:96px}.ds-stamp2{position:absolute;top:18px;right:12px;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:21px;letter-spacing:.08em;color:oklch(30% .09 262);border:3px solid currentColor;border-radius:6px;padding:2px 10px 0;line-height:1.1;transform:rotate(-7deg)}.ds-stamp2 small{display:block;font-size:12px;letter-spacing:.06em;text-align:center;font-weight:600;padding-bottom:3px}"
-    },
-    {
-      "name": "Memory note and switch",
-      "kind": "custom",
-      "refersTo": "memory-note",
-      "description": "What the household told HouseholdMemory, on carbon paper, with the switch that turns the note on and off.",
-      "html": "<div class=\"ds-memo\"><span class=\"ds-memo-k\">What Linda told HouseholdMemory on Sep 22</span><blockquote class=\"ds-memo-q\">“My grandson stayed with me from August 20 to September 10, so September was not a normal month.”</blockquote></div><button class=\"ds-switch\" role=\"switch\" aria-checked=\"true\"><span class=\"ds-track\"><span class=\"ds-knob\"></span></span>Use what Linda told us <span class=\"ds-state\">On</span></button>",
-      "css": ".ds-memo{background:oklch(95% .025 300);border-radius:8px;padding:20px 22px;margin-bottom:28px;box-shadow:0 0 0 1.5px oklch(42% .12 300 / .35);font-family:'Libre Franklin',sans-serif;max-width:640px}.ds-memo-k{font-size:15px;font-weight:600;color:oklch(42% .12 300)}.ds-memo-q{margin:6px 0 0;font-size:20px;line-height:1.45;color:oklch(22% .03 262)}.ds-switch{display:inline-flex;align-items:center;gap:12px;background:transparent;border:0;padding:6px 0;font:600 18px/1.2 'Libre Franklin',sans-serif;color:oklch(22% .03 262);cursor:pointer;min-height:48px}.ds-track{width:56px;height:32px;border-radius:16px;background:oklch(78% .02 262);position:relative;flex:none;transition:background-color 200ms cubic-bezier(0.23,1,0.32,1)}.ds-knob{position:absolute;top:4px;left:4px;width:24px;height:24px;border-radius:50%;background:oklch(98.5% .004 260);box-shadow:0 1px 3px oklch(30% .09 262 / .35);transition:transform 200ms cubic-bezier(0.23,1,0.32,1)}.ds-switch[aria-checked='true'] .ds-track{background:oklch(42% .12 300)}.ds-switch[aria-checked='true'] .ds-knob{transform:translateX(24px)}.ds-switch:hover .ds-track{background:oklch(70% .03 262)}.ds-switch[aria-checked='true']:hover .ds-track{background:oklch(36% .12 300)}.ds-state{font-weight:700;color:oklch(42% .12 300)}.ds-switch:focus-visible{outline:3px solid oklch(52% .2 27);outline-offset:3px;border-radius:4px}"
-    },
-    {
-      "name": "Comparison table",
-      "kind": "custom",
-      "refersTo": "comparison-table",
-      "description": "Same bill with and without the household note; rows that change are shaded violet.",
-      "html": "<table class=\"ds-cmp\"><caption>Same bill, with and without the note</caption><thead><tr><th>Cause</th><th>With the note</th><th>Without it</th></tr></thead><tbody><tr><th>Milder weather</th><td>−$54.52<small>−324.9 kWh</small></td><td>−$54.52<small>−324.9 kWh</small></td></tr><tr class=\"ds-diff\"><th>Your own use</th><td>−$0.05<small>−0.3 kWh</small></td><td>−$28.08<small>−167.4 kWh</small></td></tr></tbody></table>",
-      "css": ".ds-cmp{width:100%;max-width:560px;border-collapse:collapse;background:oklch(98.5% .004 260);border-radius:8px;box-shadow:0 1px 0 oklch(82% .025 262),0 10px 22px -12px oklch(30% .09 262 / .38);overflow:hidden;font:17px/1.55 'Libre Franklin',sans-serif;color:oklch(22% .03 262);font-variant-numeric:tabular-nums lining-nums}.ds-cmp caption{text-align:left;font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:30px;padding:0 0 14px;line-height:1.1}.ds-cmp th,.ds-cmp td{padding:12px 16px;text-align:left;vertical-align:top}.ds-cmp thead th{font-size:15px;font-weight:700;color:oklch(40% .03 262);background:oklch(96% .01 262)}.ds-cmp thead th:nth-child(2){color:oklch(42% .12 300)}.ds-cmp thead th:not(:first-child),.ds-cmp td{text-align:right;white-space:nowrap}.ds-cmp tbody tr+tr th,.ds-cmp tbody tr+tr td{border-top:1px solid oklch(30% .09 262 / .09)}.ds-cmp tbody th{font-weight:500}.ds-cmp td small{display:block;color:oklch(40% .03 262);font-size:15px}.ds-diff th,.ds-diff td{background:oklch(96.5% .02 300)}"
-    },
-    {
-      "name": "Evidence accordion",
-      "kind": "custom",
-      "refersTo": "evidence-accordion",
-      "description": "Native details row as a coupon: icon, title, rotating caret; body holds plain text, code chips and SQL.",
-      "html": "<details class=\"ds-ev\"><summary>Your bills joined with Columbus weather<svg class=\"ds-chev\" width=\"20\" height=\"20\" viewBox=\"0 0 256 256\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"12\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><polyline points=\"208 96 128 176 48 96\"/></svg></summary><div class=\"ds-ev-body\"><p>One federated SQL query joins <code>household_pg.bills</code> with NOAA daily weather.</p></div></details>",
-      "css": ".ds-ev{background:oklch(98.5% .004 260);border-radius:8px;box-shadow:0 1px 0 oklch(82% .025 262),0 10px 22px -12px oklch(30% .09 262 / .38);margin-bottom:12px;font-family:'Libre Franklin',sans-serif;color:oklch(22% .03 262);max-width:480px}.ds-ev summary{cursor:pointer;padding:16px 18px;font-weight:600;display:flex;gap:10px;align-items:center;list-style:none;min-height:56px}.ds-ev summary::-webkit-details-marker{display:none}.ds-ev summary:hover{color:oklch(30% .09 262)}.ds-ev summary:focus-visible{outline:3px solid oklch(52% .2 27);outline-offset:3px;border-radius:4px}.ds-chev{margin-left:auto;transition:transform 200ms cubic-bezier(0.23,1,0.32,1)}.ds-ev[open] .ds-chev{transform:rotate(180deg)}.ds-ev-body{padding:0 18px 18px 52px;font-size:17px;color:oklch(40% .03 262)}.ds-ev-body p{margin:0}.ds-ev-body code{font-family:'IBM Plex Mono',monospace;font-size:15px;color:oklch(22% .03 262);background:oklch(93% .015 262);padding:1px 6px;border-radius:4px}"
-    },
-    {
-      "name": "Action card with source stub",
-      "kind": "card",
-      "refersTo": "action-card",
-      "description": "A program the household could ask for, with its amount and a perforated source stub punched at both ends.",
-      "html": "<article class=\"ds-act\"><h3 class=\"ds-act-h\">HEAP</h3><span class=\"ds-act-full\">Home Energy Assistance Program</span><p class=\"ds-act-p\">A one-time credit on your bill for the heating season.</p><span class=\"ds-act-amt\">$31 to $546</span><div class=\"ds-act-stub\"><span class=\"ds-act-k\">SOURCE</span><a class=\"ds-act-link\" href=\"#\">Ohio energy assistance</a></div></article>",
-      "css": ".ds-act{position:relative;background:oklch(98.5% .004 260);border-radius:8px;box-shadow:0 1px 0 oklch(82% .025 262),0 10px 22px -12px oklch(30% .09 262 / .38);padding:20px 22px;display:flex;flex-direction:column;gap:8px;font-family:'Libre Franklin',sans-serif;color:oklch(22% .03 262);max-width:320px}.ds-act-h{margin:0;font-size:20px;font-weight:600;line-height:1.3}.ds-act-full{font-size:16px;color:oklch(40% .03 262)}.ds-act-p{margin:0;font-size:17px}.ds-act-amt{font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:32px;line-height:1.1;color:oklch(30% .09 262);font-variant-numeric:tabular-nums lining-nums}.ds-act-stub{margin:auto -22px -20px;padding:12px 22px 14px;border-block-start:2px dashed oklch(84% .02 262);display:flex;flex-direction:column;gap:2px;position:relative}.ds-act-stub::before,.ds-act-stub::after{content:'';position:absolute;top:-8px;width:14px;height:14px;border-radius:50%;background:oklch(93% .015 262)}.ds-act-stub::before{left:-7px}.ds-act-stub::after{right:-7px}.ds-act-k{font-size:14px;letter-spacing:.06em;font-weight:600;color:oklch(40% .03 262)}.ds-act-link{color:oklch(30% .09 262);font-weight:600;font-size:16px;text-underline-offset:3px;min-height:44px;display:inline-flex;align-items:center}.ds-act-link:hover{color:oklch(52% .2 27)}.ds-act-link:focus-visible{outline:3px solid oklch(52% .2 27);outline-offset:3px;border-radius:4px}"
-    },
-    {
-      "name": "Bill tabs on navy",
+      "name": "Shell and Tabs",
       "kind": "nav",
       "refersTo": "tab",
-      "description": "One tab per bill on the navy cover; the selected tab carries a red underline.",
-      "html": "<div class=\"ds-tabs\" role=\"tablist\"><button class=\"ds-tab\" role=\"tab\" aria-selected=\"true\">September bill</button><button class=\"ds-tab\" role=\"tab\" aria-selected=\"false\">October bill</button></div>",
-      "css": ".ds-tabs{display:flex;gap:4px;background:oklch(30% .09 262);padding:12px 16px 0;border-bottom:1px solid oklch(95% .012 262 / .2)}.ds-tab{font:600 18px/1 'Libre Franklin',sans-serif;color:oklch(82% .03 262);background:transparent;border:0;padding:14px 18px 16px;cursor:pointer;border-radius:8px 8px 0 0;position:relative;min-height:48px}.ds-tab:hover{color:oklch(95% .012 262);background:oklch(95% .012 262 / .07)}.ds-tab[aria-selected='true']{color:oklch(95% .012 262)}.ds-tab[aria-selected='true']::after{content:'';position:absolute;left:12px;right:12px;bottom:-1px;height:4px;background:oklch(52% .2 27);border-radius:2px 2px 0 0}.ds-tab:focus-visible{outline:3px solid oklch(95% .012 262);outline-offset:3px;border-radius:4px}"
+      "description": "Service-blue top bar with one tab per bill; the selected tab takes the page ground and joins the page.",
+      "html": "<div class=\"ds-shell\"><div class=\"ds-brand\">Why So High</div><div class=\"ds-tabs\" role=\"tablist\"><button class=\"ds-tab\" role=\"tab\" aria-selected=\"true\">September bill <span class=\"ds-when\">Aug 12 to Sep 11</span></button><button class=\"ds-tab\" role=\"tab\" aria-selected=\"false\">October bill</button></div></div><div class=\"ds-page\"></div>",
+      "css": ":host{--bg:oklch(97.5% .008 230);--surface:oklch(99.2% .004 230);--band:oklch(94.5% .014 235);--line:oklch(24% .03 245 / .12);--line-strong:oklch(24% .03 245 / .24);--ink:oklch(24% .03 245);--ink-2:oklch(40% .03 245);--service:oklch(38% .09 245);--service-deep:oklch(31% .08 245);--link:oklch(41% .11 245);--on-service:oklch(97.5% .008 230);--on-service-2:oklch(86% .03 235);--heat:oklch(66% .16 45);--heat-ink:oklch(48% .14 42);--cold:oklch(62% .11 235);--cold-ink:oklch(44% .11 240);--reject:oklch(55% .19 25);--reject-ink:oklch(46% .18 25);--reject-bg:oklch(95.5% .028 25);--on-reject:oklch(98% .01 25);--t1:oklch(48% .12 245);--t2:oklch(60% .11 235);--t3:oklch(68% .07 200);--t4:oklch(70% .11 75);--t5:oklch(64% .15 50);--t6:oklch(55% .17 35);--font-display:\"Public Sans\",\"Atkinson Hyperlegible Next\",sans-serif;--font-text:\"Atkinson Hyperlegible Next\",\"Public Sans\",sans-serif;--font-mono:\"Atkinson Hyperlegible Mono\",monospace;--radius:4px;--ease-out:cubic-bezier(0.23,1,0.32,1)} .ds-shell{background:var(--service);color:var(--on-service);padding:16px 32px 0} .ds-brand{font:700 21px/1.2 var(--font-display);letter-spacing:-0.012em;margin-bottom:12px} .ds-tabs{display:flex;gap:8px} .ds-tab{appearance:none;background:none;border:0;cursor:pointer;color:var(--on-service-2);font:500 17px/1 var(--font-display);padding:14px 14px 15px;min-height:48px;border-radius:var(--radius) var(--radius) 0 0;transition:background-color 160ms var(--ease-out),color 160ms var(--ease-out)} .ds-tab:hover{color:var(--on-service);background:oklch(97.5% .008 230 / .08)} .ds-tab:active{background:oklch(97.5% .008 230 / .14)} .ds-tab[aria-selected=true]{color:var(--service-deep);background:var(--bg);font-weight:700} .ds-tab:focus-visible{outline:3px solid var(--on-service);outline-offset:-4px} .ds-tab[aria-selected=true]:focus-visible{outline-color:var(--heat-ink)} .ds-when{font-weight:400;font-size:16px} .ds-page{background:var(--bg);height:24px}"
     },
     {
-      "name": "Retry button",
-      "kind": "button",
-      "refersTo": "button",
-      "description": "The only live button: retry on the failure card.",
-      "html": "<button class=\"ds-btn\">Try again</button>",
-      "css": ".ds-btn{font:600 17px/1 'Libre Franklin',sans-serif;border-radius:8px;padding:13px 18px;border:1.5px solid oklch(84% .02 262);background:oklch(98.5% .004 260);color:oklch(22% .03 262);display:inline-flex;gap:8px;align-items:center;justify-content:center;min-height:48px;cursor:pointer}.ds-btn:hover{border-color:oklch(30% .09 262)}.ds-btn:focus-visible{outline:3px solid oklch(52% .2 27);outline-offset:3px}"
+      "name": "Memory Switch",
+      "kind": "custom",
+      "refersTo": "switch-track-on",
+      "description": "Re-reads the bill with or without what the household told us.",
+      "html": "<button class=\"ds-switch\" role=\"switch\" aria-checked=\"true\" type=\"button\"><span class=\"ds-track\"></span><span class=\"ds-label\">Use what you told us</span><span class=\"ds-state\">On</span></button>",
+      "css": ":host{--bg:oklch(97.5% .008 230);--surface:oklch(99.2% .004 230);--band:oklch(94.5% .014 235);--line:oklch(24% .03 245 / .12);--line-strong:oklch(24% .03 245 / .24);--ink:oklch(24% .03 245);--ink-2:oklch(40% .03 245);--service:oklch(38% .09 245);--service-deep:oklch(31% .08 245);--link:oklch(41% .11 245);--on-service:oklch(97.5% .008 230);--on-service-2:oklch(86% .03 235);--heat:oklch(66% .16 45);--heat-ink:oklch(48% .14 42);--cold:oklch(62% .11 235);--cold-ink:oklch(44% .11 240);--reject:oklch(55% .19 25);--reject-ink:oklch(46% .18 25);--reject-bg:oklch(95.5% .028 25);--on-reject:oklch(98% .01 25);--t1:oklch(48% .12 245);--t2:oklch(60% .11 235);--t3:oklch(68% .07 200);--t4:oklch(70% .11 75);--t5:oklch(64% .15 50);--t6:oklch(55% .17 35);--font-display:\"Public Sans\",\"Atkinson Hyperlegible Next\",sans-serif;--font-text:\"Atkinson Hyperlegible Next\",\"Public Sans\",sans-serif;--font-mono:\"Atkinson Hyperlegible Mono\",monospace;--radius:4px;--ease-out:cubic-bezier(0.23,1,0.32,1)} .ds-switch{appearance:none;background:none;border:0;padding:4px 6px 4px 0;display:inline-flex;align-items:center;gap:12px;cursor:pointer;color:var(--ink);border-radius:var(--radius);min-height:44px} .ds-track{width:56px;height:32px;border:1px solid var(--line-strong);background:var(--surface);border-radius:999px;position:relative;transition:background-color 180ms var(--ease-out)} .ds-track::after{content:\"\";position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:50%;background:var(--ink-2);transition:transform 180ms var(--ease-out)} .ds-switch:hover .ds-track{border-color:var(--service)} .ds-switch[aria-checked=true] .ds-track{background:var(--service);border-color:var(--service)} .ds-switch[aria-checked=true] .ds-track::after{transform:translateX(24px);background:var(--on-service)} .ds-label{font:600 18px/1.2 var(--font-display)} .ds-state{font-size:16px;color:var(--ink-2);font-family:var(--font-text)} .ds-switch:focus-visible{outline:3px solid var(--heat-ink);outline-offset:2px}"
+    },
+    {
+      "name": "Weather Strip",
+      "kind": "custom",
+      "refersTo": "box",
+      "description": "Signature: one bar per day from its low to its high, colored by the day's average temperature step, over a dashed 65°F base line.",
+      "html": "<div class=\"ds-strip\"><div class=\"ds-strip-title\">Columbus weather, day by day</div><div class=\"ds-plot\"><div class=\"ds-base\"></div><div class=\"ds-days\"><span style=\"--lo:20;--hi:55;background:var(--t2)\"></span><span style=\"--lo:30;--hi:68;background:var(--t3)\"></span><span style=\"--lo:42;--hi:80;background:var(--t5)\"></span><span style=\"--lo:48;--hi:92;background:var(--t6)\"></span><span style=\"--lo:35;--hi:70;background:var(--t4)\"></span><span style=\"--lo:15;--hi:45;background:var(--t1)\"></span><span style=\"--lo:25;--hi:60;background:var(--t3)\"></span><span style=\"--lo:38;--hi:76;background:var(--t5)\"></span></div></div><div class=\"ds-scale\">cooler <i style=\"background:var(--t1)\"></i><i style=\"background:var(--t2)\"></i><i style=\"background:var(--t3)\"></i><i style=\"background:var(--t4)\"></i><i style=\"background:var(--t5)\"></i><i style=\"background:var(--t6)\"></i> hotter</div></div>",
+      "css": ":host{--bg:oklch(97.5% .008 230);--surface:oklch(99.2% .004 230);--band:oklch(94.5% .014 235);--line:oklch(24% .03 245 / .12);--line-strong:oklch(24% .03 245 / .24);--ink:oklch(24% .03 245);--ink-2:oklch(40% .03 245);--service:oklch(38% .09 245);--service-deep:oklch(31% .08 245);--link:oklch(41% .11 245);--on-service:oklch(97.5% .008 230);--on-service-2:oklch(86% .03 235);--heat:oklch(66% .16 45);--heat-ink:oklch(48% .14 42);--cold:oklch(62% .11 235);--cold-ink:oklch(44% .11 240);--reject:oklch(55% .19 25);--reject-ink:oklch(46% .18 25);--reject-bg:oklch(95.5% .028 25);--on-reject:oklch(98% .01 25);--t1:oklch(48% .12 245);--t2:oklch(60% .11 235);--t3:oklch(68% .07 200);--t4:oklch(70% .11 75);--t5:oklch(64% .15 50);--t6:oklch(55% .17 35);--font-display:\"Public Sans\",\"Atkinson Hyperlegible Next\",sans-serif;--font-text:\"Atkinson Hyperlegible Next\",\"Public Sans\",sans-serif;--font-mono:\"Atkinson Hyperlegible Mono\",monospace;--radius:4px;--ease-out:cubic-bezier(0.23,1,0.32,1)} .ds-strip{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:16px;font-family:var(--font-text);color:var(--ink-2);font-size:16px} .ds-strip-title{font:700 18px/1.25 var(--font-display);color:var(--ink);margin-bottom:12px} .ds-plot{position:relative;height:180px;border-bottom:1px solid var(--line-strong)} .ds-base{position:absolute;left:0;right:0;bottom:50%;border-top:1.5px dashed oklch(38% .09 245 / .55);z-index:2} .ds-days{position:absolute;inset:0;display:flex;gap:3px;z-index:3} .ds-days span{flex:1;position:relative;align-self:flex-end;border-radius:1px;margin-bottom:calc(var(--lo) * 1.8px);height:calc((var(--hi) - var(--lo)) * 1.8px);transform-origin:50% 100%;animation:ds-grow 240ms var(--ease-out) both} @keyframes ds-grow{from{transform:scaleY(0);opacity:0}to{transform:scaleY(1);opacity:1}} .ds-scale{display:flex;align-items:center;gap:2px;margin-top:12px} .ds-scale i{width:14px;height:9px;border-radius:1px;display:inline-block} @media (prefers-reduced-motion: reduce){.ds-days span{animation:none}}"
+    },
+    {
+      "name": "Cause Row",
+      "kind": "card",
+      "refersTo": "box",
+      "description": "One cause in the cause table: who worked it out, the signed amount in Heat Ink or Cold Ink, kWh and a verb.",
+      "html": "<div class=\"ds-cause\"><div><div class=\"ds-cause-title\">Hotter weather</div><div class=\"ds-cause-detail\">More cooling needed than last bill.</div><div class=\"ds-who\"><b>Weather check</b>Daily weather records, Columbus airport</div></div><div class=\"ds-amt up\"><span class=\"ds-usd\">+$21.40</span><span class=\"ds-sub\">+162 kWh</span><span class=\"ds-sub\">Added</span></div></div>",
+      "css": ":host{--bg:oklch(97.5% .008 230);--surface:oklch(99.2% .004 230);--band:oklch(94.5% .014 235);--line:oklch(24% .03 245 / .12);--line-strong:oklch(24% .03 245 / .24);--ink:oklch(24% .03 245);--ink-2:oklch(40% .03 245);--service:oklch(38% .09 245);--service-deep:oklch(31% .08 245);--link:oklch(41% .11 245);--on-service:oklch(97.5% .008 230);--on-service-2:oklch(86% .03 235);--heat:oklch(66% .16 45);--heat-ink:oklch(48% .14 42);--cold:oklch(62% .11 235);--cold-ink:oklch(44% .11 240);--reject:oklch(55% .19 25);--reject-ink:oklch(46% .18 25);--reject-bg:oklch(95.5% .028 25);--on-reject:oklch(98% .01 25);--t1:oklch(48% .12 245);--t2:oklch(60% .11 235);--t3:oklch(68% .07 200);--t4:oklch(70% .11 75);--t5:oklch(64% .15 50);--t6:oklch(55% .17 35);--font-display:\"Public Sans\",\"Atkinson Hyperlegible Next\",sans-serif;--font-text:\"Atkinson Hyperlegible Next\",\"Public Sans\",sans-serif;--font-mono:\"Atkinson Hyperlegible Mono\",monospace;--radius:4px;--ease-out:cubic-bezier(0.23,1,0.32,1)} .ds-cause{display:grid;grid-template-columns:1fr auto;gap:12px;padding:16px;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);font-family:var(--font-text);color:var(--ink)} .ds-cause-title{font:700 19px/1.25 var(--font-display);letter-spacing:-0.008em} .ds-cause-detail,.ds-who{font-size:16px;color:var(--ink-2);margin-top:4px} .ds-who b{display:block;font-family:var(--font-display);color:var(--ink)} .ds-amt{text-align:right;font-variant-numeric:tabular-nums lining-nums} .ds-usd{display:block;font:700 23px/1.15 var(--font-display);letter-spacing:-0.01em} .ds-amt.up .ds-usd{color:var(--heat-ink)} .ds-amt.down .ds-usd{color:var(--cold-ink)} .ds-sub{display:block;font-size:16px;color:var(--ink-2)}"
+    },
+    {
+      "name": "Rejected Check",
+      "kind": "card",
+      "refersTo": "check-rejected",
+      "description": "The checker's rejection, the only place rejection red appears.",
+      "html": "<div class=\"ds-rej\"><div class=\"ds-rej-head\">Rejected, first pass</div><div class=\"ds-rej-body\"><span class=\"ds-n\">2</span><div><div class=\"ds-rej-title\">The causes add up to the change</div><p>Part of the change was left unexplained.</p><p class=\"ds-sent\">Sent back to Usage math to try again</p></div></div></div>",
+      "css": ":host{--bg:oklch(97.5% .008 230);--surface:oklch(99.2% .004 230);--band:oklch(94.5% .014 235);--line:oklch(24% .03 245 / .12);--line-strong:oklch(24% .03 245 / .24);--ink:oklch(24% .03 245);--ink-2:oklch(40% .03 245);--service:oklch(38% .09 245);--service-deep:oklch(31% .08 245);--link:oklch(41% .11 245);--on-service:oklch(97.5% .008 230);--on-service-2:oklch(86% .03 235);--heat:oklch(66% .16 45);--heat-ink:oklch(48% .14 42);--cold:oklch(62% .11 235);--cold-ink:oklch(44% .11 240);--reject:oklch(55% .19 25);--reject-ink:oklch(46% .18 25);--reject-bg:oklch(95.5% .028 25);--on-reject:oklch(98% .01 25);--t1:oklch(48% .12 245);--t2:oklch(60% .11 235);--t3:oklch(68% .07 200);--t4:oklch(70% .11 75);--t5:oklch(64% .15 50);--t6:oklch(55% .17 35);--font-display:\"Public Sans\",\"Atkinson Hyperlegible Next\",sans-serif;--font-text:\"Atkinson Hyperlegible Next\",\"Public Sans\",sans-serif;--font-mono:\"Atkinson Hyperlegible Mono\",monospace;--radius:4px;--ease-out:cubic-bezier(0.23,1,0.32,1)} .ds-rej{background:var(--reject-bg);border:1px solid oklch(55% .19 25 / .55);border-radius:var(--radius);overflow:hidden;font-family:var(--font-text);color:var(--ink)} .ds-rej-head{background:var(--reject-ink);color:var(--on-reject);padding:8px 16px;font:600 16px/1.3 var(--font-display)} .ds-rej-body{display:grid;grid-template-columns:28px 1fr;gap:8px;padding:12px 16px 16px} .ds-n{font:700 19px/1.3 var(--font-display);color:var(--reject-ink)} .ds-rej-title{font:700 18px/1.3 var(--font-display)} .ds-rej p{margin:2px 0 0;font-size:16px} .ds-rej p.ds-sent{margin-top:8px;font-weight:700;color:var(--reject-ink)}"
+    },
+    {
+      "name": "Confidence Meter",
+      "kind": "custom",
+      "refersTo": "box",
+      "description": "Two segments, 1fr and 2fr; the reached level in Service Blue and its label in Public Sans 800.",
+      "html": "<div class=\"ds-conf\"><div class=\"ds-conf-h\">How sure we are</div><div class=\"ds-meter\"><span class=\"on\"></span><span></span></div><div class=\"ds-labels\"><span class=\"is\">Low</span><span>Higher, once we have 6 of your bills</span></div></div>",
+      "css": ":host{--bg:oklch(97.5% .008 230);--surface:oklch(99.2% .004 230);--band:oklch(94.5% .014 235);--line:oklch(24% .03 245 / .12);--line-strong:oklch(24% .03 245 / .24);--ink:oklch(24% .03 245);--ink-2:oklch(40% .03 245);--service:oklch(38% .09 245);--service-deep:oklch(31% .08 245);--link:oklch(41% .11 245);--on-service:oklch(97.5% .008 230);--on-service-2:oklch(86% .03 235);--heat:oklch(66% .16 45);--heat-ink:oklch(48% .14 42);--cold:oklch(62% .11 235);--cold-ink:oklch(44% .11 240);--reject:oklch(55% .19 25);--reject-ink:oklch(46% .18 25);--reject-bg:oklch(95.5% .028 25);--on-reject:oklch(98% .01 25);--t1:oklch(48% .12 245);--t2:oklch(60% .11 235);--t3:oklch(68% .07 200);--t4:oklch(70% .11 75);--t5:oklch(64% .15 50);--t6:oklch(55% .17 35);--font-display:\"Public Sans\",\"Atkinson Hyperlegible Next\",sans-serif;--font-text:\"Atkinson Hyperlegible Next\",\"Public Sans\",sans-serif;--font-mono:\"Atkinson Hyperlegible Mono\",monospace;--radius:4px;--ease-out:cubic-bezier(0.23,1,0.32,1)} .ds-conf{border-top:1px solid var(--line-strong);padding-top:12px;max-width:250px;font-family:var(--font-text)} .ds-conf-h{font:700 17px/1.3 var(--font-display);color:var(--ink)} .ds-meter{display:grid;grid-template-columns:1fr 2fr;gap:3px;margin:8px 0 6px} .ds-meter span{height:8px;background:var(--band);border-radius:1px} .ds-meter span.on{background:var(--service)} .ds-labels{display:grid;grid-template-columns:1fr 2fr;gap:3px;font-size:16px;color:var(--ink-2);line-height:1.3} .ds-labels .is{color:var(--ink);font:800 16px/1.3 var(--font-display)}"
+    },
+    {
+      "name": "Action Card",
+      "kind": "card",
+      "refersTo": "action-card",
+      "description": "A program the household can use, with its amount and who checked it at which date.",
+      "html": "<article class=\"ds-act\"><h3>HEAP</h3><p class=\"ds-full\">Home Energy Assistance Program</p><p class=\"ds-fig\"><span>Amount</span> context line</p><p class=\"ds-checked\"><b>The checker</b>: fits the program rules at this bill's date.</p></article>",
+      "css": ":host{--bg:oklch(97.5% .008 230);--surface:oklch(99.2% .004 230);--band:oklch(94.5% .014 235);--line:oklch(24% .03 245 / .12);--line-strong:oklch(24% .03 245 / .24);--ink:oklch(24% .03 245);--ink-2:oklch(40% .03 245);--service:oklch(38% .09 245);--service-deep:oklch(31% .08 245);--link:oklch(41% .11 245);--on-service:oklch(97.5% .008 230);--on-service-2:oklch(86% .03 235);--heat:oklch(66% .16 45);--heat-ink:oklch(48% .14 42);--cold:oklch(62% .11 235);--cold-ink:oklch(44% .11 240);--reject:oklch(55% .19 25);--reject-ink:oklch(46% .18 25);--reject-bg:oklch(95.5% .028 25);--on-reject:oklch(98% .01 25);--t1:oklch(48% .12 245);--t2:oklch(60% .11 235);--t3:oklch(68% .07 200);--t4:oklch(70% .11 75);--t5:oklch(64% .15 50);--t6:oklch(55% .17 35);--font-display:\"Public Sans\",\"Atkinson Hyperlegible Next\",sans-serif;--font-text:\"Atkinson Hyperlegible Next\",\"Public Sans\",sans-serif;--font-mono:\"Atkinson Hyperlegible Mono\",monospace;--radius:4px;--ease-out:cubic-bezier(0.23,1,0.32,1)} .ds-act{background:var(--surface);border:1px solid var(--line-strong);border-radius:var(--radius);padding:32px;font-family:var(--font-text);color:var(--ink)} .ds-act h3{margin:0;font:700 25px/1.2 var(--font-display);letter-spacing:-0.015em} .ds-full{margin:2px 0 0;color:var(--ink-2);font-size:16px} .ds-fig{margin:24px 0 0;color:var(--ink-2);font-size:16px} .ds-fig span{font:800 44px/1 var(--font-display);letter-spacing:-0.03em;color:var(--ink);font-variant-numeric:tabular-nums lining-nums;margin-right:12px} .ds-checked{margin:24px 0 0;padding-top:12px;border-top:1px dashed var(--line-strong);font-size:16px;color:var(--ink-2)} .ds-checked b{color:var(--ink);font-family:var(--font-display)}"
     }
   ],
   "narrative": {
-    "northStar": "The Jet-Age Ticket Wallet",
-    "overview": "Every step of the agents' reasoning is printed as a flight coupon. A navy cover holds the route of the bill (FROM one total TO the next) in tall condensed figures, and below it the wallet opens: white coupons on a pale blue-grey ground, each with a perforated stub on the right that names the agent who worked out or checked that line and the source it used. The critic's trail sits beside the coupons as its own column of tickets, and a rejected pass is stamped VOID in red while the re-issued pass is stamped VALIDATED in navy. Anything that came from the household's memory is printed on violet carbon paper.\n\nThe screen is calm and readable for a 71-year-old reader with the paper bill beside her: body text at 18px, amounts large and tabular, every dollar paired with kWh or a unit, and color never the only signal (each amount also carries a verb such as Added, Took off or No change). Density is moderate. Space is grouped tight inside a coupon and opened wide between areas, from 4px inside a figure stack to 104px between the reasoning and the evidence.\n\nThe world was chosen on 22 Oct 2026 as direction C of three (seed key 835f0fee). The build matches the contract on palette, type pairing, coupon stub, stamps and carbon violet. Where the build differs from the contract, this file records the build.",
+    "northStar": "The Forecast Office",
+    "overview": "The page reads like a weather service's daily report for Columbus. A full-bleed service-blue bar carries the brand and the two bill tabs; under it, on a cool pale ground, the change in the bill is set at forecast-headline scale, and the real daily temperatures of both billing periods run as a chart of one bar per day. Everything else is set as plain report furniture: ruled lists, a few bordered boxes, tabular figures, and short sentences for a reader of 71 with the paper bill beside her.\n\nDensity is moderate and calm. Running text is 18px (17px on phones) and never drops below 16px; only chart labels go to 14px. Colors are few and each has a job: service blue for the shell and the system's marks, a warm/cool pair for the direction of money, a six-step temperature scale for the weather bars, and one red for the checker's rejection. Surfaces are flat: there are no shadows.\n\nThis file was written from the shipped build of `web/index.html` (styles in `web/src/styles.css`, markup in `web/src/view.ts`) on 25 Oct 2026. It replaces the 22 Oct record of an earlier direction (the ticket wallet); none of that system is in the build. The earlier files are kept in `.impeccable/` as `DESIGN.superseded-2026-10-22.md` and `design.superseded-2026-10-22.json`. The rendered page was not inspected for this record; where a claim depends on the render, it says so.",
     "keyCharacteristics": [
-      "Navy cover over a pale blue-grey wallet ground; coupon-white cards carry all content.",
-      "Barlow Condensed for figures, route labels, area titles and stamps; Libre Franklin for everything a person reads as a sentence; IBM Plex Mono only for identifiers and SQL.",
-      "Perforation as structure: dashed rules and punched half-circle notches separate a coupon from its stub.",
-      "Two stamps, VOID and VALIDATED, are the only rotated elements in the system.",
-      "Carbon violet is reserved for household memory.",
-      "Phosphor Light icons on every cause, check, evidence row and action."
+      "Service-blue shell over a cool pale ground; one 4px corner radius for every box.",
+      "Public Sans for headings and figures, Atkinson Hyperlegible Next for sentences, Atkinson Hyperlegible Mono only for SQL and identifiers.",
+      "Digits inside sentences come from a self-hosted Public Sans subset (\"WSH Figures\"), so no slashed zero reaches the reader.",
+      "The weather strip, one bar per day colored by that day's average temperature, is the signature component.",
+      "Flat surfaces: 1px borders and ruled lines, no shadows.",
+      "Phosphor Light icons on causes, agents, checks, actions, evidence rows and states.",
+      "Agents carry plain names on screen; code names appear only in the evidence area."
     ],
     "rules": [
-      { "name": "The Direction Has a Color Rule", "body": "Red means the bill went up or a pass was rejected; navy means it went down or was accepted. Every colored amount also carries a sign and a verb, so color is never the only carrier.", "section": "colors" },
-      { "name": "The Carbon Is Memory Rule", "body": "Violet appears only on things that came from what the household told HouseholdMemory, plus the preview chip. Do not use it as a general accent.", "section": "colors" },
-      { "name": "The Condensed Is For Figures Rule", "body": "Barlow Condensed sets numbers, the route labels, area titles and stamps. Sentences, even short ones, stay in Libre Franklin.", "section": "typography" },
-      { "name": "The 14px Floor Rule", "body": "Reading text never drops below 14px. The only smaller text is the 13px SQL block in evidence and the 12px RE-ISSUED line inside the VALIDATED stamp.", "section": "typography" },
-      { "name": "The One Lift Rule", "body": "There is one card shadow. Emphasis is a ring, not a bigger shadow.", "section": "elevation" }
+      {
+        "name": "The Weather Owns The Scale Rule",
+        "body": "The six temperature steps color weather bars and their legend, nothing else. Money uses Heat and Cold, which are separate tokens.",
+        "section": "colors"
+      },
+      {
+        "name": "The Direction Has A Temperature Rule",
+        "body": "Added money is warm, money taken off is cool, and the change figure itself stays Ink; only its arrow takes the color. Every colored amount also carries a sign and a verb (Added, Took off, No change, Nothing left), so color is never the only signal.",
+        "section": "colors"
+      },
+      {
+        "name": "The One Rejection Rule",
+        "body": "Rejection red marks the checker's rejection and nothing else.",
+        "section": "colors"
+      },
+      {
+        "name": "The 16px Floor Rule",
+        "body": "Running text is never below 16px. Chart labels are the only text at 14px.",
+        "section": "typography"
+      },
+      {
+        "name": "The Figures Are Public Sans Rule",
+        "body": "Headings and every figure, standalone or inside a sentence, are Public Sans. Sentences are Atkinson Hyperlegible Next.",
+        "section": "typography"
+      },
+      {
+        "name": "The Mono Is Evidence Rule",
+        "body": "Atkinson Hyperlegible Mono appears only in SQL blocks and inline identifiers (table names, station id, rate label, run id, model name, agent code names), all inside the evidence area.",
+        "section": "typography"
+      },
+      {
+        "name": "The Box Or Rule Rule",
+        "body": "A box (1px border, no shadow) holds one thing read or used as a whole: the weather chart, the cause table, an action card, the notes. Lists are ruled lines: checks, the not-offered list, evidence rows.",
+        "section": "elevation"
+      }
     ],
     "dos": [
-      "Do print every reasoning step as a coupon with a stub that names the agent and the source.",
-      "Do pair every amount with a sign, a unit (kWh or $) and a verb, and keep numbers tabular.",
-      "Do use red for up or rejected and navy for down or accepted, nothing else.",
-      "Do keep violet for what came from household memory.",
-      "Do use the one card shadow and express emphasis with a 1.5-2px ring.",
-      "Do keep reading text at 17-18px Libre Franklin and touch targets at 44-48px.",
-      "Do use Phosphor Light icons on causes, checks, evidence rows, actions and states."
+      "Do set every figure in Public Sans with tabular, lining numbers, and keep digits inside sentences on the WSH Figures face.",
+      "Do keep running text at 16px or larger (18px body, 17px on phones) and chart labels at 14px.",
+      "Do color added money Heat or Heat Ink and money taken off Cold or Cold Ink, and pair every amount with a sign, a unit and a verb.",
+      "Do use the six temperature steps only for weather bars and their legend.",
+      "Do keep rejection red for the checker's rejection.",
+      "Do use one 4px radius for boxes, buttons, chips and fields, 2px for small marks and 1px for bars.",
+      "Do hold a whole thing in a bordered box and set lists as ruled lines.",
+      "Do use Phosphor Light icons, with the meaning carried by the text beside them.",
+      "Do name agents by their plain names and keep code names in the evidence area.",
+      "Do keep touch targets at 44 to 48px and the 3px Heat Ink focus ring."
     ],
     "donts": [
-      "Don't rotate anything except the VOID and VALIDATED stamps.",
-      "Don't set sentences in Barlow Condensed.",
-      "Don't let color carry meaning alone; the status text and verbs must say it too.",
-      "Don't introduce a second card radius or a second card shadow.",
+      "Don't add shadows; `--shadow` is `none`.",
+      "Don't color the change figure itself; only its arrow takes Heat Ink or Cold Ink.",
+      "Don't use Atkinson Hyperlegible Mono outside SQL and identifiers.",
+      "Don't reuse the Heat tint of the sample-data label or the Reject Ink icon of the failure card; both are drift, not rules.",
+      "Don't show a CamelCase agent name outside the evidence area.",
       "Don't use emojis anywhere."
     ]
   }
