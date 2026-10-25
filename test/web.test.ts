@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { billImageOf, type DemoPayload } from "../src/demo.ts";
 import { esc, kwh, month, plainCheck, plainReason, short, usd } from "../web/src/format.ts";
 import { AGENT_NAMES, checksFromTrace, pageView, stripView } from "../web/src/model.ts";
-import { actionPitch, actions, cascade, comparison, failure, friendlyError, memoryPanel, nextStepLine, panel, parseHash, strip, tabKey } from "../web/src/view.ts";
+import { actionPitch, actions, billDialog, cascade, comparison, failure, friendlyError, memoryPanel, memorySwitch, nextStepLine, panel, parseHash, strip, tabKey, todayInOhio } from "../web/src/view.ts";
 
 // The sample-mode answer of GET /api/demo, saved from the server on 24 Oct 2026, with the
 // daily weather the page draws (read from the saved NOAA copy, as sample mode does).
@@ -239,14 +239,11 @@ describe("round 2: amounts, dates, errors and the address bar", () => {
   it("A2: every program row says the date it was checked against, and none says open and closed at once", () => {
     const html = actions(page.first, "2026-10-24");
     const rows = html.split("<li>").slice(1);
-    expect(rows).toHaveLength(5);
+    // HEAP opened after the bill's date and is open today, so it sits with the actions (round 4).
+    expect(rows).toHaveLength(4);
     // One footer for every row: who checked it, at the bill's date, and what today changes.
     for (const row of rows) expect(row).toMatch(/<small><b>(The checker|Help finder)<\/b> checked this at the bill's date, Sep 16, 2026(; [a-z ]+today, Oct 24, 2026)?\.<\/small>/);
-    const heap = rows.find((r) => r.includes("<b>HEAP"));
-    expect(heap).toContain("HEAP (Home Energy Assistance Program)");
-    expect(heap).toContain("Opened on Oct 1, 2026, after this bill&#39;s date, and takes applications until Apr 30, 2027.");
-    expect(heap).not.toContain("Not open yet");
-    expect(heap).toContain("; open today, Oct 24, 2026.");
+    expect(rows.some((r) => r.includes("<b>HEAP"))).toBe(false);
     const summer = rows.find((r) => r.includes("Summer Crisis"));
     expect(summer).not.toMatch(/was open|is open/);
     const winter = rows.find((r) => r.includes("Winter Crisis"));
@@ -284,7 +281,7 @@ describe("round 2: amounts, dates, errors and the address bar", () => {
 
   it("explains on the page what the switch covers and why the days row moves", () => {
     const off = memoryPanel(page, false);
-    expect(off).toContain("Turning this off reads the bill as if you had told us nothing: all 2 notes are left out, so PIPP Plus is suggested again.");
+    expect(off).toContain("reads the bill as if you had told us nothing: all 2 notes are left out, so PIPP Plus is suggested again.");
     expect(off).toContain("I applied for PIPP Plus on September 25.");
     expect(comparison(page, true)).toContain("your note makes your August bill the normal month instead of your September bill");
     expect(comparison(page, true)).toContain("Both readings end at $116.77, this bill's total.");
@@ -323,7 +320,7 @@ describe("round 3: the paper bill, the next step and the weather labels", () => 
     expect(html).toContain('<span class="thumb-tag">Sample</span>');
     expect(html).toContain("Your September bill, total $217.42 circled.");
     expect(html).toContain('<dialog id="billDialog"');
-    expect(html).toContain(`alt="Your September bill, a sample statement for Aug 14, 2026 to Sep 16, 2026: ${kwh(1184)}, total amount due $217.42."`);
+    expect(html).toContain(`aria-label="Your September bill, a sample statement for Aug 14, 2026 to Sep 16, 2026: ${kwh(1184)}, total amount due $217.42, circled."`);
     // No picture is promised when the server does not say which bill was read.
     expect(panel({ ...page, first: { ...page.first, billImage: null } }, "first", true, "2026-10-24")).not.toContain("billDialog");
   });
@@ -373,5 +370,74 @@ describe("round 3: the paper bill, the next step and the weather labels", () => 
     expect(mini).toContain("+$20.86");
     expect(mini).toContain("$170.12");
     expect(mini).toContain("$217.42");
+  });
+});
+
+describe("round 4: one today, programs open now, one value per fact", () => {
+  const page = pageView(payload);
+  const todays = (html: string): string[] => [...html.matchAll(/today(?:'s date)?, ([A-Z][a-z]{2} \d{1,2}, \d{4})/g)].map((m) => m[1]);
+
+  it("reads today once in Columbus time and uses that one date on every tab and reading", () => {
+    // 03:30 UTC on Oct 25 is still Oct 24 in Columbus; an hour later it is Oct 25 there too.
+    expect(todayInOhio(new Date("2026-10-25T03:30:00Z"))).toBe("2026-10-24");
+    expect(todayInOhio(new Date("2026-10-25T04:30:00Z"))).toBe("2026-10-25");
+    const today = "2026-10-25";
+    const seen = new Set([
+      ...todays(panel(page, "first", true, today)),
+      ...todays(panel(page, "second", true, today)),
+      ...todays(panel(page, "second", false, today)),
+    ]);
+    expect([...seen]).toEqual(["Oct 25, 2026"]);
+  });
+
+  it("shows HEAP with the actions in September once it is open today, with its amounts and next step", () => {
+    const sep = actions(page.first, "2026-10-25");
+    const card = sep.slice(sep.indexOf('<article class="act open-now" id="september-act-heap"'), sep.indexOf("</article>", sep.indexOf("open-now")));
+    expect(card).toContain("Open now, since Oct 1, 2026");
+    expect(card).toContain(">$31 to $546</span>");
+    expect(card).toContain("Apply online on the Energy Assistance Portal");
+    expect(card).toContain('href="tel:+18002820880"');
+    expect(card).toContain("<b>The checker</b> checked this at the bill's date, Sep 16, 2026, before it opened; open today, Oct 25, 2026.");
+    // It does not claim the checker found it fits, and it is not listed as not offered.
+    expect(card).not.toContain("fits the program rules");
+    const notOffered = sep.slice(sep.indexOf('class="notoffered"'));
+    expect(notOffered).not.toContain("<b>HEAP");
+    expect(sep).toContain("Looked at and not offered (4)");
+    // Before Oct 1 the bill-date rule stands: HEAP is not open yet and stays in the list.
+    const early = actions(page.first, "2026-09-20");
+    expect(early).not.toContain("open-now");
+    expect(early).toContain("Not open yet: HEAP takes applications from Oct 1, 2026 to Apr 30, 2027.");
+    // October's bill date is inside the season, so HEAP is a normal offered card there.
+    for (const run of [page.withMemory, page.withoutMemory]) {
+      const oct = actions(run, "2026-10-25");
+      expect(oct).not.toContain("open-now");
+      expect(oct).toContain('id="october-act-heap"');
+      expect(oct).toContain("fits the program rules at this bill's date, Oct 16, 2026.");
+    }
+  });
+
+  it("gives the same bill period the same average in both views, and circles the total at full size too", () => {
+    const sep = stripView(page.first, payload.weather);
+    const oct = stripView(page.withMemory, payload.weather);
+    expect(sep?.brackets[1].label).toBe("September bill");
+    expect(oct?.brackets[0].label).toBe("September bill");
+    expect(sep?.brackets[1].avgF).toBe(74.7);
+    expect(oct?.brackets[0].avgF).toBe(74.7);
+    expect(strip(page.first, payload.weather, false)).toContain("<span>Average 74.7°F</span>");
+    expect(strip(page.withMemory, payload.weather, false)).toContain("<span>Average 74.7°F</span>");
+    const dialog = billDialog(page.first);
+    expect(dialog).toContain('<ellipse class="ring"');
+    expect(dialog).toContain('viewBox="24 21 802 410"');
+  });
+
+  it("puts the switch beside Here is why in October, saying what turning it off changes", () => {
+    expect(memorySwitch(page, true)).toContain("Off reads this bill as if you had told us nothing: PIPP Plus is suggested again and your own use reads −$28.08.");
+    expect(memorySwitch(page, false)).toContain("Your 2 notes are left out: PIPP Plus is suggested again and your own use reads −$28.08. Turn it on to use them.");
+    const oct = panel(page, "second", true, "2026-10-25");
+    const lead = oct.slice(0, oct.indexOf('<section class="strip'));
+    expect(lead).toContain('<p class="why">Here is why.</p>');
+    expect(lead).toContain('id="memSwitch"');
+    expect(oct.match(/id="memSwitch"/g)).toHaveLength(1);
+    expect(panel(page, "first", true, "2026-10-25")).not.toContain('id="memSwitch"');
   });
 });

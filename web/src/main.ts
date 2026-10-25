@@ -4,7 +4,7 @@
 import "./styles.css";
 import type { DemoPayload } from "../../src/demo.ts";
 import { pageView, type PageView } from "./model.ts";
-import { failure, friendlyError, panel, parseHash, skeleton, stripHint, tabKey, tabWhen, type Tab } from "./view.ts";
+import { failure, friendlyError, panel, parseHash, skeleton, stripHint, tabKey, tabWhen, todayInOhio, type Tab } from "./view.ts";
 
 interface State {
   readonly tab: Tab;
@@ -12,6 +12,8 @@ interface State {
 }
 
 const TABS: readonly Tab[] = ["first", "second"];
+/** Today in Columbus, read once when the page loads, so every tab and re-render says the same date. */
+const TODAY = todayInOhio();
 
 const $ = (id: string): HTMLElement => {
   const el = document.getElementById(id);
@@ -222,7 +224,7 @@ function render(page: PageView, state: State, onToggle: () => void, opts: { keep
   tabpanel.setAttribute("aria-labelledby", second ? "tab-second" : "tab-first");
   // The entrance plays when a bill is shown, not when the switch changes the reading.
   tabpanel.classList.toggle("settled", opts.keep === true);
-  root.innerHTML = panel(page, state.tab, state.memoryOn, undefined, { stripMore });
+  root.innerHTML = panel(page, state.tab, state.memoryOn, TODAY, { stripMore });
   tabpanel.setAttribute("aria-busy", "false");
 
   for (const k of openKeys) {

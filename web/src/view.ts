@@ -89,6 +89,11 @@ function doubleChecked(run: RunView, key: string): string {
 const TOTAL_RING = { cx: 768, cy: 391, rx: 54, ry: 22 } as const;
 const BILL_W = 850;
 const BILL_H = 560;
+/** The printed part of the sample bill with a 20px margin, for the full-size view. */
+const BILL_CROP = "24 21 802 410";
+
+const billSvg = (src: string, viewBox: string, attrs: string): string =>
+  `<svg viewBox="${viewBox}" ${attrs}><image href="${src}" width="${BILL_W}" height="${BILL_H}"></image><ellipse class="ring" cx="${TOTAL_RING.cx}" cy="${TOTAL_RING.cy}" rx="${TOTAL_RING.rx}" ry="${TOTAL_RING.ry}"></ellipse></svg>`;
 
 /** The bill the household sent, small, with its total circled; it opens full size. */
 function billThumb(run: RunView): string {
@@ -97,7 +102,7 @@ function billThumb(run: RunView): string {
   return `
     <figure class="bill-thumb block" style="--b:2">
       <button type="button" class="thumb-btn" id="billOpen" aria-haspopup="dialog" aria-controls="billDialog">
-        <svg viewBox="0 0 ${BILL_W} ${BILL_H}" aria-hidden="true" focusable="false"><image href="${src}" width="${BILL_W}" height="${BILL_H}"></image><ellipse class="ring" cx="${TOTAL_RING.cx}" cy="${TOTAL_RING.cy}" rx="${TOTAL_RING.rx}" ry="${TOTAL_RING.ry}"></ellipse></svg>
+        ${billSvg(src, `0 0 ${BILL_W} ${BILL_H}`, 'aria-hidden="true" focusable="false"')}
         <span class="thumb-tag">Sample</span>
         <span class="sr-only">: open the picture of your ${esc(run.to.label)} full size</span>
       </button>
@@ -114,11 +119,47 @@ export function billDialog(run: RunView): string {
         <h2 id="billDlgH">Your ${esc(run.to.label)}, a sample</h2>
         <button type="button" class="btn line" id="billClose">${icon("x")}Close</button>
       </div>
-      <img src="/${esc(run.billImage)}" width="${BILL_W}" height="${BILL_H}" loading="lazy" alt="Your ${esc(run.to.label)}, a sample statement${esc(when)}: ${esc(kwh(run.to.kwh))}, total amount due ${usd(run.to.usd)}.">
+      <div class="bill-full" tabindex="0" aria-label="The bill at full size; on a phone, slide it sideways to read it all">
+        ${billSvg(`/${esc(run.billImage)}`, BILL_CROP, `role="img" aria-label="Your ${esc(run.to.label)}, a sample statement${esc(when)}: ${esc(kwh(run.to.kwh))}, total amount due ${usd(run.to.usd)}, circled."`)}
+      </div>
+      <p class="bill-hint">${icon("arrows-left-right")}Slide the bill sideways to read it all.</p>
     </dialog>`;
 }
 
-function lead(run: RunView, rules: DemoRules, key: string, today: string): string {
+/** Programs the notes take off the list: taken with the notes, suggested again without them. */
+const backWithout = (page: PageView): string[] =>
+  page.withMemory.actions
+    .filter((a) => a.status === "already_taken" && page.withoutMemory.actions.find((b) => b.id === a.id)?.status === "recommended")
+    .map((a) => a.name);
+
+/**
+ * October's switch, beside "Here is why.": it re-reads the whole bill with or without what
+ * the household told us, and one line says what turning it off changes, from both runs.
+ */
+export function memorySwitch(page: PageView, on: boolean): string {
+  const notes = page.withMemory.notes;
+  if (notes.length === 0) return "";
+  const back = backWithout(page);
+  const usage = page.withoutMemory.causes.find((c) => c.key === "usage");
+  const effects = [
+    back.length ? `${listOf(back)} ${back.length === 1 ? "is" : "are"} suggested again` : "",
+    usage ? `your own use reads ${usd(usage.usd, true)}` : "",
+  ].filter(Boolean);
+  const which = notes.length === 1 ? "Your note is" : `Your ${notes.length} notes are`;
+  const then = effects.length ? `: ${listOf(effects)}` : "";
+  const line = on
+    ? `Off reads this bill as if you had told us nothing${then}.`
+    : `${which} left out${then}. Turn it on to use them.`;
+  return `
+    <div class="mem-ctl">
+      <button class="switch" id="memSwitch" type="button" role="switch" aria-checked="${on}" aria-describedby="memLine">
+        <span class="track" aria-hidden="true"></span><span class="switch-label">Use what you told us</span><span class="switch-state" aria-hidden="true">${on ? "On" : "Off"}</span>
+      </button>
+      <p class="switch-line" id="memLine">${esc(line)}</p>
+    </div>`;
+}
+
+function lead(run: RunView, rules: DemoRules, key: string, today: string, memory: string): string {
   const dir = run.changeUsd < 0 ? "down" : "up";
   const conf = run.confidence;
   const higher = conf?.fitted ? "Higher, from your own bills" : `Higher, once we have ${rules.minBillsToFit} of your bills`;
@@ -137,7 +178,7 @@ function lead(run: RunView, rules: DemoRules, key: string, today: string): strin
       <div class="lead-main block" style="--b:0">
         <h1 class="headline" tabindex="-1"><span class="hl-line">Your bill went ${dir}</span>
           <span class="big ${dir}">${icon(dir === "up" ? "arrow-up" : "arrow-down", "dir")}<span class="num">${usd(Math.abs(run.changeUsd))}</span></span></h1>
-        <div class="why-row"><p class="why">Here is why.</p>${doubleChecked(run, key)}${nextStepLine(run, today, key)}</div>
+        <div class="why-row"><div class="why-head"><p class="why">Here is why.</p>${memory}</div>${doubleChecked(run, key)}${nextStepLine(run, today, key)}</div>
       </div>
       <div class="lead-side block" style="--b:1">
         <div class="bills-wrap">
@@ -490,6 +531,14 @@ function noteForm(nextWithNote: string | null): string {
     </form>`;
 }
 
+function stepLinks(step: ActionView["nextStep"]): string {
+  if (!step.url && !step.phone) return "";
+  return `<div class="links">
+      ${step.url ? `<a class="btn solid" href="${esc(step.url)}" target="_blank" rel="noopener noreferrer">${icon("arrow-square-out")}Apply or read more${NEW_TAB}</a>` : ""}
+      ${step.phone ? `<a class="btn line" href="${telHref(step.phone)}">${icon("phone")}${esc(step.phone)}</a>` : ""}
+    </div>`;
+}
+
 function actionCard(a: ActionView, primary: boolean, asOf: string, nextWithNote: string | null, key: string): string {
   const amt = amountText(a);
   const step = a.nextStep;
@@ -509,15 +558,29 @@ function actionCard(a: ActionView, primary: boolean, asOf: string, nextWithNote:
       ${a.id === "usage_note" ? "" : `<p class="fit">${icon("check-circle")}<span>${esc(a.reason)}</span></p>`}
       <p class="next"><b>Next step.</b> ${keepPhones(step.text)}</p>
       ${a.id === "usage_note" ? noteForm(nextWithNote) : ""}
-      ${
-        step.url || step.phone
-          ? `<div class="links">
-              ${step.url ? `<a class="btn solid" href="${esc(step.url)}" target="_blank" rel="noopener noreferrer">${icon("arrow-square-out")}Apply or read more${NEW_TAB}</a>` : ""}
-              ${step.phone ? `<a class="btn line" href="${telHref(step.phone)}">${icon("phone")}${esc(step.phone)}</a>` : ""}
-            </div>`
-          : ""
-      }
+      ${stepLinks(step)}
       <p class="checked">${icon(a.id === "usage_note" ? AGENT_ICONS.ReconciliationCritic : "calendar-check")}<span>${by}</span></p>
+    </article>`;
+}
+
+/**
+ * A program that opened after the bill's date and is open today. It sits with the actions,
+ * with the amounts and next step the planner gave it; the checker only judged it at the
+ * bill's date, so the card says so and claims no eligibility.
+ */
+function openNowCard(a: ActionView, asOf: string, today: string, key: string): string {
+  const amt = amountText(a);
+  const step = a.nextStep;
+  return `
+    <article class="act open-now" id="${key}-act-${a.id}" tabindex="-1">
+      <h3>${icon(ACTION_ICONS[a.id] ?? "check")}${esc(a.name)}</h3>
+      ${a.longName && a.longName !== a.name ? `<p class="full">${esc(a.longName)}</p>` : ""}
+      <p class="status">${icon("calendar-check")}<span>Open now, since ${esc(day(a.window?.from ?? ""))}</span></p>
+      <p class="body">${esc(a.why)}</p>
+      <p class="figure"><span class="v num sm">${esc(amt.big)}</span><span class="c">${esc(amt.small)}</span></p>
+      <p class="next"><b>Next step.</b> ${keepPhones(step.text)}</p>
+      ${stepLinks(step)}
+      <p class="checked">${icon("calendar-check")}<span><b>${esc(agentName("ReconciliationCritic"))}</b> checked this at the bill's date, ${esc(day(asOf))}, before it opened; open today, ${esc(day(today))}. Your next bill checks whether you qualify.</span></p>
     </article>`;
 }
 
@@ -533,7 +596,7 @@ function takenCard(a: ActionView): string {
 }
 
 /** Today's date in Columbus, YYYY-MM-DD. */
-export const todayInOhio = (): string => new Intl.DateTimeFormat("en-CA", { timeZone: "America/New_York" }).format(new Date());
+export const todayInOhio = (now: Date = new Date()): string => new Intl.DateTimeFormat("en-CA", { timeZone: "America/New_York" }).format(now);
 
 /** Names that are letters keep their full name beside them: "HEAP (Home Energy Assistance Program)". */
 const named = (a: { id: string; name: string; longName?: string }): string =>
@@ -585,16 +648,17 @@ interface Declined {
 /**
  * The run judges eligibility at the bill's date so replays stay the same. Each row says
  * the date it was checked against. A season that ended since the bill is shown as closed
- * today; a season that opened since the bill is shown as opened, to be checked by the next
- * bill, never as offered, because only the checker can say who qualifies.
+ * today. A season that opened since the bill and is open today sits with the actions as
+ * "Open now", with its amounts and next step, and says the checker has not judged it yet.
  */
-export function actions(run: RunView, today: string = todayInOhio(), nextWithNote: string | null = null): string {
+export function actions(run: RunView, today: string, nextWithNote: string | null = null): string {
   const asOf = run.actionsAsOf;
   const key = tabKey(run);
   const openedSince = (a: ActionView): boolean =>
     a.status === "rejected" && a.window !== null && asOf < a.window.from && today >= a.window.from && today <= a.window.to;
   const stillNotOpen = (a: ActionView): boolean => a.status === "rejected" && a.window !== null && today < a.window.from;
   const offered = offeredNow(run, today);
+  const openNow = run.actions.filter(openedSince);
   const taken = run.actions.filter((a) => a.status === "already_taken");
   const checker = agentName("ReconciliationCritic");
   const declined: Declined[] = [
@@ -608,18 +672,8 @@ export function actions(run: RunView, today: string = todayInOhio(), nextWithNot
         today: `closed today, ${day(today)}`,
       })),
     ...run.actions
-      .filter((a) => a.status === "rejected")
-      .map((a) =>
-        openedSince(a)
-          ? {
-              id: a.id,
-              name: named(a),
-              reason: `Opened on ${day(a.window?.from ?? "")}, after this bill's date, and takes applications until ${day(a.window?.to ?? "")}. Your next bill checks whether you qualify.`,
-              agent: checker,
-              today: `open today, ${day(today)}`,
-            }
-          : { id: a.id, name: named(a), reason: a.reason, agent: checker, today: stillNotOpen(a) ? `still not open today, ${day(today)}` : null },
-      ),
+      .filter((a) => a.status === "rejected" && !openedSince(a))
+      .map((a) => ({ id: a.id, name: named(a), reason: a.reason, agent: checker, today: stillNotOpen(a) ? `still not open today, ${day(today)}` : null })),
     ...run.notOffered.map((x) => ({
       id: x.id,
       name: x.name,
@@ -628,9 +682,14 @@ export function actions(run: RunView, today: string = todayInOhio(), nextWithNot
       today: null,
     })),
   ];
-  const usesToday = declined.some((d) => d.today !== null);
+  const usesToday = openNow.length > 0 || declined.some((d) => d.today !== null);
   const lead = offered[0];
-  const side = [...offered.slice(1).map((a) => actionCard(a, false, asOf, nextWithNote, key)), ...taken.map(takenCard)];
+  const openCards = openNow.map((a) => openNowCard(a, asOf, today, key));
+  const side = [
+    ...offered.slice(1).map((a) => actionCard(a, false, asOf, nextWithNote, key)),
+    ...(lead ? [] : openCards),
+    ...taken.map(takenCard),
+  ];
   const foot = (d: Declined): string =>
     `<b>${esc(d.agent)}</b> checked this at the bill's date, ${esc(day(asOf))}${d.today ? `; ${esc(d.today)}` : ""}.`;
   return `
@@ -641,10 +700,14 @@ export function actions(run: RunView, today: string = todayInOhio(), nextWithNot
     ${
       lead
         ? `<div class="actions-grid${side.length ? "" : " single"}">
-            ${actionCard(lead, true, asOf, nextWithNote, key)}
+            ${
+              openCards.length
+                ? `<div class="act-side">${actionCard(lead, true, asOf, nextWithNote, key)}${openCards.join("")}</div>`
+                : actionCard(lead, true, asOf, nextWithNote, key)
+            }
             ${side.length ? `<div class="act-side">${side.join("")}</div>` : ""}
           </div>`
-        : `${taken.length ? `<div class="act-side solo">${taken.map(takenCard).join("")}</div>` : ""}<p class="notice plain">${icon("info")}<span>None of the programs we check fit this bill right now.</span></p>`
+        : `${side.length ? `<div class="act-side solo">${side.join("")}</div>` : ""}<p class="notice plain">${icon("info")}<span>None of the programs we check fit this bill right now.</span></p>`
     }
     ${
       declined.length
@@ -684,10 +747,8 @@ export function reading(page: PageView, on: boolean): string {
 export function memoryPanel(page: PageView, on: boolean): string {
   const notes = page.withMemory.notes;
   if (notes.length === 0) return "";
-  const back = page.withMemory.actions
-    .filter((a) => a.status === "already_taken" && page.withoutMemory.actions.find((b) => b.id === a.id)?.status === "recommended")
-    .map((a) => a.name);
-  const covers = `Turning this off reads the bill as if you had told us nothing: ${notes.length === 1 ? "the note is" : `all ${notes.length} notes are`} left out${back.length ? `, so ${esc(listOf(back))} ${back.length === 1 ? "is" : "are"} suggested again` : ""}.`;
+  const back = backWithout(page);
+  const covers = `The switch “Use what you told us”, under the headline, reads the bill as if you had told us nothing: ${notes.length === 1 ? "the note is" : `all ${notes.length} notes are`} left out${back.length ? `, so ${esc(listOf(back))} ${back.length === 1 ? "is" : "are"} suggested again` : ""}.`;
   return `
     <div class="note" role="group" aria-labelledby="note-h">
       <div class="note-quote">
@@ -696,9 +757,6 @@ export function memoryPanel(page: PageView, on: boolean): string {
         <p class="by">Kept in <b>${esc(agentName("HouseholdMemory"))}</b>. ${covers}</p>
       </div>
       <div class="note-switch">
-        <button class="switch" id="memSwitch" type="button" role="switch" aria-checked="${on}">
-          <span class="track" aria-hidden="true"></span><span class="switch-label">Use what you told us</span><span class="switch-state" aria-hidden="true">${on ? "On" : "Off"}</span>
-        </button>
         <p class="reading ${on ? "right" : "wrong"}">${icon(on ? "check-circle" : "warning")}<span>${reading(page, on)}</span></p>
       </div>
     </div>`;
@@ -817,7 +875,7 @@ export interface PanelState {
 }
 
 /** Everything under the tabs for one tab and switch position. */
-export function panel(page: PageView, tab: Tab, memoryOn: boolean, today: string = todayInOhio(), state: PanelState = { stripMore: false }): string {
+export function panel(page: PageView, tab: Tab, memoryOn: boolean, today: string, state: PanelState = { stripMore: false }): string {
   const second = tab === "second";
   const run = second ? (memoryOn ? page.withMemory : page.withoutMemory) : page.first;
   const key = tabKey(run);
@@ -825,7 +883,7 @@ export function panel(page: PageView, tab: Tab, memoryOn: boolean, today: string
   const nextWithNote = !second && page.withMemory.notes.length > 0 ? page.withMemory.tabLabel : null;
   return `
     <div class="wrap">
-      ${lead(run, page.rules, key, today)}
+      ${lead(run, page.rules, key, today, second ? memorySwitch(page, memoryOn) : "")}
       ${strip(run, page.weather, state.stripMore)}
       <div class="work">
         <section class="cascade-sec block" style="--b:4" aria-labelledby="casc-h">
