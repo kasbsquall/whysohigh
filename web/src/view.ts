@@ -57,12 +57,15 @@ export const tabKey = (run: RunView): string => month(run.to.end).toLowerCase();
 /** The dates a bill covers, for the tab. */
 export const tabWhen = (run: RunView): string => (run.to.start ? `${short(run.to.start)} to ${short(run.to.end)}` : "");
 
-/** Reads "#october" or "#october-check-4" into a tab and a check number; anything else picks nothing. */
-export function parseHash(hash: string, keys: Readonly<Record<Tab, string>>): { tab: Tab | null; check: number | null } {
-  const m = /^#([a-z]+)(?:-check-(\d+))?$/.exec(hash);
-  if (!m) return { tab: null, check: null };
+/**
+ * Reads "#october", "#october-check-4" or "#september-act-pipp_plus" into a tab and the id
+ * of the element to show on it; anything else picks nothing.
+ */
+export function parseHash(hash: string, keys: Readonly<Record<Tab, string>>): { tab: Tab | null; target: string | null } {
+  const m = /^#([a-z]+)(?:-(check-\d+|act-[a-z_]+))?$/.exec(hash);
+  if (!m) return { tab: null, target: null };
   const tab = (Object.keys(keys) as Tab[]).find((t) => keys[t] === m[1]) ?? null;
-  return { tab, check: tab && m[2] ? Number(m[2]) : null };
+  return { tab, target: tab && m[2] ? `${m[1]}-${m[2]}` : null };
 }
 
 // ---------- Lead ----------
@@ -82,17 +85,50 @@ function doubleChecked(run: RunView, key: string): string {
   return `<p class="notice">${icon("seal-check")}<span>We double-checked this. ${why} <a href="#${key}-check-${i + 1}">See check ${i + 1}</a>.</span></p>`;
 }
 
-function lead(run: RunView, rules: DemoRules, key: string): string {
+/** Where the sample bill template prints "Total amount due", in the image's own pixels. */
+const TOTAL_RING = { cx: 768, cy: 391, rx: 54, ry: 22 } as const;
+const BILL_W = 850;
+const BILL_H = 560;
+
+/** The bill the household sent, small, with its total circled; it opens full size. */
+function billThumb(run: RunView): string {
+  if (!run.billImage) return "";
+  const src = `/${esc(run.billImage)}`;
+  return `
+    <figure class="bill-thumb block" style="--b:2">
+      <button type="button" class="thumb-btn" id="billOpen" aria-haspopup="dialog" aria-controls="billDialog">
+        <svg viewBox="0 0 ${BILL_W} ${BILL_H}" aria-hidden="true" focusable="false"><image href="${src}" width="${BILL_W}" height="${BILL_H}"></image><ellipse class="ring" cx="${TOTAL_RING.cx}" cy="${TOTAL_RING.cy}" rx="${TOTAL_RING.rx}" ry="${TOTAL_RING.ry}"></ellipse></svg>
+        <span class="thumb-tag">Sample</span>
+        <span class="sr-only">: open the picture of your ${esc(run.to.label)} full size</span>
+      </button>
+      <figcaption>Your ${esc(run.to.label)}, total ${usd(run.to.usd)} circled. <span class="open">${icon("arrows-out-simple")}Open it full size</span></figcaption>
+    </figure>`;
+}
+
+export function billDialog(run: RunView): string {
+  if (!run.billImage) return "";
+  const when = run.to.start ? ` for ${day(run.to.start)} to ${day(run.to.end)}` : "";
+  return `
+    <dialog id="billDialog" class="bill-dialog" aria-labelledby="billDlgH">
+      <div class="dlg-head">
+        <h2 id="billDlgH">Your ${esc(run.to.label)}, a sample</h2>
+        <button type="button" class="btn line" id="billClose">${icon("x")}Close</button>
+      </div>
+      <img src="/${esc(run.billImage)}" width="${BILL_W}" height="${BILL_H}" loading="lazy" alt="Your ${esc(run.to.label)}, a sample statement${esc(when)}: ${esc(kwh(run.to.kwh))}, total amount due ${usd(run.to.usd)}.">
+    </dialog>`;
+}
+
+function lead(run: RunView, rules: DemoRules, key: string, today: string): string {
   const dir = run.changeUsd < 0 ? "down" : "up";
   const conf = run.confidence;
+  const higher = conf?.fitted ? "Higher, from your own bills" : `Higher, once we have ${rules.minBillsToFit} of your bills`;
   const meter = conf
-    ? `<aside class="confidence block" style="--b:1" aria-labelledby="conf-h">
+    ? `<div class="confidence" role="group" aria-labelledby="conf-h">
         <h2 id="conf-h">${icon("gauge")}How sure we are</h2>
         <div class="meter" aria-hidden="true"><span class="on"></span><span${conf.fitted ? ' class="on"' : ""}></span></div>
-        <p class="meter-labels"><span${conf.fitted ? "" : ' class="is"'}>Low</span><span${conf.fitted ? ' class="is"' : ""}>Higher, from your own bills</span></p>
+        <p class="meter-labels"><span${conf.fitted ? "" : ' class="is"'}>Low</span><span${conf.fitted ? ' class="is"' : ""}>${esc(higher)}</span></p>
         <p class="conf-why">${esc(conf.reason)}</p>
-        ${conf.fitted ? "" : `<p class="conf-rule">It goes higher once we have ${rules.minBillsToFit} of your earlier bills to learn from.</p>`}
-      </aside>`
+      </div>`
     : "";
   const bill = (b: BillEnd, cls: string): string =>
     `<div class="bill-line ${cls}"><dt><b>${esc(b.label)}</b><span>${esc(range(b))}</span></dt><dd class="amt num">${usd(b.usd)}</dd></div>`;
@@ -101,14 +137,18 @@ function lead(run: RunView, rules: DemoRules, key: string): string {
       <div class="lead-main block" style="--b:0">
         <h1 class="headline" tabindex="-1"><span class="hl-line">Your bill went ${dir}</span>
           <span class="big ${dir}">${icon(dir === "up" ? "arrow-up" : "arrow-down", "dir")}<span class="num">${usd(Math.abs(run.changeUsd))}</span></span></h1>
+        <div class="why-row"><p class="why">Here is why.</p>${doubleChecked(run, key)}${nextStepLine(run, today, key)}</div>
+      </div>
+      <div class="lead-side block" style="--b:1">
         <div class="bills-wrap">
           <dl class="bills">${bill(run.from, "then")}${bill(run.to, "now")}</dl>
           <p class="unit-note">kWh means kilowatt-hours, the unit your meter counts.</p>
         </div>
-        <div class="why-row"><p class="why">Here is why.</p>${doubleChecked(run, key)}</div>
+        ${meter}
       </div>
-      ${meter}
-    </div>`;
+      ${billThumb(run)}
+    </div>
+    ${billDialog(run)}`;
 }
 
 // ---------- Weather chart ----------
@@ -126,12 +166,13 @@ const tempStep = (meanF: number): number => TEMP_STEPS.findIndex(([limit]) => me
 const pct = (n: number): string => `${n.toFixed(2)}%`;
 
 /** What the chart's readout says before anyone picks a day. */
-export const stripHint = (s: StripView | null, touch: boolean): string => {
-  const how = touch ? "Tap a day for its high and low." : "Point at a day for its high and low.";
-  return s?.hottest ? `Hottest day: ${short(s.hottest.date)}, ${s.hottest.tmaxF}°F. ${how}` : how;
-};
+export const stripHint = (touch: boolean): string => (touch ? "Tap a day for its high and low." : "Point at a day for its high and low.");
 
-/** The compact weather chart under the headline, with its reading guide one click away. */
+/** Words for one day, as the readout and the slider say them. */
+export const dayText = (s: StripView, d: StripView["days"][number]): string =>
+  `${day(d.date)}: high ${d.tmaxF}°F, low ${d.tminF}°F, average ${d.meanF.toFixed(1)}°F. In the ${s.brackets[d.bill].label}.`;
+
+/** The weather chart under the headline: one bar a day, each bill's average and hottest day labelled on it. */
 export function strip(run: RunView, weather: DemoWeather, more: boolean): string {
   const s = stripView(run, weather);
   if (!s) return "";
@@ -139,6 +180,7 @@ export function strip(run: RunView, weather: DemoWeather, more: boolean): string
   const y = (t: number): number => ((t - s.lowF) / (s.highF - s.lowF)) * 100;
   const split = s.days.findIndex((d) => d.bill === 1);
   const at = split < 0 ? n : split;
+  const span = (i: 0 | 1): { left: number; width: number } => (i === 0 ? { left: 0, width: (at / n) * 100 } : { left: (at / n) * 100, width: ((n - at) / n) * 100 });
   const hasBase = 65 > s.lowF && 65 < s.highF;
   const axis = [
     `<span style="bottom:100%">${s.highF}°F</span>`,
@@ -149,48 +191,74 @@ export function strip(run: RunView, weather: DemoWeather, more: boolean): string
   const bars = s.days
     .map(
       (d, i) =>
-        `<span class="day${d === hot ? " hot" : ""}" data-date="${d.date}" data-hi="${d.tmaxF}" data-lo="${d.tminF}" data-bill="${esc(s.brackets[d.bill].label)}"><span class="bar t${tempStep(d.meanF)}" style="--i:${i};bottom:${pct(y(d.tminF))};height:${pct(Math.max(y(d.tmaxF) - y(d.tminF), 2))}"></span></span>`,
+        `<span class="day${d === hot ? " hot" : ""}" data-text="${esc(dayText(s, d))}"><span class="bar t${tempStep(d.meanF)}" style="--i:${i};bottom:${pct(y(d.tminF))};height:${pct(Math.max(y(d.tmaxF) - y(d.tminF), 2))}"></span></span>`,
     )
     .join("");
   const noted = s.brackets.findIndex((b) => b.noted);
-  const notedBand =
-    noted >= 0 ? `<div class="noted-band" style="left:${pct(noted === 0 ? 0 : (at / n) * 100)};width:${pct(((noted === 0 ? at : n - at) / n) * 100)}"></div>` : "";
+  const notedBand = noted === 0 || noted === 1 ? `<div class="noted-band" style="left:${pct(span(noted).left)};width:${pct(span(noted).width)}"></div>` : "";
+  const hotX = hot ? ((s.days.indexOf(hot) + 0.5) / n) * 100 : 0;
+  // Each average is a line across its bill, labelled above the bars at the bill's start, or
+  // at its end when the hottest-day label would sit on the start.
+  const avgs = s.brackets
+    .map((b, i) => {
+      if (b.avgF === null) return "";
+      const { left, width } = span(i as 0 | 1);
+      const atEnd = hot !== null && hotX >= left && hotX - left < 25;
+      return `<div class="avg${atEnd ? " end" : ""}" style="left:${pct(left)};width:${pct(width)};bottom:${pct(y(b.avgF))};--up:${(100 - y(b.avgF)).toFixed(2)}"><span>Average ${b.avgF.toFixed(1)}°F</span></div>`;
+    })
+    .join("");
+  const hotLabel = hot
+    ? `<p class="hot-label${hotX > 75 ? " end" : hotX < 25 ? " start" : ""}" style="left:${pct(hotX)}" aria-hidden="true">Hottest day: ${esc(short(hot.date))}, ${hot.tmaxF}°F</p>`
+    : "";
   const first = s.days[0];
   const last = s.days[n - 1];
   const legend = TEMP_STEPS.map(([, label], i) => `<li><span class="sw t${i + 1}"></span>${label}</li>`).join("");
   const needs = s.brackets
     .map(
       (b) =>
-        `<li><b>${esc(b.label)}</b>, ${esc(short(b.start))} to ${esc(short(b.end))}, ${b.days} days${b.drawn < b.days ? ` (${b.drawn} with readings)` : ""}.${b.need ? ` ${esc(b.need)}.` : ""}${b.noted ? ` Not a normal month, from your note.` : ""}</li>`,
+        `<li><b>${esc(b.label)}</b>, ${esc(short(b.start))} to ${esc(short(b.end))}, ${b.days} days${b.drawn < b.days ? ` (${b.drawn} with readings)` : ""}${b.avgF === null ? "" : `, average ${b.avgF.toFixed(1)}°F`}.${b.need ? ` ${esc(b.need)}.` : ""}${b.noted ? ` Not a normal month, from your note.` : ""}</li>`,
     )
     .join("");
+  const summary = [
+    ...s.brackets.map((b) => (b.avgF === null ? "" : `${b.label} averaged ${b.avgF.toFixed(1)}°F.`)),
+    hot ? `The hottest day was ${day(hot.date)}, at ${hot.tmaxF}°F.` : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
   return `
-    <section class="strip block" style="--b:2" id="strip" aria-labelledby="strip-h">
-      <div class="strip-head">
+    <section class="strip block" style="--b:3" id="strip" aria-labelledby="strip-h">
+      <div class="strip-side">
         <h2 id="strip-h">${icon("cloud-sun")}Columbus weather, day by day</h2>
-        <p class="readout" id="readout">${esc(stripHint(s, false))}</p>
+        <p class="strip-sum">${esc(summary)}</p>
+        <p class="readout" id="readout">${esc(stripHint(false))}</p>
+        <span class="mini-scale" aria-hidden="true"><span>cooler</span><span class="sw t1"></span><span class="sw t2"></span><span class="sw t3"></span><span class="sw t4"></span><span class="sw t5"></span><span class="sw t6"></span><span>hotter</span></span>
         <div class="strip-tools">
-          <span class="mini-scale" aria-hidden="true"><span>cooler</span><span class="sw t1"></span><span class="sw t2"></span><span class="sw t3"></span><span class="sw t4"></span><span class="sw t5"></span><span class="sw t6"></span><span>hotter</span></span>
-          <button type="button" class="clear-btn" id="clearShade" hidden>${icon("x")}Clear the shading</button>
           <button type="button" class="more-btn" id="stripMore" aria-expanded="${more}" aria-controls="strip-more">${icon("info")}How to read this chart</button>
+          <button type="button" class="clear-btn" id="clearShade" hidden>${icon("x")}Clear the shading</button>
         </div>
       </div>
-      <div class="plot-wrap">
-        <div class="yaxis" aria-hidden="true">${axis}</div>
-        <div class="plot" role="slider" tabindex="0" aria-label="Daily temperatures in Columbus, ${esc(short(first.date))} to ${esc(short(last.date))}, ${first.date.slice(0, 4)}. Each bar runs from the day's low to its high." aria-valuemin="1" aria-valuemax="${n}" aria-valuenow="1" aria-valuetext="${esc(stripHint(s, false))}">
-          ${notedBand}
-          <div class="band" style="left:0;width:${pct((at / n) * 100)}"></div>
-          <div class="band" style="left:${pct((at / n) * 100)};right:0"></div>
-          ${hasBase ? `<div class="base-line" style="bottom:${pct(y(65))}"></div>` : ""}
-          <div class="days">${bars}</div>
+      <div class="strip-chart">
+        <div class="plot-wrap">
+          <div class="yaxis" aria-hidden="true"><div class="yaxis-in">${axis}</div></div>
+          <div class="plot" role="slider" tabindex="0" aria-label="Daily temperatures in Columbus, ${esc(short(first.date))} to ${esc(short(last.date))}, ${first.date.slice(0, 4)}. Each bar runs from the day's low to its high." aria-valuemin="1" aria-valuemax="${n}" aria-valuenow="1" aria-valuetext="${esc(stripHint(false))}">
+            ${hotLabel}
+            <div class="plot-in">
+              ${notedBand}
+              <div class="band" style="left:0;width:${pct(span(0).width)}"></div>
+              <div class="band" style="left:${pct(span(1).left)};right:0"></div>
+              ${hasBase ? `<div class="base-line" style="bottom:${pct(y(65))}"></div>` : ""}
+              <div class="days">${bars}</div>
+              ${avgs}
+            </div>
+          </div>
         </div>
+        <div class="brackets" style="grid-template-columns:${at}fr ${n - at}fr">${s.brackets
+          .map((b) => `<p class="bracket${b.noted ? " noted" : ""}"><b>${esc(b.label)}</b> <span>${esc(short(b.start))} to ${esc(short(b.end))}</span>${b.noted ? `<span class="nb-note">, not a normal month</span>` : ""}</p>`)
+          .join("")}</div>
       </div>
-      <div class="brackets" style="grid-template-columns:${at}fr ${n - at}fr">${s.brackets
-        .map((b) => `<p class="bracket${b.noted ? " noted" : ""}"><b>${esc(b.label)}</b> <span>${esc(short(b.start))} to ${esc(short(b.end))}</span>${b.noted ? `<span class="nb-note">, not a normal month</span>` : ""}</p>`)
-        .join("")}</div>
       <div class="strip-more" id="strip-more"${more ? "" : " hidden"}>
         <div class="legend"><p>Bar color is the day's average temperature, in °F:</p><ol>${legend}</ol></div>
-        <p>${hasBase ? "The dashed line is 65°F, the base for degree days. " : ""}A degree day measures how much heating or cooling a day needs: a day averaging 75°F has 10 cooling degree days.</p>
+        <p>${hasBase ? "The dashed line is 65°F, the base for degree days. " : ""}The solid line across each bill is its average temperature. A degree day measures how much heating or cooling a day needs: a day averaging 75°F has 10 cooling degree days.</p>
         <ul class="needs">${needs}</ul>
         <p class="strip-foot">${icon(AGENT_ICONS.WeatherAnalyst)}<span><b>${esc(agentName("WeatherAnalyst"))}</b>, from the official daily weather records for Columbus airport. Where they come from is under “Where the numbers come from”.</span></p>
       </div>
@@ -246,6 +314,40 @@ function causeRow(c: CauseView, before: number, after: number, scale: Scale, i: 
     </tr>`;
 }
 
+/** Short names for the phone chart, which has room for a word or two per row. */
+const SHORT: Readonly<Record<CauseView["key"], string>> = {
+  price: "Price",
+  one_off: "Not repeated",
+  days: "Days",
+  weather: "Weather",
+  usage: "Your own use",
+  unexplained: "Not explained",
+};
+
+/** The running total as one chart, for narrow screens where a bar per table row falls apart. */
+function bridgeChart(run: RunView, scale: Scale): string {
+  let total = run.from.usd;
+  const rows = [
+    `<li class="bm-bill"><span class="bm-l">${esc(run.from.label)}</span><span class="bm-t"><span class="mark" style="left:${pct(scale.x(run.from.usd))}"></span></span><span class="bm-v num">${usd(run.from.usd)}</span></li>`,
+    ...run.causes.map((c) => {
+      const before = total;
+      total = Math.round((total + c.usd) * 100) / 100;
+      const tone = c.usd > 0 ? "up" : c.usd < 0 ? "down" : "zero";
+      const seg =
+        tone === "zero"
+          ? `<span class="seg zero" style="left:${pct(scale.x(total))}"></span>`
+          : `<span class="seg ${tone}" style="left:${pct(scale.x(Math.min(before, total)))};width:${pct(Math.abs(scale.x(total) - scale.x(before)))}"></span>`;
+      return `<li><span class="bm-l">${esc(SHORT[c.key])}</span><span class="bm-t">${seg}</span><span class="bm-v num ${tone}">${usd(c.usd, true)}</span></li>`;
+    }),
+    `<li class="bm-bill"><span class="bm-l">${esc(run.to.label)}</span><span class="bm-t"><span class="mark" style="left:${pct(scale.x(run.to.usd))}"></span></span><span class="bm-v num">${usd(run.to.usd)}</span></li>`,
+  ];
+  return `
+    <figure class="bridge-mini" aria-hidden="true">
+      <ol>${rows.join("")}</ol>
+      <figcaption><span>${money(scale.lo)}</span><span>Running total</span><span>${money(scale.hi)}</span></figcaption>
+    </figure>`;
+}
+
 export function cascade(run: RunView): string {
   if (run.skipped) {
     return `<p class="notice plain">${icon("warning")}<span>We could not split this change: ${esc(run.skipped)}</span></p>`;
@@ -259,7 +361,7 @@ export function cascade(run: RunView): string {
   });
   const lo = money(scale.lo);
   const hi = money(scale.hi);
-  return `
+  return `${bridgeChart(run, scale)}
     <table class="cascade" id="cascade">
       <caption><span class="cap">${icon("arrows-horizontal")}<span>The running-total bars go from ${lo} on the left to ${hi} on the right, not from $0, so each change shows at a size you can read.</span></span></caption>
       <thead><tr>
@@ -388,7 +490,7 @@ function noteForm(nextWithNote: string | null): string {
     </form>`;
 }
 
-function actionCard(a: ActionView, primary: boolean, asOf: string, nextWithNote: string | null): string {
+function actionCard(a: ActionView, primary: boolean, asOf: string, nextWithNote: string | null, key: string): string {
   const amt = amountText(a);
   const step = a.nextStep;
   const rules = a.source.startsWith("https://")
@@ -399,7 +501,7 @@ function actionCard(a: ActionView, primary: boolean, asOf: string, nextWithNote:
       ? `<b>${esc(agentName("ReconciliationCritic"))}</b>: anyone can add a note; it has no income or date rules. A saved note is kept in <b>${esc(agentName("HouseholdMemory"))}</b>.`
       : `<b>${esc(agentName("ReconciliationCritic"))}</b>: fits the program rules at this bill's date, ${esc(day(asOf))}.${rules}`;
   return `
-    <article class="act${primary ? " primary" : ""}">
+    <article class="act${primary ? " primary" : ""}" id="${key}-act-${a.id}" tabindex="-1">
       <h3>${icon(ACTION_ICONS[a.id] ?? "check")}${esc(a.name)}</h3>
       ${a.longName && a.longName !== a.name ? `<p class="full">${esc(a.longName)}</p>` : ""}
       <p class="body">${esc(a.why)}</p>
@@ -433,12 +535,51 @@ function takenCard(a: ActionView): string {
 /** Today's date in Columbus, YYYY-MM-DD. */
 export const todayInOhio = (): string => new Intl.DateTimeFormat("en-CA", { timeZone: "America/New_York" }).format(new Date());
 
+/** Names that are letters keep their full name beside them: "HEAP (Home Energy Assistance Program)". */
+const named = (a: { id: string; name: string; longName?: string }): string =>
+  a.longName && a.longName !== a.name && a.name.length <= 5 ? `${a.name} (${a.longName})` : a.name;
+
+/** A season that ended since the bill's date is closed today, whatever the bill's date said. */
+const closedNow = (a: ActionView, today: string): boolean => a.status === "recommended" && a.window !== null && today > a.window.to;
+
+/** The actions the page offers today, in the planner's order. */
+export const offeredNow = (run: RunView, today: string): ActionView[] => run.actions.filter((a) => a.status === "recommended" && !closedNow(a, today));
+
+/** One sentence that says what an action could do, from its amount. */
+export function actionPitch(a: ActionView): string {
+  const amt = a.amount;
+  const name = named(a);
+  if (!amt) return `${name}.`;
+  switch (amt.kind) {
+    case "monthly":
+      return `${name} could make your bill about ${money(amt.usd)} a month, instead of this bill's ${usd(amt.insteadOfUsd)}.`;
+    case "range":
+      return `${name} could take ${money(amt.minUsd)} to ${money(amt.maxUsd)} off your bill, one time this heating season${amt.withPipp ? ", after PIPP Plus is approved" : ""}.`;
+    case "up_to":
+      return `${name} could pay up to ${money(amt.usd)} toward your bill.`;
+    case "disputed":
+      return `${name}: ${usd(amt.usd)} of this bill is in question.`;
+    case "share_of_change":
+      return `${name}: ${usd(amt.usd)} of the change came from your own use.`;
+  }
+}
+
+/** The first thing to do, under "Here is why.", linked to its card further down. */
+export function nextStepLine(run: RunView, today: string, key: string): string {
+  const a = offeredNow(run, today)[0];
+  if (!a) return "";
+  const how = a.id === "usage_note" ? "See how" : "See how to apply";
+  return `<p class="next-up">${icon("arrow-circle-down")}<span><b>Next step:</b> ${esc(actionPitch(a))} <a href="#${key}-act-${a.id}">${how}</a></span></p>`;
+}
+
 interface Declined {
   readonly id: string;
   readonly name: string;
   readonly reason: string;
-  /** Which date the row was checked against, said in full. */
-  readonly when: string;
+  /** Who checked the row; shown in bold, like every agent name. */
+  readonly agent: string;
+  /** What today's date changes, when it changes something. */
+  readonly today: string | null;
 }
 
 /**
@@ -449,22 +590,23 @@ interface Declined {
  */
 export function actions(run: RunView, today: string = todayInOhio(), nextWithNote: string | null = null): string {
   const asOf = run.actionsAsOf;
-  const closedNow = (a: ActionView): boolean => a.status === "recommended" && a.window !== null && today > a.window.to;
+  const key = tabKey(run);
   const openedSince = (a: ActionView): boolean =>
     a.status === "rejected" && a.window !== null && asOf < a.window.from && today >= a.window.from && today <= a.window.to;
   const stillNotOpen = (a: ActionView): boolean => a.status === "rejected" && a.window !== null && today < a.window.from;
-  const offered = run.actions.filter((a) => a.status === "recommended" && !closedNow(a));
+  const offered = offeredNow(run, today);
   const taken = run.actions.filter((a) => a.status === "already_taken");
-  const named = (a: { id: string; name: string; longName?: string }): string =>
-    a.longName && a.longName !== a.name && a.name.length <= 5 ? `${a.name} (${a.longName})` : a.name;
-  const billDate = `Checked by ${agentName("ReconciliationCritic").toLowerCase()} at this bill's date, ${day(asOf)}`;
+  const checker = agentName("ReconciliationCritic");
   const declined: Declined[] = [
-    ...run.actions.filter(closedNow).map((a) => ({
-      id: a.id,
-      name: named(a),
-      reason: `Closed on ${day(a.window?.to ?? "")}, so you cannot apply now; ask about next season.`,
-      when: `Checked against today's date, ${day(today)}`,
-    })),
+    ...run.actions
+      .filter((a) => closedNow(a, today))
+      .map((a) => ({
+        id: a.id,
+        name: named(a),
+        reason: `Closed on ${day(a.window?.to ?? "")}, so you cannot apply now; ask about next season.`,
+        agent: checker,
+        today: `closed today, ${day(today)}`,
+      })),
     ...run.actions
       .filter((a) => a.status === "rejected")
       .map((a) =>
@@ -473,25 +615,24 @@ export function actions(run: RunView, today: string = todayInOhio(), nextWithNot
               id: a.id,
               name: named(a),
               reason: `Opened on ${day(a.window?.from ?? "")}, after this bill's date, and takes applications until ${day(a.window?.to ?? "")}. Your next bill checks whether you qualify.`,
-              when: `Not open at this bill's date, ${day(asOf)}; checked against today's date, ${day(today)}`,
+              agent: checker,
+              today: `open today, ${day(today)}`,
             }
-          : {
-              id: a.id,
-              name: named(a),
-              reason: a.reason,
-              when: stillNotOpen(a) ? `${billDate}; still not open today, ${day(today)}` : billDate,
-            },
+          : { id: a.id, name: named(a), reason: a.reason, agent: checker, today: stillNotOpen(a) ? `still not open today, ${day(today)}` : null },
       ),
     ...run.notOffered.map((x) => ({
       id: x.id,
       name: x.name,
       reason: `${SPELLED[x.id] ? `${SPELLED[x.id]} ` : ""}${x.reason}`,
-      when: `Looked at by ${agentName("ActionPlanner").toLowerCase()} for this bill, ${day(asOf)}`,
+      agent: agentName("ActionPlanner"),
+      today: null,
     })),
   ];
-  const usesToday = declined.some((d) => d.when.includes("today"));
+  const usesToday = declined.some((d) => d.today !== null);
   const lead = offered[0];
-  const side = [...offered.slice(1).map((a) => actionCard(a, false, asOf, nextWithNote)), ...taken.map(takenCard)];
+  const side = [...offered.slice(1).map((a) => actionCard(a, false, asOf, nextWithNote, key)), ...taken.map(takenCard)];
+  const foot = (d: Declined): string =>
+    `<b>${esc(d.agent)}</b> checked this at the bill's date, ${esc(day(asOf))}${d.today ? `; ${esc(d.today)}` : ""}.`;
   return `
     <div class="sec-head">
       <h2 id="act-h">What you can do about this bill</h2>
@@ -500,7 +641,7 @@ export function actions(run: RunView, today: string = todayInOhio(), nextWithNot
     ${
       lead
         ? `<div class="actions-grid${side.length ? "" : " single"}">
-            ${actionCard(lead, true, asOf, nextWithNote)}
+            ${actionCard(lead, true, asOf, nextWithNote, key)}
             ${side.length ? `<div class="act-side">${side.join("")}</div>` : ""}
           </div>`
         : `${taken.length ? `<div class="act-side solo">${taken.map(takenCard).join("")}</div>` : ""}<p class="notice plain">${icon("info")}<span>None of the programs we check fit this bill right now.</span></p>`
@@ -508,10 +649,7 @@ export function actions(run: RunView, today: string = todayInOhio(), nextWithNot
     ${
       declined.length
         ? `<div class="notoffered"><h3>Looked at and not offered (${declined.length})</h3><ul>${declined
-            .map(
-              (d) =>
-                `<li>${icon(DECLINED_ICONS[d.id] ?? "x-circle")}<div><b>${esc(d.name)}</b><p>${esc(d.reason)}</p><small>${esc(d.when)}.</small></div></li>`,
-            )
+            .map((d) => `<li>${icon(DECLINED_ICONS[d.id] ?? "x-circle")}<div><b>${esc(d.name)}</b><p>${esc(d.reason)}</p><small>${foot(d)}</small></div></li>`)
             .join("")}</ul></div>`
         : ""
     }`;
@@ -687,7 +825,7 @@ export function panel(page: PageView, tab: Tab, memoryOn: boolean, today: string
   const nextWithNote = !second && page.withMemory.notes.length > 0 ? page.withMemory.tabLabel : null;
   return `
     <div class="wrap">
-      ${lead(run, page.rules, key)}
+      ${lead(run, page.rules, key, today)}
       ${strip(run, page.weather, state.stripMore)}
       <div class="work">
         <section class="cascade-sec block" style="--b:4" aria-labelledby="casc-h">
@@ -720,7 +858,7 @@ export function skeleton(): string {
 /** A failure in words for the household; the original error goes to the console, never to the page. */
 export function friendlyError(error: unknown): string {
   return error instanceof TypeError
-    ? "We could not reach Why So High. Check your internet connection and try again."
+    ? "We could not load your bills. Check your internet connection and try again."
     : "Something went wrong on our side. Please try again in a minute.";
 }
 

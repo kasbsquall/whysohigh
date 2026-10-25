@@ -3,7 +3,7 @@
 
 import "./styles.css";
 import type { DemoPayload } from "../../src/demo.ts";
-import { pageView, stripView, type PageView } from "./model.ts";
+import { pageView, type PageView } from "./model.ts";
 import { failure, friendlyError, panel, parseHash, skeleton, stripHint, tabKey, tabWhen, type Tab } from "./view.ts";
 
 interface State {
@@ -45,12 +45,7 @@ function wireStrip(root: HTMLElement, hint: string): void {
   plot.setAttribute("aria-valuetext", hint);
   const cells = [...plot.querySelectorAll<HTMLElement>(".day")];
   let current = -1;
-  const text = (cell: HTMLElement): string => {
-    const { date = "", hi = "", lo = "", bill = "" } = cell.dataset;
-    const [y, m, d] = date.split("-").map(Number);
-    const when = new Date(Date.UTC(y, m - 1, d)).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "UTC" });
-    return `${when}: high ${hi}°F, low ${lo}°F, average ${((Number(hi) + Number(lo)) / 2).toFixed(1)}°F. In the ${bill}.`;
-  };
+  const text = (cell: HTMLElement): string => cell.dataset.text ?? "";
   const show = (i: number, speak: boolean): void => {
     const k = Math.max(0, Math.min(cells.length - 1, i));
     if (k !== current) {
@@ -150,6 +145,30 @@ function wireWeather(root: HTMLElement, pinnedBefore: boolean): void {
   if (pinnedBefore) pin(true);
 }
 
+/** Tells the sticky checks column its own height, so a tall column can still show its end. */
+function wireSticky(root: HTMLElement): void {
+  const sec = root.querySelector<HTMLElement>(".checks-sec");
+  if (!sec) return;
+  const set = (): void => sec.style.setProperty("--ck-h", `${sec.offsetHeight}px`);
+  new ResizeObserver(set).observe(sec);
+  set();
+}
+
+/** The bill picture opens full size in a dialog; closing it gives focus back to the picture. */
+function wireBill(root: HTMLElement): void {
+  const open = root.querySelector<HTMLButtonElement>("#billOpen");
+  const dialog = root.querySelector<HTMLDialogElement>("#billDialog");
+  const close = root.querySelector<HTMLButtonElement>("#billClose");
+  if (!open || !dialog || !close) return;
+  open.addEventListener("click", () => dialog.showModal());
+  close.addEventListener("click", () => dialog.close());
+  // A click on the dimmed backdrop lands on the dialog itself, outside its content.
+  dialog.addEventListener("click", (e) => {
+    if (e.target === dialog) dialog.close();
+  });
+  dialog.addEventListener("close", () => open.focus());
+}
+
 /** The note form under "Tell us what changed at home". Nothing is saved; the page says so. */
 function wireNote(root: HTMLElement): void {
   const open = root.querySelector<HTMLButtonElement>("#noteOpen");
@@ -181,7 +200,7 @@ function setTabsReady(ready: boolean): void {
   for (const t of TABS) $(`tab-${t}`).setAttribute("aria-disabled", String(!ready));
 }
 
-function render(page: PageView, state: State, onToggle: () => void, opts: { keep?: boolean; focusSwitch?: boolean; scrollTo?: number | null } = {}): void {
+function render(page: PageView, state: State, onToggle: () => void, opts: { keep?: boolean; focusSwitch?: boolean; scrollTo?: string | null } = {}): void {
   const second = state.tab === "second";
   const root = $("panel");
   // Kept across a re-render of the same bill: open disclosures, the weather shading, the chart guide.
@@ -210,16 +229,17 @@ function render(page: PageView, state: State, onToggle: () => void, opts: { keep
     const d = root.querySelector<HTMLDetailsElement>(`details[data-key="${k}"]`);
     if (d) d.open = true;
   }
-  const run = second ? (state.memoryOn ? page.withMemory : page.withoutMemory) : page.first;
-  wireStrip(root, stripHint(stripView(run, page.weather), touchOnly()));
+  wireStrip(root, stripHint(touchOnly()));
   wireStripMore(root, () => undefined);
   wireWeather(root, pinned);
   wireNote(root);
+  wireBill(root);
+  wireSticky(root);
   const sw = document.getElementById("memSwitch");
   sw?.addEventListener("click", onToggle);
   if (opts.focusSwitch) sw?.focus();
   if (opts.scrollTo) {
-    const target = document.getElementById(`${tabKey(run)}-check-${opts.scrollTo}`);
+    const target = document.getElementById(opts.scrollTo);
     target?.scrollIntoView({ block: "start" });
     target?.focus({ preventScroll: true });
   }
@@ -271,10 +291,10 @@ async function load(): Promise<void> {
   window.addEventListener("hashchange", () => {
     const k = keys();
     if (!k || !page) return;
-    const { tab, check } = parseHash(location.hash, k);
+    const { tab, target } = parseHash(location.hash, k);
     if (tab && tab !== state.tab) {
       state = { ...state, tab };
-      render(page, state, toggle, { scrollTo: check });
+      render(page, state, toggle, { scrollTo: target });
     }
   });
 
@@ -288,11 +308,11 @@ async function load(): Promise<void> {
       if (body === null || !res.ok || "error" in body) throw new Error(`The demo service answered ${res.status}.`);
       page = pageView(body);
       const k = keys();
-      const wanted = k ? parseHash(pendingHash, k) : { tab: null, check: null };
+      const wanted = k ? parseHash(pendingHash, k) : { tab: null, target: null };
       pendingHash = "";
       if (wanted.tab) state = { ...state, tab: wanted.tab };
-      render(page, state, toggle, { scrollTo: wanted.check });
-      if (!wanted.check) writeHash();
+      render(page, state, toggle, { scrollTo: wanted.target });
+      if (!wanted.target) writeHash();
       if (fromRetry) document.querySelector<HTMLElement>(".headline")?.focus();
     } catch (error: unknown) {
       // The page never shows the raw message; it stays in the console for whoever runs the demo.

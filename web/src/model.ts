@@ -126,6 +126,8 @@ export interface RunView {
   readonly actionsAsOf: string;
   readonly actions: readonly ActionView[];
   readonly notOffered: readonly { readonly id: string; readonly name: string; readonly reason: string }[];
+  /** The bill image this run read, as the page serves it, when the server says which. */
+  readonly billImage: string | null;
 }
 
 const TARIFF_AGENT = "RateAnalyst";
@@ -326,7 +328,11 @@ export function runView(run: DemoPayloadRun, household: Household, minBillsToFit
         reason:
           d.model.source === "ohio_prior"
             ? `You have fewer than ${minBillsToFit} earlier bills with us, so we compared your use with typical Ohio homes` +
-              (calibratedTo ? `, adjusted to your ${billName(calibratedTo.periodEnd)}.` : ".")
+              (!calibratedTo
+                ? "."
+                : note && calibratedTo.periodEnd !== from.end
+                  ? `, adjusted to your ${billName(calibratedTo.periodEnd)}, the last normal month, because of your note of ${day(note.at)}.`
+                  : `, adjusted to your ${billName(calibratedTo.periodEnd)}.`)
             : `Worked out from your own ${d.model.billsUsed} earlier bills.`,
       }
     : null;
@@ -365,6 +371,7 @@ export function runView(run: DemoPayloadRun, household: Household, minBillsToFit
       };
     }),
     notOffered: run.actions.notProposed.map((n) => ({ id: n.id, name: n.name, reason: plainReason(n.reason) })),
+    billImage: run.billImage ?? null,
   };
 }
 
@@ -412,6 +419,8 @@ export interface StripBracket {
   readonly need: string | null;
   /** The household's note says this bill was not a normal month. */
   readonly noted: boolean;
+  /** Average of the drawn days' mean temperatures, one decimal, in °F; null when no day was drawn. */
+  readonly avgF: number | null;
 }
 
 export interface StripView {
@@ -445,15 +454,19 @@ export function stripView(run: RunView, weather: DemoWeather): StripView | null 
     const v = (n: WeatherNeed | null): number => (n ? (k === "cooling" ? n.coolingPerDay : n.heatingPerDay) : 0);
     return Math.max(v(from), v(to)) >= 0.5;
   });
-  const bracket = (end: BillEnd, i: 0 | 1, need: WeatherNeed | null): StripBracket => ({
-    label: end.label,
-    start: end.start,
-    end: end.end,
-    days: end.days,
-    drawn: days.filter((d) => d.bill === i).length,
-    need: needText(need, kinds),
-    noted: run.note !== null && run.note.periodStart === end.start,
-  });
+  const bracket = (end: BillEnd, i: 0 | 1, need: WeatherNeed | null): StripBracket => {
+    const drawn = days.filter((d) => d.bill === i);
+    return {
+      label: end.label,
+      start: end.start,
+      end: end.end,
+      days: end.days,
+      drawn: drawn.length,
+      need: needText(need, kinds),
+      noted: run.note !== null && run.note.periodStart === end.start,
+      avgF: drawn.length ? Math.round((drawn.reduce((sum, d) => sum + d.meanF, 0) / drawn.length) * 10) / 10 : null,
+    };
+  };
   const hottest = days.reduce<StripDay | null>((best, d) => (best === null || d.tmaxF > best.tmaxF ? d : best), null);
   const lows = days.map((d) => d.tminF);
   const highs = days.map((d) => d.tmaxF);

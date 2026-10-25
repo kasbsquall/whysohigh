@@ -5,7 +5,7 @@
 // 4. Month 2 again without memory, to show what memory changed.
 
 import { readFileSync, rmSync } from "node:fs";
-import { join } from "node:path";
+import { basename, join } from "node:path";
 import { openHouseholdMemory, parseNote, rememberNote } from "./memory/householdMemory.ts";
 import { parseHouseholdFacts, PROGRAMS, type HouseholdFacts, type Program, type ProgramId } from "./actions/programs.ts";
 import { CLOSURE_FLOOR_USD, CLOSURE_SHARE, MAX_SLOPE_VS_OHIO, RECOMPUTE_TOLERANCE } from "./agents/critic.ts";
@@ -77,7 +77,15 @@ export interface DemoPayloadRun extends Omit<DemoRun, "logFile"> {
   readonly trace: readonly LogEvent[];
   /** Most the critic lets stay unexplained for this change (check 2). */
   readonly closureAllowedUsd: number | null;
+  /** Where the page serves the bill image this run read, under web/public. */
+  readonly billImage: string | null;
 }
+
+/** The bill image of a demo step, as the page serves it: "bills/linda-2026-09.png". */
+export const billImageOf = (step: DemoStep["name"]): string | null => {
+  const found = DEMO_STEPS.find((s) => s.name === step);
+  return found ? `bills/${basename(found.bill)}` : null;
+};
 
 /** The thresholds that decide what the critic accepts, so the page can show them. */
 export interface DemoRules {
@@ -148,6 +156,7 @@ export async function demoPayload(runs: readonly DemoRun[], runtime: Runtime = c
         trace: readTrace(logFile),
         programs: Object.fromEntries(run.actions.actions.map((a) => [a.id, PROGRAMS[a.id]])),
         closureAllowedUsd: change === undefined ? null : Math.max(Math.abs(change) * CLOSURE_SHARE, CLOSURE_FLOOR_USD),
+        billImage: billImageOf(run.step),
       };
     }),
     weather,
