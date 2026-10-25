@@ -11,8 +11,9 @@ import { parseHouseholdFacts, PROGRAMS, type HouseholdFacts, type Program, type 
 import { CLOSURE_FLOOR_USD, CLOSURE_SHARE, MAX_SLOPE_VS_OHIO, RECOMPUTE_TOLERANCE } from "./agents/critic.ts";
 import { MIN_BILLS_TO_FIT } from "./agents/weatherAnalyst.ts";
 import type { LogEvent } from "./log.ts";
+import { readDemoWeather, type DemoWeather } from "./demoWeather.ts";
 import { explain, ORCHESTRATOR, type Explanation } from "./pipeline.ts";
-import { createRuntime } from "./runtime.ts";
+import { createRuntime, type Runtime } from "./runtime.ts";
 
 export const DEMO_HOUSEHOLD = "linda";
 
@@ -87,11 +88,12 @@ export interface DemoRules {
   readonly maxSlopeVsOhio: number;
 }
 
-/** What the web page receives: the household, the critic's thresholds and the three runs with their traces. */
+/** What the web page receives: the household, the critic's thresholds, the three runs with their traces, and the daily weather of the bills shown. */
 export interface DemoPayload {
   readonly household: Household;
   readonly rules: DemoRules;
   readonly runs: readonly DemoPayloadRun[];
+  readonly weather: DemoWeather;
 }
 
 /** Only the events and fields the page shows; paths, retries and token counts stay on the server. */
@@ -106,7 +108,21 @@ const readTrace = (file: string): LogEvent[] =>
     .filter((e) => TRACE_STEPS.has(e.step))
     .map((e) => Object.fromEntries(TRACE_FIELDS.filter((k) => e[k] !== undefined).map((k) => [k, e[k]])) as unknown as LogEvent);
 
-export function demoPayload(runs: readonly DemoRun[]): DemoPayload {
+/** The days the page draws: from the earliest bill compared to the end of the latest bill. */
+export function demoWeatherRange(runs: readonly DemoRun[]): { readonly from: string; readonly toExclusive: string } {
+  if (runs.length === 0) throw new Error("The demo has no runs to draw weather for.");
+  const starts = runs.map((r) => {
+    const { start } = r.rate.estimate.period;
+    return r.history.find((b) => b.periodEnd === start)?.periodStart ?? start;
+  });
+  const ends = runs.map((r) => r.rate.estimate.period.end);
+  return { from: starts.reduce((a, b) => (b < a ? b : a)), toExclusive: ends.reduce((a, b) => (b > a ? b : a)) };
+}
+
+export async function demoPayload(runs: readonly DemoRun[], runtime: Runtime = createRuntime()): Promise<DemoPayload> {
+  runtime.logger.log({ agent: ORCHESTRATOR, step: "start", demoStep: "weather-strip", sampleMode: runtime.config.sampleMode });
+  const weather = await readDemoWeather(runtime.sql, demoWeatherRange(runs), runtime.config.sampleMode);
+  runtime.logger.log({ agent: ORCHESTRATOR, step: "done", days: weather.days.length, source: weather.source, logFile: runtime.logger.file });
   const raw = JSON.parse(readFileSync("samples/linda.json", "utf8")) as Household;
   return {
     household: {
@@ -134,5 +150,6 @@ export function demoPayload(runs: readonly DemoRun[]): DemoPayload {
         closureAllowedUsd: change === undefined ? null : Math.max(Math.abs(change) * CLOSURE_SHARE, CLOSURE_FLOOR_USD),
       };
     }),
+    weather,
   };
 }

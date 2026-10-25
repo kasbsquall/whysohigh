@@ -4,6 +4,7 @@
 import type { ActionAmount, ActionStatus } from "../../src/agents/actionPlanner.ts";
 import type { ComponentKey } from "../../src/agents/usageAnalyst.ts";
 import type { DemoPayload, DemoPayloadRun, DemoRules, Household } from "../../src/demo.ts";
+import type { DemoWeather } from "../../src/demoWeather.ts";
 import type { LogEvent } from "../../src/log.ts";
 import type { BillWeather } from "../../src/zetaris/queries.ts";
 import { day, month, plainReason, usd } from "./format.ts";
@@ -15,6 +16,37 @@ export interface BillEnd {
   readonly days: number;
   readonly kwh: number;
   readonly usd: number;
+}
+
+/** The names the page uses for each agent; the code names stay in the evidence. */
+export const AGENT_NAMES: Readonly<Record<string, string>> = {
+  BillReader: "Bill reader",
+  RateAnalyst: "Price check",
+  WeatherAnalyst: "Weather check",
+  UsageAnalyst: "Usage math",
+  ReconciliationCritic: "The checker",
+  HouseholdMemory: "Your notes",
+  ActionPlanner: "Help finder",
+};
+
+/** What each agent does, in one line, for the evidence table. */
+export const AGENT_JOBS: Readonly<Record<string, string>> = {
+  BillReader: "Reads the bill photo (Nemotron vision model)",
+  RateAnalyst: "Recomputes the bill from AEP Ohio's published tariff",
+  WeatherAnalyst: "Columbus daily weather from NOAA, as degree days",
+  UsageAnalyst: "Splits days, weather and your own use",
+  ReconciliationCritic: "Recomputes everything and sends work back when it does not add up",
+  HouseholdMemory: "What the household told us, used on the next bill",
+  ActionPlanner: "Programs the household qualifies for today, with amounts",
+};
+
+/** The plain name of an agent, or the code name when it has none. */
+export const agentName = (code: string): string => AGENT_NAMES[code] ?? code;
+
+/** Heating and cooling a bill needed, in degree days a day. */
+export interface WeatherNeed {
+  readonly coolingPerDay: number;
+  readonly heatingPerDay: number;
 }
 
 export interface CauseView {
@@ -78,13 +110,15 @@ export interface RunView {
   readonly confidence: { readonly level: string; readonly reason: string } | null;
   readonly checks: readonly CheckView[];
   readonly evidence: Evidence;
-  readonly note: { readonly text: string; readonly at: string } | null;
+  readonly note: { readonly text: string; readonly at: string; readonly periodStart: string } | null;
+  /** Degree days a day for the last bill and this bill, when the run has them. */
+  readonly needs: { readonly from: WeatherNeed | null; readonly to: WeatherNeed | null };
   /** Why the run could not split the change, when it could not. */
   readonly skipped: string | null;
   /** The date check 4 judged eligibility at. */
   readonly actionsAsOf: string;
   readonly actions: readonly ActionView[];
-  readonly notOffered: readonly { readonly name: string; readonly reason: string }[];
+  readonly notOffered: readonly { readonly id: string; readonly name: string; readonly reason: string }[];
 }
 
 const TARIFF_AGENT = "RateAnalyst";
@@ -157,7 +191,7 @@ function describeCause(key: ComponentKey, amount: number, ctx: CauseContext): Om
         detail: `${ctx.to.days} days this time, ${ctx.from.days} last time.`,
         role: "WORKED OUT BY",
         agent: "UsageAnalyst",
-        source: "Bill dates read by BillReader",
+        source: `Bill dates read by ${agentName("BillReader")}`,
       };
     }
     case "weather":
@@ -263,7 +297,9 @@ export function runView(run: DemoPayloadRun, household: Household, minBillsToFit
     usd: run.bill.previous?.totalUsd ?? d?.fromUsd ?? 0,
   };
   const recalled = run.memory?.notes.find((n) => n.kind === "one_off") ?? null;
-  const note = recalled ? { text: recalled.text, at: recalled.at } : null;
+  const note = recalled ? { text: recalled.text, at: recalled.at, periodStart: recalled.periodStart } : null;
+  const need = (b: BillWeather | undefined): WeatherNeed | null =>
+    b && b.days > 0 ? { coolingPerDay: b.cdd / b.days, heatingPerDay: b.hdd / b.days } : null;
   const ctx: CauseContext = { run, from, to, previous, current, allowedUsd: run.closureAllowedUsd, note };
   const largest = Math.max(...(d?.components ?? []).map((c) => Math.abs(c.usd)), 0.01);
   const causes = (d?.components ?? []).map((c) => ({
@@ -297,6 +333,7 @@ export function runView(run: DemoPayloadRun, household: Household, minBillsToFit
     checks: checksFromTrace(run.trace),
     evidence: evidenceFrom(run),
     note,
+    needs: { from: need(previous), to: need(current) },
     skipped: run.change.skipped,
     actionsAsOf: run.actions.asOf,
     actions: run.actions.actions.map((a) => {
@@ -315,13 +352,14 @@ export function runView(run: DemoPayloadRun, household: Household, minBillsToFit
         window: program?.window ?? null,
       };
     }),
-    notOffered: run.actions.notProposed.map((n) => ({ name: n.name, reason: plainReason(n.reason) })),
+    notOffered: run.actions.notProposed.map((n) => ({ id: n.id, name: n.name, reason: plainReason(n.reason) })),
   };
 }
 
 export interface PageView {
   readonly household: Household;
   readonly rules: DemoRules;
+  readonly weather: DemoWeather;
   readonly first: RunView;
   readonly withMemory: RunView;
   readonly withoutMemory: RunView;
@@ -336,8 +374,82 @@ export function pageView(payload: DemoPayload): PageView {
   return {
     household: payload.household,
     rules: payload.rules,
+    weather: payload.weather,
     first: byStep("month1"),
     withMemory: byStep("month2"),
     withoutMemory: byStep("month2-without-memory"),
+  };
+}
+
+export interface StripDay {
+  readonly date: string;
+  readonly tmaxF: number;
+  readonly tminF: number;
+  readonly meanF: number;
+  /** 0 for the last bill, 1 for this bill. */
+  readonly bill: 0 | 1;
+}
+
+export interface StripBracket {
+  readonly label: string;
+  readonly start: string;
+  readonly end: string;
+  readonly days: number;
+  /** Count of days drawn, which is fewer than the bill's days when NOAA has gaps. */
+  readonly drawn: number;
+  readonly need: string | null;
+  /** The household's note says this bill was not a normal month. */
+  readonly noted: boolean;
+}
+
+export interface StripView {
+  readonly days: readonly StripDay[];
+  readonly brackets: readonly [StripBracket, StripBracket];
+  readonly hottest: StripDay | null;
+  /** Axis ends in F, on whole tens around the data. */
+  readonly lowF: number;
+  readonly highF: number;
+}
+
+const round1s = (n: number): string => n.toFixed(1);
+
+/** "Cooling need 9.8, heating need 0.0 degree days a day", only for the kinds either bill needed. */
+function needText(need: WeatherNeed | null, kinds: readonly ("cooling" | "heating")[]): string | null {
+  if (!need || kinds.length === 0) return null;
+  const parts = kinds.map((k) => `${k} need ${round1s(k === "cooling" ? need.coolingPerDay : need.heatingPerDay)}`);
+  const text = `${parts.join(", ")} degree days a day`;
+  return text.charAt(0).toUpperCase() + text.slice(1);
+}
+
+/** The days of the two bills compared, from the weather the server read, for the strip. */
+export function stripView(run: RunView, weather: DemoWeather): StripView | null {
+  if (!run.from.start) return null;
+  const days: StripDay[] = weather.days
+    .filter((d) => d.date >= run.from.start && d.date < run.to.end)
+    .map((d) => ({ ...d, meanF: (d.tmaxF + d.tminF) / 2, bill: d.date < run.to.start ? 0 : 1 }));
+  if (days.length === 0) return null;
+  const { from, to } = run.needs;
+  const kinds = (["cooling", "heating"] as const).filter((k) => {
+    const v = (n: WeatherNeed | null): number => (n ? (k === "cooling" ? n.coolingPerDay : n.heatingPerDay) : 0);
+    return Math.max(v(from), v(to)) >= 0.5;
+  });
+  const bracket = (end: BillEnd, i: 0 | 1, need: WeatherNeed | null): StripBracket => ({
+    label: end.label,
+    start: end.start,
+    end: end.end,
+    days: end.days,
+    drawn: days.filter((d) => d.bill === i).length,
+    need: needText(need, kinds),
+    noted: run.note !== null && run.note.periodStart === end.start,
+  });
+  const hottest = days.reduce<StripDay | null>((best, d) => (best === null || d.tmaxF > best.tmaxF ? d : best), null);
+  const lows = days.map((d) => d.tminF);
+  const highs = days.map((d) => d.tmaxF);
+  return {
+    days,
+    brackets: [bracket(run.from, 0, from), bracket(run.to, 1, to)],
+    hottest,
+    lowF: Math.floor(Math.min(...lows) / 10) * 10,
+    highF: Math.ceil(Math.max(...highs) / 10) * 10,
   };
 }

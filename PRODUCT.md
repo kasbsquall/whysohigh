@@ -37,7 +37,8 @@ Each cause of the change (price, extra days, weather, usage, a one-off last mont
 - The change is split into price, one-off from the previous bill (when the household marked it), days, weather, usage and unexplained, in dollars and kWh.
 - Critic checks visible in the trace: bill recompute within 2%, closure under 5% of the change, weather model credibility, freshness of tariff and weather data. A rejection sends work back with a reason.
 - Confidence is low while the household has fewer than 6 earlier bills; the screen must say so.
-- Actions with dollar amounts (HEAP, PIPP Plus, AEP budget billing, PUCO complaint) are not built yet (block 7). Program amounts come only from docs/11-ohio-y-piezas.md and must be rechecked before showing.
+- Actions with dollar amounts (PIPP Plus, HEAP, crisis programs, AEP Average Monthly Payment, PUCO complaint) are built: each one is offered or not with its reason, checked at the bill's date. Program amounts come only from docs/11-ohio-y-piezas.md.
+- On screen, agents carry plain names (Bill reader, Price check, Weather check, Usage math, The checker, Your notes, Help finder); the internal names stay one step away, in the evidence, for judges.
 - SAMPLE_MODE replays recorded responses; the page must work in it with no credentials.
 
 ## Brand Commitments

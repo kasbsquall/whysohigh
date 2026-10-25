@@ -2,10 +2,11 @@ import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import type { DemoPayload } from "../src/demo.ts";
 import { esc, kwh, month, plainReason, short, usd } from "../web/src/format.ts";
-import { checksFromTrace, pageView } from "../web/src/model.ts";
-import { actions, memoryPanel } from "../web/src/view.ts";
+import { AGENT_NAMES, checksFromTrace, pageView, stripView } from "../web/src/model.ts";
+import { actions, memoryPanel, panel } from "../web/src/view.ts";
 
-// The sample-mode answer of GET /api/demo, saved on 22 Oct 2026.
+// The sample-mode answer of GET /api/demo, saved on 22 Oct 2026. Its weather field was
+// added on 24 Oct 2026 from the saved NOAA copy, which is what sample mode serves.
 const payload = JSON.parse(readFileSync("test/fixtures/demo-payload.json", "utf8")) as DemoPayload;
 
 describe("page formatting", () => {
@@ -51,6 +52,7 @@ describe("page view from the demo runs", () => {
     const sum = first.causes.reduce((s, c) => s + c.usd, 0);
     expect(Math.round((first.from.usd + sum) * 100) / 100).toBe(first.to.usd);
     expect(first.causes.map((c) => c.agent)).toEqual(["RateAnalyst", "UsageAnalyst", "WeatherAnalyst", "UsageAnalyst", "ReconciliationCritic"]);
+    expect(first.causes.find((c) => c.key === "days")?.source).toBe("Bill dates read by Bill reader");
     expect(first.confidence).toEqual({ level: "LOW", reason: "Linda has fewer than 6 earlier bills, so the weather share uses Ohio averages, calibrated to the August bill." });
   });
 
@@ -120,5 +122,86 @@ describe("page view from the demo runs", () => {
     expect(checks).toEqual([
       { accepted: true, title: "The data covers every day", text: "ok", about: "inputs", attempt: 1, stamp: null, sentBackTo: null },
     ]);
+  });
+});
+
+describe("the weather strip", () => {
+  const page = pageView(payload);
+
+  it("draws every day of the two bills from the weather the server sent, split where this bill starts", () => {
+    const strip = stripView(page.first, page.weather);
+    expect(strip).not.toBeNull();
+    if (!strip) return;
+    expect(strip.days).toHaveLength(29 + 33);
+    expect(strip.days[0].date).toBe("2026-07-16");
+    expect(strip.days.at(-1)?.date).toBe("2026-09-15");
+    expect(strip.days.findIndex((d) => d.bill === 1)).toBe(29);
+    expect(strip.brackets.map((b) => [b.label, b.days, b.drawn])).toEqual([
+      ["August bill", 29, 29],
+      ["September bill", 33, 33],
+    ]);
+    expect(strip.brackets.map((b) => b.need)).toEqual(["Cooling need 10.2 degree days a day", "Cooling need 9.8 degree days a day"]);
+  });
+
+  it("finds the hottest day in the data rather than taking it from the page", () => {
+    const inRange = page.weather.days.filter((d) => d.date >= "2026-07-16" && d.date < "2026-09-16");
+    expect(stripView(page.first, page.weather)?.hottest?.tmaxF).toBe(Math.max(...inRange.map((d) => d.tmaxF)));
+    const shifted = { ...page.weather, days: page.weather.days.map((d) => (d.date === "2026-08-01" ? { ...d, tmaxF: 120 } : d)) };
+    expect(stripView(page.first, shifted)?.hottest).toMatchObject({ date: "2026-08-01", tmaxF: 120 });
+  });
+
+  it("marks the bill the note set apart only when the note is used", () => {
+    const withNote = stripView(page.withMemory, page.weather);
+    expect(withNote?.brackets.map((b) => b.noted)).toEqual([true, false]);
+    expect(stripView(page.withoutMemory, page.weather)?.brackets.map((b) => b.noted)).toEqual([false, false]);
+    expect(withNote?.brackets[1].need).toBe("Cooling need 2.7, heating need 2.9 degree days a day");
+  });
+
+  it("says on the page how the weather was read", () => {
+    const html = panel(page, "first", true, "2026-10-24");
+    expect(html).toContain("NOAA daily records for station USW00014821");
+    expect(html).toContain("from a saved copy of the Zetaris NOAA table, because this is sample mode");
+    expect(html).toContain("Hottest: ");
+  });
+});
+
+describe("agent names on the page", () => {
+  const page = pageView(payload);
+  const CODE = /\b(BillReader|RateAnalyst|WeatherAnalyst|UsageAnalyst|ReconciliationCritic|HouseholdMemory|ActionPlanner)\b/;
+  const views = [
+    ["first", true],
+    ["second", true],
+    ["second", false],
+  ] as const;
+
+  it.each(views)("uses plain names outside the evidence and code names only inside it (%s tab, note %s)", (tab, on) => {
+    const html = panel(page, tab, on, "2026-10-24");
+    const at = html.indexOf('<section class="sec evidence');
+    expect(at).toBeGreaterThan(0);
+    const screen = html.slice(0, at);
+    const evidence = html.slice(at);
+    expect(screen).not.toMatch(CODE);
+    for (const name of ["Bill reader", "Price check", "Weather check", "Usage math", "The checker"]) expect(screen).toContain(name);
+    for (const [code, name] of Object.entries(AGENT_NAMES)) {
+      expect(evidence).toContain(`<code translate="no">${code}</code>`);
+      expect(evidence).toContain(name);
+    }
+  });
+
+  it("names Your notes and Help finder where they did the work", () => {
+    expect(panel(page, "second", true, "2026-10-24")).toContain("Your notes");
+    expect(panel(page, "first", true, "2026-10-24")).toContain("Looked at by Help finder");
+  });
+
+  it("says the checker sent the first answer back to Usage math, and labels the passes", () => {
+    const html = panel(page, "first", true, "2026-10-24");
+    expect(html).toContain("The checker rejected the first answer and sent it back to Usage math.");
+    expect(html).toContain("Sent back to Usage math to try again");
+    expect(html).toContain("Second pass, after Usage math tried again");
+    expect(html).not.toMatch(/VOID|VALIDATED/);
+  });
+
+  it("states that the running-total bars do not start at zero", () => {
+    expect(panel(page, "first", true, "2026-10-24")).toMatch(/The running-total bars start at \$\d+, not at \$0/);
   });
 });

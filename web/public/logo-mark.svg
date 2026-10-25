@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32" role="img" aria-label="Why So High">
+  <path d="M13.4 19.2V11.4H9.2L16 2.6l6.8 8.8h-4.2v7.8a6 6 0 1 1-5.2 0Z" fill="none" stroke="#09466f" stroke-width="2.1" stroke-linejoin="round"/>
+  <rect x="15" y="10.5" width="2" height="13" rx="1" fill="#df6c32"/>
+  <circle cx="16" cy="24.4" r="3.2" fill="#df6c32"/>
+  <path d="M21.6 15.4h3.2M21.6 19h2.4" stroke="#09466f" stroke-width="1.7" stroke-linecap="round"/>
+</svg>
