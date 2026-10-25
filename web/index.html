@@ -7,6 +7,7 @@
 <meta name="description" content="Snap your electricity bill. Why So High tells you why it went up and what you can do about it this month.">
 <meta name="theme-color" content="#09466f">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="preload" href="/fonts/public-sans-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preconnect" href="https://unpkg.com" crossorigin>
@@ -25,6 +26,7 @@
   </defs>
 </svg>
 
+<a class="skip" href="#page">Skip to the explanation</a>
 <header class="shell">
   <div class="wrap">
     <div class="shell-top">
@@ -32,18 +34,21 @@
         <svg aria-hidden="true" focusable="false"><use href="#mark"/></svg>
         <span class="brand-word">Why So High</span>
       </a>
-      <span class="household" id="household"><span class="sk-line on-dark" aria-hidden="true"></span><span class="sr-only">Loading the household</span></span>
-      <span class="sample"><i class="ph-light ph-flask" aria-hidden="true"></i>Sample bill (synthetic data)</span>
+      <span class="household" id="household"><span class="sk-line on-dark" aria-hidden="true"></span><span class="sr-only">Loading the household…</span></span>
+      <span class="sample"><i class="ph-light ph-flask" aria-hidden="true"></i>Sample bill, made-up data</span>
     </div>
     <div class="tabs" role="tablist" aria-label="Which bill">
-      <button class="tab" type="button" role="tab" id="tab-first" aria-selected="true" aria-controls="page"><i class="ph-light ph-file-text" aria-hidden="true"></i><span id="tab-first-label">First bill</span><span class="when" id="tab-first-when"></span></button>
-      <button class="tab" type="button" role="tab" id="tab-second" aria-selected="false" aria-controls="page" tabindex="-1"><i class="ph-light ph-file-text" aria-hidden="true"></i><span id="tab-second-label">Next bill</span><span class="when" id="tab-second-when"></span></button>
+      <button class="tab" type="button" role="tab" id="tab-first" aria-selected="true" aria-controls="page" aria-disabled="true"><i class="ph-light ph-file-text" aria-hidden="true"></i><span id="tab-first-label"><span class="sk-line on-dark tab-sk" aria-hidden="true"></span><span class="sr-only">First bill</span></span><span class="when" id="tab-first-when"></span></button>
+      <button class="tab" type="button" role="tab" id="tab-second" aria-selected="false" aria-controls="page" aria-disabled="true" tabindex="-1"><i class="ph-light ph-file-text" aria-hidden="true"></i><span id="tab-second-label"><span class="sk-line on-dark tab-sk" aria-hidden="true"></span><span class="sr-only">Next bill</span></span><span class="when" id="tab-second-when"></span></button>
     </div>
   </div>
 </header>
 
-<main id="page" role="tabpanel" aria-labelledby="tab-first" aria-busy="true" tabindex="-1">
-  <div id="panel"></div>
+<main>
+  <div id="page" role="tabpanel" aria-labelledby="tab-first" aria-busy="true">
+    <div id="panel"></div>
+  </div>
+  <div id="live" class="sr-only" aria-live="polite" aria-atomic="true"></div>
 </main>
 
 <footer class="foot">

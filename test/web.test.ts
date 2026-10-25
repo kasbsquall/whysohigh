@@ -1,12 +1,12 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import type { DemoPayload } from "../src/demo.ts";
-import { esc, kwh, month, plainReason, short, usd } from "../web/src/format.ts";
+import { esc, kwh, month, plainCheck, plainReason, short, usd } from "../web/src/format.ts";
 import { AGENT_NAMES, checksFromTrace, pageView, stripView } from "../web/src/model.ts";
-import { actions, memoryPanel, panel } from "../web/src/view.ts";
+import { actions, comparison, failure, friendlyError, memoryPanel, panel, parseHash, tabKey } from "../web/src/view.ts";
 
-// The sample-mode answer of GET /api/demo, saved on 22 Oct 2026. Its weather field was
-// added on 24 Oct 2026 from the saved NOAA copy, which is what sample mode serves.
+// The sample-mode answer of GET /api/demo, saved from the server on 24 Oct 2026, with the
+// daily weather the page draws (read from the saved NOAA copy, as sample mode does).
 const payload = JSON.parse(readFileSync("test/fixtures/demo-payload.json", "utf8")) as DemoPayload;
 
 describe("page formatting", () => {
@@ -53,7 +53,11 @@ describe("page view from the demo runs", () => {
     expect(Math.round((first.from.usd + sum) * 100) / 100).toBe(first.to.usd);
     expect(first.causes.map((c) => c.agent)).toEqual(["RateAnalyst", "UsageAnalyst", "WeatherAnalyst", "UsageAnalyst", "ReconciliationCritic"]);
     expect(first.causes.find((c) => c.key === "days")?.source).toBe("Bill dates read by Bill reader");
-    expect(first.confidence).toEqual({ level: "LOW", reason: "Linda has fewer than 6 earlier bills, so the weather share uses Ohio averages, calibrated to the August bill." });
+    expect(first.confidence).toEqual({
+      level: "LOW",
+      fitted: false,
+      reason: "You have fewer than 6 earlier bills with us, so we compared your use with typical Ohio homes, adjusted to your August bill.",
+    });
   });
 
   it("keeps the critic's rejection, who it went back to, and the re-issued pass", () => {
@@ -104,7 +108,8 @@ describe("page view from the demo runs", () => {
 
   it("shows a season that ended after the bill's date as closed today, with no call to action", () => {
     const html = actions(page.first, "2026-10-22");
-    expect(html).toContain("Closed on Sep 30. It was open on this bill&#39;s date, Sep 16; ask about next season.");
+    expect(html).toContain("Closed on Sep 30, 2026, so you cannot apply now; ask about next season.");
+    expect(html).toContain("Checked against today&#39;s date, Oct 22, 2026.");
     expect(html).not.toContain("ask for Summer Crisis help");
     expect(actions(page.first, "2026-09-20")).toContain("ask for Summer Crisis help");
   });
@@ -120,7 +125,7 @@ describe("page view from the demo runs", () => {
       { agent: "UsageAnalyst", step: "decomposition" },
     ]);
     expect(checks).toEqual([
-      { accepted: true, title: "The data covers every day", text: "ok", about: "inputs", attempt: 1, stamp: null, sentBackTo: null },
+      { accepted: true, title: "The data covers every day", text: "ok", detail: "ok", about: "inputs", attempt: 1, stamp: null, sentBackTo: null },
     ]);
   });
 });
@@ -159,9 +164,13 @@ describe("the weather strip", () => {
 
   it("says on the page how the weather was read", () => {
     const html = panel(page, "first", true, "2026-10-24");
-    expect(html).toContain("NOAA daily records for station USW00014821");
-    expect(html).toContain("from a saved copy of the Zetaris NOAA table, because this is sample mode");
-    expect(html).toContain("Hottest: ");
+    const at = html.indexOf('<section class="sec evidence');
+    // In plain words on the page; the station, Zetaris and sample mode wait in the evidence.
+    expect(html.slice(0, at)).toContain("from the official daily weather records for Columbus airport");
+    expect(html.slice(0, at)).not.toMatch(/USW00014821|Zetaris|sample mode|NOAA/);
+    expect(html.slice(at)).toContain("a saved copy of the same Zetaris NOAA table");
+    expect(html.slice(at)).toContain("read 92 days of weather, Jul 16, 2026 to Oct 15, 2026. The chart on this tab shows the 62 days of its two bills.");
+    expect(html).toContain("Hottest day: Sep 3, 97°F.");
   });
 });
 
@@ -190,18 +199,110 @@ describe("agent names on the page", () => {
 
   it("names Your notes and Help finder where they did the work", () => {
     expect(panel(page, "second", true, "2026-10-24")).toContain("Your notes");
-    expect(panel(page, "first", true, "2026-10-24")).toContain("Looked at by Help finder");
+    expect(panel(page, "first", true, "2026-10-24")).toContain("Looked at by help finder for this bill, Sep 16, 2026.");
+    expect(panel(page, "second", true, "2026-10-24")).toContain("<b>Your notes</b>: what you told us on Sep 25, 2026.");
+    expect(panel(page, "second", true, "2026-10-24")).not.toContain("Checked by <b>Your notes</b>");
   });
 
   it("says the checker sent the first answer back to Usage math, and labels the passes", () => {
     const html = panel(page, "first", true, "2026-10-24");
-    expect(html).toContain("The checker rejected the first answer and sent it back to Usage math.");
+    expect(html).toContain("We double-checked this. The first try left $12.60 unexplained, so Usage math worked it out again.");
+    expect(html).toContain('href="#september-check-4"');
+    expect(html).toContain('id="september-check-4"');
     expect(html).toContain("Sent back to Usage math to try again");
     expect(html).toContain("Second pass, after Usage math tried again");
     expect(html).not.toMatch(/VOID|VALIDATED/);
   });
 
   it("states that the running-total bars do not start at zero", () => {
-    expect(panel(page, "first", true, "2026-10-24")).toMatch(/The running-total bars start at \$\d+, not at \$0/);
+    const html = panel(page, "first", true, "2026-10-24");
+    expect(html).toContain("The running-total bars go from $165 on the left to $220 on the right, not from $0");
+    expect(html).toContain("Running total, from $165 to $220");
+  });
+});
+
+describe("round 2: amounts, dates, errors and the address bar", () => {
+  const page = pageView(payload);
+  const between = (html: string, from: string, to: string): string => html.slice(html.indexOf(from), html.indexOf(to, html.indexOf(from)));
+
+  it("A1: shows HEAP's reduced range as the big figure once PIPP Plus was applied for, in the same format as its text", () => {
+    const html = actions(page.withMemory, "2026-10-24");
+    const card = between(html, "ph-flame", "</article>");
+    expect(card).toContain('<span class="v num">$8 to $137</span>');
+    expect(card).toContain("once, for the heating season, once PIPP Plus is approved");
+    expect(card).toContain("$8 to $137 instead of $31 to $546");
+    expect(card).not.toContain("$8.00");
+    // Without the note PIPP Plus was not applied for, so the full range applies.
+    expect(actions(page.withoutMemory, "2026-10-24")).toContain(">$31 to $546</span>");
+  });
+
+  it("A2: every program row says the date it was checked against, and none says open and closed at once", () => {
+    const html = actions(page.first, "2026-10-24");
+    const rows = html.split("<li>").slice(1);
+    expect(rows).toHaveLength(5);
+    for (const row of rows) expect(row).toMatch(/<small>[^<]*(at this bill&#39;s date, Sep 16, 2026|today&#39;s date, Oct 24, 2026|for this bill, Sep 16, 2026)[^<]*\.<\/small>/);
+    const heap = rows.find((r) => r.includes("<b>HEAP"));
+    expect(heap).toContain("HEAP (Home Energy Assistance Program)");
+    expect(heap).toContain("Opened on Oct 1, 2026, after this bill&#39;s date, and takes applications until Apr 30, 2027.");
+    expect(heap).not.toContain("Not open yet");
+    const summer = rows.find((r) => r.includes("Summer Crisis"));
+    expect(summer).not.toMatch(/was open|is open/);
+    const winter = rows.find((r) => r.includes("Winter Crisis"));
+    expect(winter).toContain("still not open today, Oct 24, 2026");
+    expect(html).toContain("Checked at this bill's date, Sep 16, 2026, and against today's date, Oct 24, 2026");
+    // Before HEAP opened, the checker's own reason stands, and the row says it is still not open.
+    const early = actions(page.first, "2026-09-20");
+    expect(early).toContain("Not open yet: HEAP takes applications from Oct 1, 2026 to Apr 30, 2027.");
+    expect(early).toContain("still not open today, Sep 20, 2026");
+  });
+
+  it("A3: the error state shows friendly words only, never the browser's or the server's message", () => {
+    const network = friendlyError(new TypeError("Failed to fetch"));
+    expect(network).toBe("We could not reach Why So High. Check your internet connection and try again.");
+    const server = friendlyError(new Error("npm run serve crashed: ECONNREFUSED"));
+    expect(server).toBe("Something went wrong on our side. Please try again in a minute.");
+    for (const html of [failure(network), failure(server)]) {
+      expect(html).not.toMatch(/Failed to fetch|npm|ECONNREFUSED/);
+      expect(html).toContain('id="retry"');
+      expect(html).toContain('role="alert"');
+    }
+  });
+
+  it("keeps the bill in the address bar: #september, #october and #october-check-4", () => {
+    const keys = { first: tabKey(page.first), second: tabKey(page.withMemory) };
+    expect(keys).toEqual({ first: "september", second: "october" });
+    expect(parseHash("#october", keys)).toEqual({ tab: "second", check: null });
+    expect(parseHash("#october-check-4", keys)).toEqual({ tab: "second", check: 4 });
+    expect(parseHash("#september", keys)).toEqual({ tab: "first", check: null });
+    expect(parseHash("#check-4", keys)).toEqual({ tab: null, check: null });
+    expect(parseHash("#march", keys)).toEqual({ tab: null, check: null });
+    expect(parseHash("", keys)).toEqual({ tab: null, check: null });
+    expect(panel(page, "second", true, "2026-10-24")).toContain('href="#october-check-4"');
+  });
+
+  it("explains on the page what the switch covers and why the days row moves", () => {
+    const off = memoryPanel(page, false);
+    expect(off).toContain("Turning this off reads the bill as if you had told us nothing: all 2 notes are left out, so PIPP Plus is suggested again.");
+    expect(off).toContain("I applied for PIPP Plus on September 25.");
+    expect(comparison(page, true)).toContain("your note makes your August bill the normal month instead of your September bill");
+    expect(comparison(page, true)).toContain("Both readings end at $116.77, this bill's total.");
+  });
+
+  it("puts the checker's plain words on the page and its own words in the evidence", () => {
+    expect(plainCheck("Published tariff gives $217.42, billed $217.42 (0.0% apart).")).toBe(
+      "AEP Ohio's price list gives $217.42 for this use, and the bill says $217.42 (0.0% apart).",
+    );
+    const html = panel(page, "first", true, "2026-10-24");
+    const at = html.indexOf('<section class="sec evidence');
+    expect(html.slice(0, at)).toContain("your home uses about 13.3 kWh a day for things that do not depend on the weather");
+    expect(html.slice(0, at)).not.toContain("Ohio-average model");
+    expect(html.slice(at)).toContain("The Ohio-average model, calibrated by −2.59 kWh per day");
+  });
+
+  it("offers a note field that says plainly nothing is saved", () => {
+    const html = actions(page.first, "2026-10-24", "October bill");
+    expect(html).toContain('id="noteOpen"');
+    expect(html).toContain('<textarea id="noteText"');
+    expect(html).toContain("This demo does not save notes, so your next bill will not use what you write here. To see a note at work, open the October bill.");
   });
 });

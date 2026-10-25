@@ -126,7 +126,20 @@ describe("ActionPlanner", () => {
   it("warns that HEAP pays 75% less once the household has applied for PIPP Plus", () => {
     const taken = new Map([["pipp_plus" as const, { at: "2026-09-25", text: "I applied for PIPP Plus." }]]);
     const heap = propose(septemberInput({ taken })).proposed.find((a) => a.id === "heap");
-    expect(heap?.why).toContain("about 8.00 USD to 137.00 USD");
+    expect(heap?.why).toContain("8 USD to 137 USD instead of 31 USD to 546 USD");
+    // The figure shown is the range that applies, the reduced one.
+    expect(heap?.amount).toEqual({ kind: "range", minUsd: 8, maxUsd: 137, withPipp: true });
+    expect(propose(septemberInput()).proposed.find((a) => a.id === "heap")?.amount).toEqual({ kind: "range", minUsd: 31, maxUsd: 546 });
+  });
+
+  it("says plainly why no usage note is suggested when the household's own use went down", () => {
+    const base = septemberInput();
+    const d = base.change.decomposition;
+    if (!d) throw new Error("fixture has no decomposition");
+    const down = { ...d, components: d.components.map((c) => (c.key === "usage" ? { ...c, usd: -28.08 } : c)) };
+    const reason = propose({ ...base, change: { ...base.change, decomposition: down } }).notProposed.find((n) => n.id === "usage_note")?.reason;
+    expect(reason).toMatch(/^Your own use went down by 28\.08 USD, so there is nothing for a note to explain\./);
+    expect(reason).toMatch(/a quarter of the change, and at least 10 USD/);
   });
 
   it("does not suggest a usage note when the change was not fully explained", () => {

@@ -48,3 +48,23 @@ const ESCAPES: Readonly<Record<string, string>> = { "&": "&amp;", "<": "&lt;", "
 
 /** Escapes text for HTML. Everything from the server goes through this. */
 export const esc = (value: string | number): string => String(value).replace(/[&<>"']/g, (c) => ESCAPES[c]);
+
+/**
+ * The checker's reasons, already in dollars, in the words the page uses outside the
+ * evidence: the price list instead of "published tariff", the daily weather records
+ * instead of NOAA, typical Ohio homes instead of the Ohio prior. The words as the
+ * checker wrote them stay in the evidence.
+ */
+export const plainCheck = (reason: string): string =>
+  reason
+    .replace(/^Published tariff gives (\S+), billed (\S+) \(([^)]+) apart\)\.$/, "AEP Ohio's price list gives $1 for this use, and the bill says $2 ($3 apart).")
+    .replace(/^Published tariff and NOAA weather cover every day of the (\d+) bills compared\.$/, "The price list and the daily weather records cover every day of the $1 bills compared.")
+    .replace(
+      /^The Ohio-average model(?:, calibrated by [^,]+,)? has ([\d.]+) kWh per day of base use and slopes within (\d+) times the Ohio ones\.$/,
+      "The estimate is believable: your home uses about $1 kWh a day for things that do not depend on the weather, and reacts to heat and cold no more than $2 times as much as a typical Ohio home.",
+    )
+    .replace(
+      /^The fit on (\d+) bills(?:, calibrated by [^,]+,)? has ([\d.]+) kWh per day of base use and slopes within (\d+) times the Ohio ones\.$/,
+      "The estimate from your own $1 bills is believable: about $2 kWh a day for things that do not depend on the weather, and no more than $3 times a typical Ohio home's reaction to heat and cold.",
+    )
+    .replace("Usage was measured against Ohio averages, which may not fit this household.", "Your use was compared with typical Ohio homes, which may not fit your home.");

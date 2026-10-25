@@ -32,7 +32,13 @@ export const BUDGET_BILLING_MONTHS = 12;
 
 export type ActionAmount =
   | { readonly kind: "monthly"; readonly usd: number; readonly insteadOfUsd: number }
-  | { readonly kind: "range"; readonly minUsd: number; readonly maxUsd: number }
+  | {
+      readonly kind: "range";
+      readonly minUsd: number;
+      readonly maxUsd: number;
+      /** True when the range is already cut because the household applied for PIPP Plus. */
+      readonly withPipp?: boolean;
+    }
   | { readonly kind: "up_to"; readonly usd: number }
   | { readonly kind: "disputed"; readonly usd: number }
   | { readonly kind: "share_of_change"; readonly usd: number };
@@ -81,6 +87,7 @@ export interface PlannerInput {
 }
 
 const dollars = (n: number): string => `${n.toFixed(2)} USD`;
+const wholeDollars = (n: number): string => `${n} USD`;
 
 export function pippMonthlyUsd(facts: HouseholdFacts | null): number | null {
   if (typeof facts?.annualIncomeUsd !== "number" || !Number.isFinite(facts.annualIncomeUsd) || facts.annualIncomeUsd < 0) return null;
@@ -103,13 +110,17 @@ export function propose(input: PlannerInput): { proposed: ProposedAction[]; notP
     amount: pipp === null ? null : { kind: "monthly", usd: pipp, insteadOfUsd: input.billTotalUsd },
   });
   const pippApplied = input.taken.has("pipp_plus");
-  const cut = (n: number): string => dollars(Math.round(n * (1 - HEAP_PIPP_CUT)));
+  const cut = (n: number): number => Math.round(n * (1 - HEAP_PIPP_CUT));
+  const pct = `${Math.round(HEAP_PIPP_CUT * 100)}%`;
+  // With PIPP Plus applied for, the reduced range is the one that applies, so it is the amount shown.
   proposed.push({
     id: "heap",
     why: pippApplied
-      ? `A one-time credit on your bill for the heating season. Once PIPP Plus is approved, HEAP pays 75% less: about ${cut(HEAP_MIN_USD)} to ${cut(HEAP_MAX_USD)}.`
-      : "A one-time credit on your bill for the heating season. Households also on PIPP Plus get 75% less.",
-    amount: { kind: "range", minUsd: HEAP_MIN_USD, maxUsd: HEAP_MAX_USD },
+      ? `A one-time credit on your bill for the heating season. Because you applied for PIPP Plus, HEAP pays ${pct} less once PIPP Plus is approved: ${wholeDollars(cut(HEAP_MIN_USD))} to ${wholeDollars(cut(HEAP_MAX_USD))} instead of ${wholeDollars(HEAP_MIN_USD)} to ${wholeDollars(HEAP_MAX_USD)}.`
+      : `A one-time credit on your bill for the heating season. Households also on PIPP Plus get ${pct} less.`,
+    amount: pippApplied
+      ? { kind: "range", minUsd: cut(HEAP_MIN_USD), maxUsd: cut(HEAP_MAX_USD), withPipp: true }
+      : { kind: "range", minUsd: HEAP_MIN_USD, maxUsd: HEAP_MAX_USD },
   });
   proposed.push({ id: "summer_crisis", why: "Help paying a summer bill, for households with someone 60 or older or a disconnection notice.", amount: { kind: "up_to", usd: SUMMER_CRISIS_MAX_USD } });
   proposed.push({ id: "winter_crisis", why: "Help to keep or restore service in winter, once there is a disconnection notice.", amount: { kind: "up_to", usd: WINTER_CRISIS_MAX_USD } });
@@ -150,10 +161,14 @@ export function propose(input: PlannerInput): { proposed: ProposedAction[]; notP
         amount: { kind: "share_of_change", usd: usage },
       });
     } else {
+      const rule = `We suggest a note only when your own use adds at least ${dollars(needed)} (a quarter of the change, and at least ${wholeDollars(USAGE_FLOOR_FOR_NOTE_USD)}).`;
       notProposed.push({
         id: "usage_note",
         name: PROGRAMS.usage_note.name,
-        reason: `Your own use changed this bill by ${dollars(usage)}; a note is suggested only when it adds at least ${dollars(needed)}.`,
+        reason:
+          usage <= 0
+            ? `Your own use went down by ${dollars(-usage)}, so there is nothing for a note to explain. ${rule}`
+            : `Your own use added ${dollars(usage)}, less than the amount that calls for a note. ${rule}`,
       });
     }
   }

@@ -1,9 +1,10 @@
-// Loads Linda's runs from the server and keeps the page in step with the tab and the memory switch.
+// Loads Linda's runs from the server and keeps the page in step with the tab, the
+// memory switch and the address bar (#september, #october, #october-check-4).
 
 import "./styles.css";
 import type { DemoPayload } from "../../src/demo.ts";
-import { pageView, type PageView } from "./model.ts";
-import { failure, panel, skeleton, tabWhen, type Tab } from "./view.ts";
+import { pageView, stripView, type PageView } from "./model.ts";
+import { failure, friendlyError, panel, parseHash, skeleton, stripHint, tabKey, tabWhen, type Tab } from "./view.ts";
 
 interface State {
   readonly tab: Tab;
@@ -19,157 +20,292 @@ const $ = (id: string): HTMLElement => {
 };
 
 const reducedMotion = (): boolean => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+const touchOnly = (): boolean => window.matchMedia("(hover: none)").matches;
 
-/** Reading one day of the weather strip, by pointer or by arrow keys. */
-function wireStrip(root: HTMLElement): void {
+/** The one live region on the page; it stays put across renders so readers announce it. */
+const announce = (text: string): void => {
+  const live = $("live");
+  live.textContent = "";
+  window.setTimeout(() => {
+    live.textContent = text;
+  }, 30);
+};
+
+const inView = (el: Element): boolean => {
+  const r = el.getBoundingClientRect();
+  return r.bottom > 0 && r.top < window.innerHeight;
+};
+
+/** Reading one day of the weather chart: pointer, tap, or the slider keys. */
+function wireStrip(root: HTMLElement, hint: string): void {
   const plot = root.querySelector<HTMLElement>(".plot");
-  const out = root.querySelector<HTMLElement>("#readout span");
+  const out = root.querySelector<HTMLElement>("#readout");
   if (!plot || !out) return;
+  out.textContent = hint;
+  plot.setAttribute("aria-valuetext", hint);
   const cells = [...plot.querySelectorAll<HTMLElement>(".day")];
   let current = -1;
-  const show = (i: number): void => {
-    const k = Math.max(0, Math.min(cells.length - 1, i));
-    if (k === current) return;
-    cells[current]?.classList.remove("is-on");
-    current = k;
-    const cell = cells[k];
-    cell.classList.add("is-on");
+  const text = (cell: HTMLElement): string => {
     const { date = "", hi = "", lo = "", bill = "" } = cell.dataset;
     const [y, m, d] = date.split("-").map(Number);
     const when = new Date(Date.UTC(y, m - 1, d)).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "UTC" });
-    const mean = ((Number(hi) + Number(lo)) / 2).toFixed(1);
-    const text = `${when}: high ${hi}°F, low ${lo}°F, average ${mean}°F. In the ${bill}.`;
-    out.textContent = text;
-    plot.setAttribute("aria-valuenow", String(k + 1));
-    plot.setAttribute("aria-valuetext", text);
+    return `${when}: high ${hi}°F, low ${lo}°F, average ${((Number(hi) + Number(lo)) / 2).toFixed(1)}°F. In the ${bill}.`;
   };
-  plot.addEventListener("pointermove", (e) => {
+  const show = (i: number, speak: boolean): void => {
+    const k = Math.max(0, Math.min(cells.length - 1, i));
+    if (k !== current) {
+      cells[current]?.classList.remove("is-on");
+      current = k;
+      cells[k].classList.add("is-on");
+      out.textContent = text(cells[k]);
+      plot.setAttribute("aria-valuenow", String(k + 1));
+      plot.setAttribute("aria-valuetext", out.textContent);
+    }
+    // The slider announces its own value; a tap or click goes through the live region.
+    if (speak) announce(out.textContent ?? "");
+  };
+  const at = (e: PointerEvent): number => {
     const r = plot.getBoundingClientRect();
-    show(Math.floor(((e.clientX - r.left) / r.width) * cells.length));
-  });
-  plot.addEventListener("pointerleave", () => {
-    if (document.activeElement === plot) return;
+    return Math.floor(((e.clientX - r.left) / r.width) * cells.length);
+  };
+  const reset = (): void => {
     cells[current]?.classList.remove("is-on");
     current = -1;
+    out.textContent = hint;
+  };
+  plot.addEventListener("pointermove", (e) => {
+    if (e.pointerType === "mouse") show(at(e), false);
+  });
+  plot.addEventListener("pointerdown", (e) => show(at(e), true));
+  plot.addEventListener("pointerleave", (e) => {
+    if (e.pointerType === "mouse" && document.activeElement !== plot) reset();
+  });
+  plot.addEventListener("blur", reset);
+  // Keyboard users learn the keys when they reach the chart, so the resting line stays short.
+  plot.addEventListener("focus", () => {
+    if (current < 0) out.textContent = "Use the left and right arrow keys to move from day to day.";
   });
   plot.addEventListener("keydown", (e) => {
     const steps: Readonly<Record<string, number>> = { ArrowRight: 1, ArrowUp: 1, ArrowLeft: -1, ArrowDown: -1, PageUp: 7, PageDown: -7 };
     let next: number | null = null;
-    if (e.key in steps) next = (current < 0 ? 0 : current + steps[e.key]);
+    if (e.key in steps) next = current < 0 ? 0 : current + steps[e.key];
     else if (e.key === "Home") next = 0;
     else if (e.key === "End") next = cells.length - 1;
     if (next === null) return;
     e.preventDefault();
-    show(next);
-  });
-  plot.addEventListener("focus", () => {
-    if (current < 0) show(0);
+    show(next, false);
   });
 }
 
-/** The weather row lights up both bills on the strip; its button keeps them lit and brings the strip into view. */
-function wireWeather(root: HTMLElement): void {
+/** The chart's reading guide, opened and closed in place. */
+function wireStripMore(root: HTMLElement, onChange: (open: boolean) => void): void {
+  const btn = root.querySelector<HTMLButtonElement>("#stripMore");
+  const box = root.querySelector<HTMLElement>("#strip-more");
+  if (!btn || !box) return;
+  btn.addEventListener("click", () => {
+    const open = btn.getAttribute("aria-expanded") !== "true";
+    btn.setAttribute("aria-expanded", String(open));
+    box.hidden = !open;
+    onChange(open);
+  });
+}
+
+/**
+ * The weather row shades both bills on the chart. Hover only shades when the chart is on
+ * screen; the button keeps the shading, brings the chart into view and moves focus to the
+ * chart's own "Clear the shading", so the focused control is never left off screen.
+ */
+function wireWeather(root: HTMLElement, pinnedBefore: boolean): void {
   const stripEl = root.querySelector<HTMLElement>("#strip");
   const row = root.querySelector<HTMLElement>(".is-weather-row");
   const btn = row?.querySelector<HTMLButtonElement>(".weather-btn");
-  if (!stripEl || !row || !btn) return;
+  const clear = root.querySelector<HTMLButtonElement>("#clearShade");
+  if (!stripEl || !row || !btn || !clear) return;
   const pinned = (): boolean => btn.getAttribute("aria-pressed") === "true";
-  const set = (on: boolean): void => {
+  const shade = (on: boolean): void => {
     stripEl.classList.toggle("is-weather", on);
   };
-  row.addEventListener("pointerenter", () => set(true));
-  row.addEventListener("pointerleave", () => set(pinned()));
-  row.addEventListener("focusin", () => set(true));
-  row.addEventListener("focusout", (e) => {
-    if (!row.contains(e.relatedTarget as Node | null)) set(pinned());
+  const pin = (on: boolean): void => {
+    btn.setAttribute("aria-pressed", String(on));
+    clear.hidden = !on;
+    shade(on);
+  };
+  row.addEventListener("pointerenter", () => {
+    if (inView(stripEl)) shade(true);
   });
+  row.addEventListener("pointerleave", () => shade(pinned()));
   btn.addEventListener("click", () => {
     const on = !pinned();
-    btn.setAttribute("aria-pressed", String(on));
-    set(on);
-    if (on) stripEl.scrollIntoView({ behavior: reducedMotion() ? "auto" : "smooth", block: "center" });
+    pin(on);
+    if (!on) return;
+    if (!inView(stripEl)) stripEl.scrollIntoView({ behavior: reducedMotion() ? "auto" : "smooth", block: "nearest" });
+    clear.focus({ preventScroll: true });
+    announce("Both bills are shaded on the weather chart.");
+  });
+  clear.addEventListener("click", () => {
+    pin(false);
+    btn.focus();
+    announce("Shading cleared.");
+  });
+  if (pinnedBefore) pin(true);
+}
+
+/** The note form under "Tell us what changed at home". Nothing is saved; the page says so. */
+function wireNote(root: HTMLElement): void {
+  const open = root.querySelector<HTMLButtonElement>("#noteOpen");
+  const form = root.querySelector<HTMLFormElement>("#noteForm");
+  const text = root.querySelector<HTMLTextAreaElement>("#noteText");
+  const result = root.querySelector<HTMLElement>("#noteResult");
+  if (!open || !form || !text || !result) return;
+  open.addEventListener("click", () => {
+    const show = form.hidden;
+    form.hidden = !show;
+    open.setAttribute("aria-expanded", String(show));
+    if (show) text.focus();
+  });
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const words = text.value.trim();
+    result.hidden = false;
+    result.classList.toggle("is-empty", words === "");
+    // textContent, never innerHTML: what the visitor types is shown as text.
+    result.textContent =
+      words === ""
+        ? "Write a few words first, for example who stayed with you or what you bought."
+        : `Your note would read: “${words}”${/[.!?]$/.test(words) ? "" : "."} It is not saved.`;
+    announce(result.textContent);
   });
 }
 
-function render(page: PageView, state: State, onToggle: () => void, focusSwitch = false): void {
+function setTabsReady(ready: boolean): void {
+  for (const t of TABS) $(`tab-${t}`).setAttribute("aria-disabled", String(!ready));
+}
+
+function render(page: PageView, state: State, onToggle: () => void, opts: { keep?: boolean; focusSwitch?: boolean; scrollTo?: number | null } = {}): void {
   const second = state.tab === "second";
+  const root = $("panel");
+  // Kept across a re-render of the same bill: open disclosures, the weather shading, the chart guide.
+  const openKeys = opts.keep ? [...root.querySelectorAll<HTMLDetailsElement>("details[data-key]")].filter((d) => d.open).map((d) => d.dataset.key) : [];
+  const pinned = opts.keep ? root.querySelector(".weather-btn")?.getAttribute("aria-pressed") === "true" : false;
+  const stripMore = opts.keep ? root.querySelector("#stripMore")?.getAttribute("aria-expanded") === "true" : false;
+
   $("household").textContent = `${page.household.name}, ${page.household.utility} residential, ${page.household.city}`;
   $("tab-first-label").textContent = page.first.tabLabel;
   $("tab-first-when").textContent = tabWhen(page.first);
   $("tab-second-label").textContent = page.withMemory.tabLabel;
   $("tab-second-when").textContent = tabWhen(page.withMemory);
+  setTabsReady(true);
   for (const [id, on] of [["tab-first", !second], ["tab-second", second]] as const) {
     $(id).setAttribute("aria-selected", String(on));
     $(id).tabIndex = on ? 0 : -1;
   }
-  const main = $("page");
-  main.setAttribute("aria-labelledby", second ? "tab-second" : "tab-first");
+  const tabpanel = $("page");
+  tabpanel.setAttribute("aria-labelledby", second ? "tab-second" : "tab-first");
   // The entrance plays when a bill is shown, not when the switch changes the reading.
-  main.classList.toggle("settled", focusSwitch);
-  $("panel").innerHTML = panel(page, state.tab, state.memoryOn);
-  main.setAttribute("aria-busy", "false");
+  tabpanel.classList.toggle("settled", opts.keep === true);
+  root.innerHTML = panel(page, state.tab, state.memoryOn, undefined, { stripMore });
+  tabpanel.setAttribute("aria-busy", "false");
 
-  wireStrip(main);
-  wireWeather(main);
+  for (const k of openKeys) {
+    const d = root.querySelector<HTMLDetailsElement>(`details[data-key="${k}"]`);
+    if (d) d.open = true;
+  }
+  const run = second ? (state.memoryOn ? page.withMemory : page.withoutMemory) : page.first;
+  wireStrip(root, stripHint(stripView(run, page.weather), touchOnly()));
+  wireStripMore(root, () => undefined);
+  wireWeather(root, pinned);
+  wireNote(root);
   const sw = document.getElementById("memSwitch");
   sw?.addEventListener("click", onToggle);
-  if (focusSwitch) sw?.focus();
-}
-
-function wireTabs(getState: () => State, set: (s: State) => void): void {
-  TABS.forEach((tab, i) => {
-    const el = $(`tab-${tab}`);
-    el.addEventListener("click", () => {
-      if (getState().tab !== tab) set({ ...getState(), tab });
-    });
-    el.addEventListener("keydown", (e) => {
-      const keys: Readonly<Record<string, number>> = {
-        ArrowRight: (i + 1) % TABS.length,
-        ArrowLeft: (i - 1 + TABS.length) % TABS.length,
-        Home: 0,
-        End: TABS.length - 1,
-      };
-      if (!(e.key in keys)) return;
-      e.preventDefault();
-      const next = TABS[keys[e.key]];
-      if (getState().tab !== next) set({ ...getState(), tab: next });
-      $(`tab-${next}`).focus();
-    });
-  });
+  if (opts.focusSwitch) sw?.focus();
+  if (opts.scrollTo) {
+    const target = document.getElementById(`${tabKey(run)}-check-${opts.scrollTo}`);
+    target?.scrollIntoView({ block: "start" });
+    target?.focus({ preventScroll: true });
+  }
 }
 
 async function load(): Promise<void> {
   let page: PageView | null = null;
-  let state: State = { tab: location.hash === "#october" ? "second" : "first", memoryOn: true };
+  let state: State = { tab: "first", memoryOn: true };
+  let pendingHash = location.hash;
+  const keys = (): Record<Tab, string> | null => (page ? { first: tabKey(page.first), second: tabKey(page.withMemory) } : null);
+  const writeHash = (): void => {
+    const k = keys();
+    if (k) history.replaceState(null, "", `#${k[state.tab]}`);
+  };
+
   const toggle = (): void => {
     state = { ...state, memoryOn: !state.memoryOn };
-    if (page) render(page, state, toggle, true);
+    if (!page) return;
+    render(page, state, toggle, { keep: true, focusSwitch: true });
+    announce(document.querySelector(".reading")?.textContent ?? "");
   };
-  const set = (next: State): void => {
-    state = next;
-    if (page) render(page, state, toggle);
+  const choose = (tab: Tab, focus: boolean): void => {
+    if (!page) return; // tabs are disabled until there is something to show
+    if (state.tab !== tab) {
+      state = { ...state, tab };
+      render(page, state, toggle);
+      writeHash();
+    }
+    if (focus) $(`tab-${tab}`).focus();
   };
-  wireTabs(() => state, set);
 
-  const start = async (): Promise<void> => {
+  TABS.forEach((tab, i) => {
+    const el = $(`tab-${tab}`);
+    el.addEventListener("click", () => choose(tab, false));
+    el.addEventListener("keydown", (e) => {
+      const to: Readonly<Record<string, number>> = { ArrowRight: (i + 1) % TABS.length, ArrowLeft: (i - 1 + TABS.length) % TABS.length, Home: 0, End: TABS.length - 1 };
+      if (!(e.key in to)) return;
+      e.preventDefault();
+      choose(TABS[to[e.key]], true);
+    });
+  });
+  // The skip link goes to the headline without touching the address bar, which holds the tab.
+  document.querySelector(".skip")?.addEventListener("click", (e) => {
+    const target = document.querySelector<HTMLElement>(".headline") ?? document.querySelector<HTMLElement>("#retry");
+    if (!target) return;
+    e.preventDefault();
+    target.focus();
+  });
+  window.addEventListener("hashchange", () => {
+    const k = keys();
+    if (!k || !page) return;
+    const { tab, check } = parseHash(location.hash, k);
+    if (tab && tab !== state.tab) {
+      state = { ...state, tab };
+      render(page, state, toggle, { scrollTo: check });
+    }
+  });
+
+  const start = async (fromRetry: boolean): Promise<void> => {
+    setTabsReady(false);
     $("page").setAttribute("aria-busy", "true");
-    if (!page) $("household").innerHTML = `<span class="sk-line on-dark" aria-hidden="true"></span><span class="sr-only">Loading the household</span>`;
     $("panel").innerHTML = skeleton();
     try {
       const res = await fetch("/api/demo");
       const body = (await res.json().catch(() => null)) as DemoPayload | { error: string } | null;
-      if (body === null) throw new Error("The explanation service is not answering. Please try again in a minute.");
-      if (!res.ok || "error" in body) throw new Error("error" in body ? body.error : "The explanation service had a problem. Please try again in a minute.");
+      if (body === null || !res.ok || "error" in body) throw new Error(`The demo service answered ${res.status}.`);
       page = pageView(body);
-      render(page, state, toggle);
+      const k = keys();
+      const wanted = k ? parseHash(pendingHash, k) : { tab: null, check: null };
+      pendingHash = "";
+      if (wanted.tab) state = { ...state, tab: wanted.tab };
+      render(page, state, toggle, { scrollTo: wanted.check });
+      if (!wanted.check) writeHash();
+      if (fromRetry) document.querySelector<HTMLElement>(".headline")?.focus();
     } catch (error: unknown) {
+      // The page never shows the raw message; it stays in the console for whoever runs the demo.
+      console.error("Why So High could not load the demo:", error);
       $("page").setAttribute("aria-busy", "false");
-      $("household").textContent = "Household not loaded";
-      $("panel").innerHTML = failure(error instanceof Error ? error.message : "Something went wrong.");
-      $("retry").addEventListener("click", () => void start());
+      $("household").textContent = "Could not load the household";
+      $("panel").innerHTML = failure(friendlyError(error));
+      const retry = $("retry");
+      retry.addEventListener("click", () => void start(true));
+      retry.focus();
     }
   };
-  await start();
+  await start(false);
 }
 
 void load();

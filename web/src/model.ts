@@ -7,7 +7,7 @@ import type { DemoPayload, DemoPayloadRun, DemoRules, Household } from "../../sr
 import type { DemoWeather } from "../../src/demoWeather.ts";
 import type { LogEvent } from "../../src/log.ts";
 import type { BillWeather } from "../../src/zetaris/queries.ts";
-import { day, month, plainReason, usd } from "./format.ts";
+import { day, month, plainCheck, plainReason, usd } from "./format.ts";
 
 export interface BillEnd {
   readonly label: string;
@@ -65,7 +65,10 @@ export interface CauseView {
 export interface CheckView {
   readonly accepted: boolean;
   readonly title: string;
+  /** The reason in the page's plain words. */
   readonly text: string;
+  /** The reason as the checker wrote it, in dollars, for the evidence. */
+  readonly detail: string;
   readonly about: string;
   readonly attempt: number;
   readonly stamp: "void" | "valid" | null;
@@ -107,10 +110,14 @@ export interface RunView {
   readonly to: BillEnd;
   readonly causes: readonly CauseView[];
   readonly allowedUsd: number | null;
-  readonly confidence: { readonly level: string; readonly reason: string } | null;
+  readonly confidence: { readonly level: string; readonly fitted: boolean; readonly reason: string } | null;
   readonly checks: readonly CheckView[];
   readonly evidence: Evidence;
   readonly note: { readonly text: string; readonly at: string; readonly periodStart: string } | null;
+  /** Everything the household told us that this run used, oldest first. */
+  readonly notes: readonly { readonly text: string; readonly at: string }[];
+  /** The bill the usage model treats as a normal month, when it was adjusted to one. */
+  readonly normalBill: string | null;
   /** Degree days a day for the last bill and this bill, when the run has them. */
   readonly needs: { readonly from: WeatherNeed | null; readonly to: WeatherNeed | null };
   /** Why the run could not split the change, when it could not. */
@@ -122,7 +129,7 @@ export interface RunView {
 }
 
 const TARIFF_AGENT = "RateAnalyst";
-const NOAA_SOURCE = "NOAA station USW00014821, Columbus";
+const WEATHER_SOURCE = "Daily weather records for Columbus airport";
 
 /** The bill in history that ends on a date, or starts on it. */
 const historyEnding = (history: readonly BillWeather[], end: string): BillWeather | undefined =>
@@ -145,9 +152,9 @@ function weatherDetail(previous: BillWeather, current: BillWeather): string {
     parts.push(`${kind} need ${now.toFixed(1)} degree days a day, ${way} from ${before.toFixed(1)}`);
   }
   const definition = "A degree day measures how much heating or cooling a day needs.";
-  if (parts.length === 0) return `Little heating or cooling was needed on either bill. ${definition}`;
+  if (parts.length === 0) return `${definition} Little heating or cooling was needed on either bill.`;
   const text = parts.join("; ");
-  return `${text.charAt(0).toUpperCase()}${text.slice(1)}. ${definition}`;
+  return `${definition} ${text.charAt(0).toUpperCase()}${text.slice(1)}.`;
 }
 
 interface CauseContext {
@@ -169,11 +176,11 @@ function describeCause(key: ComponentKey, amount: number, ctx: CauseContext): Om
         title: "Price of electricity",
         detail:
           amount === 0
-            ? "No change in AEP Ohio's published prices between the two bills."
-            : "AEP Ohio's published prices changed between the two bills.",
+            ? "No change in AEP Ohio's published price list, its tariff, between the two bills."
+            : "AEP Ohio's published price list, its tariff, changed between the two bills.",
         role: "CHECKED BY",
         agent: TARIFF_AGENT,
-        source: segment ? `Tariff in force since ${day(segment.tariff.start)}` : "Published AEP Ohio tariff",
+        source: segment ? `Price list in force since ${day(segment.tariff.start)}` : "AEP Ohio's published price list",
       };
     }
     case "one_off":
@@ -200,7 +207,7 @@ function describeCause(key: ComponentKey, amount: number, ctx: CauseContext): Om
         detail: ctx.previous && ctx.current ? weatherDetail(ctx.previous, ctx.current) : "Weather for both bills from NOAA.",
         role: "CHECKED BY",
         agent: "WeatherAnalyst",
-        source: NOAA_SOURCE,
+        source: WEATHER_SOURCE,
       };
     case "usage": {
       const calibratedTo = d?.calibratedTo ? historyStarting(ctx.run.history, d.calibratedTo) : undefined;
@@ -215,7 +222,7 @@ function describeCause(key: ComponentKey, amount: number, ctx: CauseContext): Om
         role: "WORKED OUT BY",
         agent: "UsageAnalyst",
         source: !calibratedTo
-          ? "Measured against the weather model"
+          ? "Worked out from the weather and typical Ohio use"
           : ctx.note && calibratedTo.periodEnd !== ctx.from.end
             ? `Measured against your ${billName(calibratedTo.periodEnd)}, the last normal one`
             : `Measured against your ${billName(calibratedTo.periodEnd)}`,
@@ -224,7 +231,7 @@ function describeCause(key: ComponentKey, amount: number, ctx: CauseContext): Om
     case "unexplained":
       return {
         title: "Not explained",
-        detail: amount === 0 ? "Nothing is left over. It would show here if there were." : "The part the agents could not explain.",
+        detail: amount === 0 ? "Nothing is left over. It would show here if there were." : "The part we could not explain.",
         role: "CHECKED BY",
         agent: "ReconciliationCritic",
         source: ctx.allowedUsd === null ? "Must stay small" : `Allowed: up to ${usd(ctx.allowedUsd)}`,
@@ -250,11 +257,13 @@ export function checksFromTrace(trace: readonly LogEvent[]): CheckView[] {
     // Check 4 (eligibility) is shown with the actions it judged, not in this trail.
     if (e.agent !== "ReconciliationCritic" || e.check === "eligibility") return;
     const accepted = e.accepted === true;
+    const detail = plainReason(String(e.reason));
     const retry = accepted ? undefined : trace.slice(i + 1).find((next) => next.step === "retry");
     checks.push({
       accepted,
       title: checkTitle(e),
-      text: plainReason(String(e.reason)),
+      text: plainCheck(detail),
+      detail,
       about: String(e.about),
       attempt: Number(e.attempt),
       stamp: !accepted ? "void" : rejectedBefore && e.check === "closure" ? "valid" : null,
@@ -313,11 +322,12 @@ export function runView(run: DemoPayloadRun, household: Household, minBillsToFit
   const confidence = d
     ? {
         level: d.model.confidence.toUpperCase(),
+        fitted: d.model.source !== "ohio_prior",
         reason:
           d.model.source === "ohio_prior"
-            ? `${household.name} has fewer than ${minBillsToFit} earlier bills, so the weather share uses Ohio averages` +
-              (calibratedTo ? `, calibrated to the ${billName(calibratedTo.periodEnd)}.` : ".")
-            : `Fitted on ${household.name}'s own ${d.model.billsUsed} earlier bills.`,
+            ? `You have fewer than ${minBillsToFit} earlier bills with us, so we compared your use with typical Ohio homes` +
+              (calibratedTo ? `, adjusted to your ${billName(calibratedTo.periodEnd)}.` : ".")
+            : `Worked out from your own ${d.model.billsUsed} earlier bills.`,
       }
     : null;
   return {
@@ -333,6 +343,8 @@ export function runView(run: DemoPayloadRun, household: Household, minBillsToFit
     checks: checksFromTrace(run.trace),
     evidence: evidenceFrom(run),
     note,
+    notes: (run.memory?.notes ?? []).map((n) => ({ text: n.text, at: n.at })),
+    normalBill: calibratedTo ? billName(calibratedTo.periodEnd) : null,
     needs: { from: need(previous), to: need(current) },
     skipped: run.change.skipped,
     actionsAsOf: run.actions.asOf,
