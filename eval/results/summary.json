@@ -2,6 +2,19 @@
   "households": 30,
   "repetitions": 3,
   "baselineModel": "nvidia/nemotron-3-ultra-550b-a55b",
+  "informedNote": "Same model and prompt as the bill-only baseline, plus the published tariffs and the bill history with NOAA degree days.",
+  "servedBy": {
+    "note": "Both baselines ask Nightshift for the model above; its router chose the model that answered. Counts over answers that parsed.",
+    "billOnly": {
+      "nvidia/nemotron-3.5-super-vl-120b-a12b": 26,
+      "nvidia/nemotron-3-ultra-550b-a55b": 64
+    },
+    "informed": {
+      "nvidia/nemotron-3.5-super-vl-120b-a12b": 26,
+      "nvidia/nemotron-3.5-lightning-30b-a3b": 5,
+      "nvidia/nemotron-3-ultra-550b-a55b": 14
+    }
+  },
   "truthDefinition": "Price from the published tariff, then days, weather and usage in waterfall order, with the household's true weather response calibrated to its previous bill.",
   "split": {
     "note": "The 24 households without a billing error. Bill-only answers are pooled over the repetitions.",
@@ -45,6 +58,45 @@
         },
         "meanTotalErrorUsd": 69.52,
         "mainCauseRight": 21
+      },
+      "informed": {
+        "answered": 40,
+        "unanswered": 32,
+        "meanAbsErrorUsd": {
+          "price": 0.15,
+          "days": 9.63,
+          "weather": 27.68,
+          "usage": 30.23,
+          "unexplained": 0
+        },
+        "meanTotalErrorUsd": 67.69,
+        "mainCauseRight": 12
+      },
+      "billOnlyUltra": {
+        "answered": 58,
+        "unanswered": 0,
+        "meanAbsErrorUsd": {
+          "price": 0,
+          "days": 11.24,
+          "weather": 29.67,
+          "usage": 29.31,
+          "unexplained": 0
+        },
+        "meanTotalErrorUsd": 70.22,
+        "mainCauseRight": 16
+      },
+      "informedUltra": {
+        "answered": 14,
+        "unanswered": 0,
+        "meanAbsErrorUsd": {
+          "price": 0,
+          "days": 5.58,
+          "weather": 21.51,
+          "usage": 22.97,
+          "unexplained": 0
+        },
+        "meanTotalErrorUsd": 50.06,
+        "mainCauseRight": 10
       }
     },
     "byCause": {
@@ -88,6 +140,45 @@
           },
           "meanTotalErrorUsd": 31.12,
           "mainCauseRight": 3
+        },
+        "informed": {
+          "answered": 10,
+          "unanswered": 8,
+          "meanAbsErrorUsd": {
+            "price": 0.59,
+            "days": 0,
+            "weather": 22.3,
+            "usage": 21.72,
+            "unexplained": 0
+          },
+          "meanTotalErrorUsd": 44.61,
+          "mainCauseRight": 0
+        },
+        "billOnlyUltra": {
+          "answered": 16,
+          "unanswered": 0,
+          "meanAbsErrorUsd": {
+            "price": 0.01,
+            "days": 0.86,
+            "weather": 14.42,
+            "usage": 15.29,
+            "unexplained": 0
+          },
+          "meanTotalErrorUsd": 30.59,
+          "mainCauseRight": 3
+        },
+        "informedUltra": {
+          "answered": 1,
+          "unanswered": 0,
+          "meanAbsErrorUsd": {
+            "price": 0,
+            "days": 0,
+            "weather": 45.37,
+            "usage": 45.37,
+            "unexplained": 0
+          },
+          "meanTotalErrorUsd": 90.74,
+          "mainCauseRight": 0
         }
       },
       "days": {
@@ -129,6 +220,45 @@
             "unexplained": 0
           },
           "meanTotalErrorUsd": 115.05,
+          "mainCauseRight": 0
+        },
+        "informed": {
+          "answered": 10,
+          "unanswered": 8,
+          "meanAbsErrorUsd": {
+            "price": 0,
+            "days": 34.77,
+            "weather": 26.86,
+            "usage": 37.23,
+            "unexplained": 0
+          },
+          "meanTotalErrorUsd": 98.86,
+          "mainCauseRight": 0
+        },
+        "billOnlyUltra": {
+          "answered": 15,
+          "unanswered": 0,
+          "meanAbsErrorUsd": {
+            "price": 0,
+            "days": 40.06,
+            "weather": 41.19,
+            "usage": 40.65,
+            "unexplained": 0
+          },
+          "meanTotalErrorUsd": 121.9,
+          "mainCauseRight": 0
+        },
+        "informedUltra": {
+          "answered": 2,
+          "unanswered": 0,
+          "meanAbsErrorUsd": {
+            "price": 0,
+            "days": 29.32,
+            "weather": 36.02,
+            "usage": 42.15,
+            "unexplained": 0
+          },
+          "meanTotalErrorUsd": 107.48,
           "mainCauseRight": 0
         }
       },
@@ -172,6 +302,45 @@
           },
           "meanTotalErrorUsd": 59.17,
           "mainCauseRight": 6
+        },
+        "informed": {
+          "answered": 11,
+          "unanswered": 7,
+          "meanAbsErrorUsd": {
+            "price": 0,
+            "days": 0,
+            "weather": 31.17,
+            "usage": 31.17,
+            "unexplained": 0
+          },
+          "meanTotalErrorUsd": 62.34,
+          "mainCauseRight": 5
+        },
+        "billOnlyUltra": {
+          "answered": 14,
+          "unanswered": 0,
+          "meanAbsErrorUsd": {
+            "price": 0,
+            "days": 0,
+            "weather": 29.13,
+            "usage": 29.13,
+            "unexplained": 0
+          },
+          "meanTotalErrorUsd": 58.26,
+          "mainCauseRight": 5
+        },
+        "informedUltra": {
+          "answered": 6,
+          "unanswered": 0,
+          "meanAbsErrorUsd": {
+            "price": 0,
+            "days": 0,
+            "weather": 10.39,
+            "usage": 10.39,
+            "unexplained": 0
+          },
+          "meanTotalErrorUsd": 20.77,
+          "mainCauseRight": 5
         }
       },
       "usage": {
@@ -214,6 +383,45 @@
           },
           "meanTotalErrorUsd": 72.76,
           "mainCauseRight": 12
+        },
+        "informed": {
+          "answered": 9,
+          "unanswered": 9,
+          "meanAbsErrorUsd": {
+            "price": 0,
+            "days": 4.18,
+            "weather": 30.32,
+            "usage": 30.75,
+            "unexplained": 0
+          },
+          "meanTotalErrorUsd": 65.25,
+          "mainCauseRight": 7
+        },
+        "billOnlyUltra": {
+          "answered": 13,
+          "unanswered": 0,
+          "meanAbsErrorUsd": {
+            "price": 0,
+            "days": 2.87,
+            "weather": 35.72,
+            "usage": 33.67,
+            "unexplained": 0
+          },
+          "meanTotalErrorUsd": 72.27,
+          "mainCauseRight": 8
+        },
+        "informedUltra": {
+          "answered": 5,
+          "unanswered": 0,
+          "meanAbsErrorUsd": {
+            "price": 0,
+            "days": 3.89,
+            "weather": 24.28,
+            "usage": 25.92,
+            "unexplained": 0
+          },
+          "meanTotalErrorUsd": 54.09,
+          "mainCauseRight": 5
         }
       }
     },
@@ -258,6 +466,45 @@
           },
           "meanTotalErrorUsd": 66.77,
           "mainCauseRight": 18
+        },
+        "informed": {
+          "answered": 28,
+          "unanswered": 32,
+          "meanAbsErrorUsd": {
+            "price": 0,
+            "days": 8.83,
+            "weather": 25.38,
+            "usage": 26.81,
+            "unexplained": 0
+          },
+          "meanTotalErrorUsd": 61.02,
+          "mainCauseRight": 9
+        },
+        "billOnlyUltra": {
+          "answered": 51,
+          "unanswered": 0,
+          "meanAbsErrorUsd": {
+            "price": 0,
+            "days": 12.57,
+            "weather": 27.9,
+            "usage": 27.72,
+            "unexplained": 0
+          },
+          "meanTotalErrorUsd": 68.19,
+          "mainCauseRight": 14
+        },
+        "informedUltra": {
+          "answered": 12,
+          "unanswered": 0,
+          "meanAbsErrorUsd": {
+            "price": 0,
+            "days": 6.04,
+            "weather": 19.61,
+            "usage": 21.78,
+            "unexplained": 0
+          },
+          "meanTotalErrorUsd": 47.42,
+          "mainCauseRight": 9
         }
       },
       "electric": {
@@ -300,6 +547,45 @@
           },
           "meanTotalErrorUsd": 83.27,
           "mainCauseRight": 3
+        },
+        "informed": {
+          "answered": 12,
+          "unanswered": 0,
+          "meanAbsErrorUsd": {
+            "price": 0.49,
+            "days": 11.51,
+            "weather": 33.06,
+            "usage": 38.21,
+            "unexplained": 0
+          },
+          "meanTotalErrorUsd": 83.27,
+          "mainCauseRight": 3
+        },
+        "billOnlyUltra": {
+          "answered": 7,
+          "unanswered": 0,
+          "meanAbsErrorUsd": {
+            "price": 0,
+            "days": 1.61,
+            "weather": 42.52,
+            "usage": 40.91,
+            "unexplained": 0
+          },
+          "meanTotalErrorUsd": 85.04,
+          "mainCauseRight": 2
+        },
+        "informedUltra": {
+          "answered": 2,
+          "unanswered": 0,
+          "meanAbsErrorUsd": {
+            "price": 0,
+            "days": 2.81,
+            "weather": 32.92,
+            "usage": 30.11,
+            "unexplained": 0
+          },
+          "meanTotalErrorUsd": 65.84,
+          "mainCauseRight": 1
         }
       }
     },
@@ -345,6 +631,45 @@
           },
           "meanTotalErrorUsd": 69.52,
           "mainCauseRight": 21
+        },
+        "informed": {
+          "answered": 40,
+          "unanswered": 32,
+          "meanAbsErrorUsd": {
+            "price": 0.15,
+            "days": 9.63,
+            "weather": 27.68,
+            "usage": 30.23,
+            "unexplained": 0
+          },
+          "meanTotalErrorUsd": 67.69,
+          "mainCauseRight": 12
+        },
+        "billOnlyUltra": {
+          "answered": 58,
+          "unanswered": 0,
+          "meanAbsErrorUsd": {
+            "price": 0,
+            "days": 11.24,
+            "weather": 29.67,
+            "usage": 29.31,
+            "unexplained": 0
+          },
+          "meanTotalErrorUsd": 70.22,
+          "mainCauseRight": 16
+        },
+        "informedUltra": {
+          "answered": 14,
+          "unanswered": 0,
+          "meanAbsErrorUsd": {
+            "price": 0,
+            "days": 5.58,
+            "weather": 21.51,
+            "usage": 22.97,
+            "unexplained": 0
+          },
+          "meanTotalErrorUsd": 50.06,
+          "mainCauseRight": 10
         }
       },
       "low": {
@@ -364,6 +689,27 @@
           "mainCauseRight": 0
         },
         "billOnly": {
+          "answered": 0,
+          "unanswered": 0,
+          "meanAbsErrorUsd": null,
+          "meanTotalErrorUsd": null,
+          "mainCauseRight": 0
+        },
+        "informed": {
+          "answered": 0,
+          "unanswered": 0,
+          "meanAbsErrorUsd": null,
+          "meanTotalErrorUsd": null,
+          "mainCauseRight": 0
+        },
+        "billOnlyUltra": {
+          "answered": 0,
+          "unanswered": 0,
+          "meanAbsErrorUsd": null,
+          "meanTotalErrorUsd": null,
+          "mainCauseRight": 0
+        },
+        "informedUltra": {
           "answered": 0,
           "unanswered": 0,
           "meanAbsErrorUsd": null,
@@ -406,42 +752,58 @@
       "precision": null,
       "recall": 0
     },
+    "informed": {
+      "answers": 45,
+      "noAnswer": 45,
+      "truePositives": 3,
+      "falsePositives": 0,
+      "falseNegatives": 2,
+      "trueNegatives": 40,
+      "precision": 1,
+      "recall": 0.6
+    },
     "cases": [
       {
         "id": "eval-25",
         "injectedUsd": 1.06,
         "agentsFlaggedUsd": null,
-        "billOnlyFlagged": 0
+        "billOnlyFlagged": 0,
+        "informedFlagged": 0
       },
       {
         "id": "eval-26",
         "injectedUsd": 6.73,
         "agentsFlaggedUsd": 6.73,
-        "billOnlyFlagged": 0
+        "billOnlyFlagged": 0,
+        "informedFlagged": 0
       },
       {
         "id": "eval-27",
         "injectedUsd": 8.9,
         "agentsFlaggedUsd": 8.9,
-        "billOnlyFlagged": 0
+        "billOnlyFlagged": 0,
+        "informedFlagged": 0
       },
       {
         "id": "eval-28",
         "injectedUsd": 16.87,
         "agentsFlaggedUsd": 16.87,
-        "billOnlyFlagged": 0
+        "billOnlyFlagged": 0,
+        "informedFlagged": 0
       },
       {
         "id": "eval-29",
         "injectedUsd": 19.63,
         "agentsFlaggedUsd": 19.63,
-        "billOnlyFlagged": 0
+        "billOnlyFlagged": 0,
+        "informedFlagged": 3
       },
       {
         "id": "eval-30",
         "injectedUsd": -11.68,
         "agentsFlaggedUsd": -11.68,
-        "billOnlyFlagged": 0
+        "billOnlyFlagged": 0,
+        "informedFlagged": 0
       }
     ]
   },

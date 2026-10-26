@@ -1,9 +1,30 @@
 {
   "key": "b8e52d5f0aaaf6acb3a7c6b0",
   "response": {
-    "providerError": {
-      "status": 502,
-      "message": "Nightshift returned HTTP 502 for nvidia/nemotron-3-ultra-550b-a55b: {\"error\":{\"message\":\"410: {\\\"type\\\":\\\"about:blank\\\",\\\"title\\\":\\\"Gone\\\",\\\"status\\\":410,\\\"detail\\\":\\\"The model 'nvidia/nemotron-3-nano-30b-a3b' has reached its end of life on 2026-09-01T09:00:00Z and is no longer available.\\\"}\",\"type\":\"api_error\",\"code\":\"provider_error\",\"param\":null,\"meterless_detail\""
+    "text": "{\n  \"price_usd\": 0,\n  \"days_usd\": 0,\n  \"weather_usd\": 0,\n  \"usage_usd\": -42.61,\n  \"billing_error_suspected\": false,\n  \"billing_error_usd\": null\n}",
+    "reasoning": "",
+    "modelRequested": "nvidia/nemotron-3-ultra-550b-a55b",
+    "modelServed": "nvidia/nemotron-3.5-lightning-30b-a3b",
+    "usage": {
+      "prompt_tokens": 3033,
+      "completion_tokens": 3854,
+      "total_tokens": 6887
+    },
+    "receipt": {
+      "receiptId": "rcpt_req_rhqsbfmr",
+      "requestedModel": "nvidia/nemotron-3-ultra-550b-a55b",
+      "routedModel": "nvidia/nemotron-3.5-lightning-30b-a3b",
+      "route": "Nemotron 3.5 Lightning 30B A3B, cloud",
+      "consensus": "single route",
+      "raced": 1,
+      "crossChecks": [
+        "destructive_action passed",
+        "pii_guard passed",
+        "schema_validity passed"
+      ],
+      "privacy": "cloud-ok",
+      "costUsd": 0,
+      "latencyMs": 45002
     }
   }
 }

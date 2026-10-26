@@ -1,9 +1,26 @@
 {
   "key": "37b6490a6955ceb849ac4513",
   "response": {
-    "providerError": {
-      "status": 502,
-      "message": "Nightshift returned HTTP 502 for nvidia/nemotron-3-ultra-550b-a55b: {\"error\":{\"message\":\"404: {\\\"status\\\":404,\\\"title\\\":\\\"Not Found\\\",\\\"detail\\\":\\\"Function '84bf12ff-edbd-4435-baea-0fa6a7453d2e': Not found for account 'DgXBmsUiiy3If7MLv_3t_eucXS5q-Msozqsp5BkImxo'\\\"}\",\"type\":\"api_error\",\"code\":\"provider_error\",\"param\":null,\"meterless_detail\":\"nvidia_404: {\\\"status\\\":"
+    "text": "{\"price_usd\":0,\"days_usd\":0,\"weather_usd\":0,\"usage_usd\":8.36,\"billing_error_suspected\":false,\"billing_error_usd\":null}",
+    "reasoning": "",
+    "modelRequested": "nvidia/nemotron-3-ultra-550b-a55b",
+    "modelServed": "nvidia/nemotron-3.5-super-vl-120b-a12b",
+    "usage": {
+      "prompt_tokens": 4094,
+      "completion_tokens": 3120,
+      "total_tokens": 7214
+    },
+    "receipt": {
+      "receiptId": "rcpt_req_40zr6clm",
+      "requestedModel": "nvidia/nemotron-3-ultra-550b-a55b",
+      "routedModel": "nvidia/nemotron-3.5-super-vl-120b-a12b",
+      "route": "Nemotron 3.5 Super VL 120B A12B, cloud",
+      "consensus": "frontier answer",
+      "raced": 1,
+      "crossChecks": [],
+      "privacy": "cloud-ok",
+      "costUsd": 0,
+      "latencyMs": 45005
     }
   }
 }

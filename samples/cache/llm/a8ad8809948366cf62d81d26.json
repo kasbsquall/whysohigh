@@ -1,9 +1,30 @@
 {
   "key": "a8ad8809948366cf62d81d26",
   "response": {
-    "providerError": {
-      "status": 502,
-      "message": "Nightshift returned HTTP 502 for nvidia/nemotron-3-ultra-550b-a55b: {\"error\":{\"message\":\"410: {\\\"type\\\":\\\"about:blank\\\",\\\"title\\\":\\\"Gone\\\",\\\"status\\\":410,\\\"detail\\\":\\\"The model 'nvidia/nemotron-3-nano-30b-a3b' has reached its end of life on 2026-09-01T09:00:00Z and is no longer available.\\\"}\",\"type\":\"api_error\",\"code\":\"provider_error\",\"param\":null,\"meterless_detail\""
+    "text": "{\n  \"price_usd\": 3.22,\n  \"days_usd\": 0,\n  \"weather_usd\": 0,\n  \"usage_usd\": -11.82,\n  \"billing_error_suspected\": false,\n  \"billing_error_usd\": null\n}",
+    "reasoning": "",
+    "modelRequested": "nvidia/nemotron-3-ultra-550b-a55b",
+    "modelServed": "nvidia/nemotron-3.5-super-vl-120b-a12b",
+    "usage": {
+      "prompt_tokens": 5708,
+      "completion_tokens": 4325,
+      "total_tokens": 10033
+    },
+    "receipt": {
+      "receiptId": "rcpt_req_5jc7pjmz",
+      "requestedModel": "nvidia/nemotron-3-ultra-550b-a55b",
+      "routedModel": "nvidia/nemotron-3.5-super-vl-120b-a12b",
+      "route": "Nemotron 3.5 Super VL 120B A12B, cloud",
+      "consensus": "frontier answer",
+      "raced": 1,
+      "crossChecks": [
+        "destructive_action passed",
+        "pii_guard passed",
+        "schema_validity passed"
+      ],
+      "privacy": "cloud-ok",
+      "costUsd": 0,
+      "latencyMs": 45004
     }
   }
 }

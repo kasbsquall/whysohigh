@@ -152,6 +152,8 @@ interface BaselineRecord {
   readonly suspected: boolean | null;
   readonly errorUsd: number | null;
   readonly failure: string | null;
+  /** The model Nightshift says answered; its router can serve another model than the one asked for. */
+  readonly modelServed: string | null;
 }
 
 /**
@@ -173,7 +175,13 @@ function resumable(runtime: Runtime): LlmClient {
 }
 
 /** Like BillReader, a reply that is not the JSON asked for is sent back once with the reason. */
-async function baselineAnswer(runtime: Runtime, agent: string, content: string, h: EvalHousehold, repeat: number): Promise<BaselineAnswer> {
+async function baselineAnswer(
+  runtime: Runtime,
+  agent: string,
+  content: string,
+  h: EvalHousehold,
+  repeat: number,
+): Promise<{ answer: BaselineAnswer; modelServed: string }> {
   const llm = resumable(runtime);
   let messages: ChatMessage[] = [{ role: "user", content }];
   for (let attempt = 1; ; attempt++) {
@@ -185,7 +193,7 @@ async function baselineAnswer(runtime: Runtime, agent: string, content: string, 
       repeat,
     });
     try {
-      return parseBaselineReply(reply.text);
+      return { answer: parseBaselineReply(reply.text), modelServed: reply.modelServed };
     } catch (error: unknown) {
       const reason = (error as Error).message;
       runtime.logger.log({ agent, step: "rejected_reply", eval: h.id, repeat, attempt, reason });
@@ -202,14 +210,14 @@ async function baselineAnswer(runtime: Runtime, agent: string, content: string, 
 async function askBaseline(agent: string, content: string, h: EvalHousehold, repeat: number): Promise<BaselineRecord> {
   const runtime = createRuntime(quiet);
   try {
-    const answer = await baselineAnswer(runtime, agent, content, h, repeat);
-    runtime.logger.log({ agent, step: "answer", eval: h.id, repeat, answer });
-    return { id: h.id, repeat, split: splitWithRemainder(answer.parts, changeOf(h)), suspected: answer.suspected, errorUsd: answer.errorUsd, failure: null };
+    const { answer, modelServed } = await baselineAnswer(runtime, agent, content, h, repeat);
+    runtime.logger.log({ agent, step: "answer", eval: h.id, repeat, answer, modelServed });
+    return { id: h.id, repeat, split: splitWithRemainder(answer.parts, changeOf(h)), suspected: answer.suspected, errorUsd: answer.errorUsd, failure: null, modelServed };
   } catch (error: unknown) {
     if (error instanceof SampleMissError) throw error;
     const failure = (error as Error).message.slice(0, 200);
     runtime.logger.log({ agent, step: "no_answer", eval: h.id, repeat, failure });
-    return { id: h.id, repeat, split: null, suspected: null, errorUsd: null, failure };
+    return { id: h.id, repeat, split: null, suspected: null, errorUsd: null, failure, modelServed: null };
   }
 }
 
@@ -270,8 +278,12 @@ function scores(group: readonly EvalHousehold[]) {
     weatherOnly: score(group.map((h) => ({ estimate: weatherOnly(h), truth: truth(h) }))),
     billOnly: score(group.flatMap((h) => baseline.filter((b) => b.id === h.id).map((b) => ({ estimate: b.split, truth: truth(h) })))),
     informed: score(group.flatMap((h) => informed.filter((b) => b.id === h.id).map((b) => ({ estimate: b.split, truth: truth(h) })))),
+    billOnlyUltra: score(group.flatMap((h) => baseline.filter((b) => b.id === h.id && b.modelServed === BASELINE_MODEL).map((b) => ({ estimate: b.split, truth: truth(h) })))),
+    informedUltra: score(group.flatMap((h) => informed.filter((b) => b.id === h.id && b.modelServed === BASELINE_MODEL).map((b) => ({ estimate: b.split, truth: truth(h) })))),
   };
 }
+
+const countBy = (xs: readonly string[]): Record<string, number> => xs.reduce<Record<string, number>>((acc, x) => ({ ...acc, [x]: (acc[x] ?? 0) + 1 }), {});
 
 const graded = households.filter((h) => h.cause !== "billing_error");
 const outcomes = graded.map((h) => pipeline.get(h.id)?.outcome as PipelineOutcome);
@@ -283,6 +295,11 @@ const summary = {
   repetitions: K,
   baselineModel: BASELINE_MODEL,
   informedNote: "Same model and prompt as the bill-only baseline, plus the published tariffs and the bill history with NOAA degree days.",
+  servedBy: {
+    note: "Both baselines ask Nightshift for the model above; its router chose the model that answered. Counts over answers that parsed.",
+    billOnly: countBy(baseline.filter((b) => b.modelServed !== null).map((b) => b.modelServed as string)),
+    informed: countBy(informed.filter((b) => b.modelServed !== null).map((b) => b.modelServed as string)),
+  },
   truthDefinition:
     "Price from the published tariff, then days, weather and usage in waterfall order, with the household's true weather response calibrated to its previous bill.",
   split: {
@@ -366,6 +383,8 @@ process.stdout.write(
     line("weather only", all.weatherOnly),
     line("bill only", all.billOnly),
     line("informed", all.informed),
+    line("bill, Ultra", all.billOnlyUltra),
+    line("informed, Ultra", all.informedUltra),
     line("agents, fitted", summary.split.byAgentsConfidence.fitted.agents),
     line("agents, low", summary.split.byAgentsConfidence.low.agents),
     `Critic: bill matches tariff ${summary.critic.billMatchesTariff}/24, first closure ${summary.critic.firstClosureAccepted}/24, closed ${summary.critic.changeClosed}/24, weather model rejected ${summary.critic.weatherModelRejected}/24.`,
