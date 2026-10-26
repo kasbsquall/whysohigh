@@ -6,6 +6,8 @@ Built for the Open Agent Hackathon 2026, Track 03 (Reasoning Architecture). Scop
 
 **Demo video (2:50):** https://youtu.be/1CA6gYeeOUw
 
+**Try it in the browser, no install:** https://kasbsquall.github.io/whysohigh/ (sample mode: the page replays the recorded live run; reading your own photo needs the live models)
+
 ![Linda's September bill explained: up $47.30, split into her own use, more billing days and weather, checked against the published tariff, with PIPP Plus as the next step](docs/img/september.png)
 
 Linda's bill went up $47.30. The bill says how much, not why. Why So High reads the bill, recomputes it from AEP Ohio's published tariff, joins her bills with NOAA's daily weather for Columbus, and splits the change into price, billing days, weather and her own use. A checker recomputes every number and sends work back when it does not add up. Then it says what she can do this month, with an amount: PIPP Plus could hold her bill near $100 a month, and the checker confirmed she is under its income limit. Every number on the page traces to a SQL query, a tariff line or a model call.
