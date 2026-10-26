@@ -1,0 +1,30 @@
+{
+  "key": "c0bac90eb1f84642a30ce9dd",
+  "response": {
+    "text": "1. Extract current bill values (total $147.84, 787 kWh, 30 days, line items) and last month’s values (total $156.44, 859 kWh, 30 days); compute the total dollar change (−$8.60).\n2. Calculate days_usd: compare billing-period lengths (30 vs 30 days → $0).\n3. Calculate price_usd: apply last month’s applicable tariff/rates to the current period’s usage and fixed charge, compare to the actual current bill (or compare effective per-kWh rates from line items/tariffs), isolating the rate-change effect.\n4. Estimate weather_usd: use the NOAA degree-day data (HDD/CDD) for both periods and the historical usage–weather relationship to estimate how much of the usage change is attributable to weather.\n5. Derive usage_usd as the residual: total change minus price_usd, days_usd, and weather_usd, representing non-weather household usage behavior.\n6. Check for billing errors: confirm meter-read difference equals billed kWh, line items sum to the total, and last month’s total reconciles with its tariff; set billing_error_suspected and billing_error_usd accordingly.\n7. Return a JSON object with price_usd, days_usd, weather_usd, usage_usd (summing to the total change), billing_error_suspected, and billing_error_usd.",
+    "reasoning": "",
+    "modelRequested": "nvidia/nemotron-3-ultra-550b-a55b",
+    "modelServed": "nvidia/nemotron-3.5-super-vl-120b-a12b",
+    "usage": {
+      "prompt_tokens": 5806,
+      "completion_tokens": 2247,
+      "total_tokens": 8053
+    },
+    "receipt": {
+      "receiptId": "rcpt_req_wj3w53xg",
+      "requestedModel": "nvidia/nemotron-3-ultra-550b-a55b",
+      "routedModel": "nvidia/nemotron-3.5-super-vl-120b-a12b",
+      "route": "Nemotron 3.5 Super VL 120B A12B, cloud",
+      "consensus": "frontier answer",
+      "raced": 1,
+      "crossChecks": [
+        "destructive_action passed",
+        "pii_guard passed",
+        "schema_validity failed"
+      ],
+      "privacy": "cloud-ok",
+      "costUsd": 0,
+      "latencyMs": 45008
+    }
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "key": "2ad340b65a066ea96d187dfb",
+  "response": {
+    "text": "1. Verify current-bill arithmetic and compute the total change: confirm meter reads (18,032 − 16,751 = 1,281 kWh), sum line items ($18.38 + $40.44 + $172.18 = $231.00), and calculate the change versus last month ($231.00 − $217.35 = +$13.65). Treat any internal mismatch as a potential billing error.\n\n2. Confirm price_usd = $0.00 and days_usd = $0.00: both periods are 30 days under the same AEP Ohio RS tariff window (2025-01-01 to 2026-04-09), same fixed monthly charge ($18.38), and same tier-1 variable rate ($0.0263125 + $0.13441 = $0.1607225/kWh); both usages are below the 2,000 kWh tier boundary.\n\n3. Estimate weather_usd: derive a weather-to-usage relationship from the NOAA bill history (e.g., regress kWh on CDD/HDD), isolate the weather-attributable kWh difference between last month (CDD 368, HDD 0) and the current period (CDD 353, HDD 0), and value those weather-driven kWh at the effective variable rate (~$0.1607/kWh); expect a small negative contribution since CDD fell by 15.\n\n4. Compute usage_usd as the residual so that price_usd + days_usd + weather_usd + usage_usd equals exactly +$13.65.\n\n5. Screen for a billing error: reconstruct the expected tariff total for 1,281 kWh, compare it to the stated total and line items, verify billed kWh against meter reads, and set billing_error_suspected and billing_error_usd accordingly (false/null if differences are only normal rounding or line-item classification).\n\n6. Return only the JSON object with keys price_usd, days_usd, weather_usd, usage_usd, billing_error_suspected, and billing_error_usd.",
+    "reasoning": "",
+    "modelRequested": "nvidia/nemotron-3-ultra-550b-a55b",
+    "modelServed": "nvidia/nemotron-3.5-super-vl-120b-a12b",
+    "usage": {
+      "prompt_tokens": 2962,
+      "completion_tokens": 2478,
+      "total_tokens": 5440
+    },
+    "receipt": {
+      "receiptId": "rcpt_req_oynn9faf",
+      "requestedModel": "nvidia/nemotron-3-ultra-550b-a55b",
+      "routedModel": "nvidia/nemotron-3.5-super-vl-120b-a12b",
+      "route": "Nemotron 3.5 Super VL 120B A12B, cloud",
+      "consensus": "frontier answer",
+      "raced": 1,
+      "crossChecks": [
+        "destructive_action passed",
+        "pii_guard passed",
+        "schema_validity failed"
+      ],
+      "privacy": "cloud-ok",
+      "costUsd": 0,
+      "latencyMs": 45016
+    }
+  }
+}

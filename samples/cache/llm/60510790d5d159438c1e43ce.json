@@ -1,0 +1,30 @@
+{
+  "key": "60510790d5d159438c1e43ce",
+  "response": {
+    "text": "Weather raised your bill by $40.77. Your own use lowered it by $3.37.",
+    "reasoning": "The user wants me to explain an electric bill change to a 71-year-old reader in Columbus, Ohio. I need to write at most three short sentences, under 60 words, in plain English.\n\nKey constraints:\n- Don't open with the total change (it's shown above)\n- Start with the biggest reason, then the next one\n- Say what pulled the other way if anything did\n- If FACTS has an action, end with what it could do and its amount\n- Use only numbers from FACTS, written exactly as they appear (dollars with two decimals)\n- No other numbers, no percentages, no dates, no math shown\n- Don't call the reader by name\n- Reply with sentences only\n\nFrom FACTS:\n- from_weather: +$40.77 (biggest reason, positive)\n- from_the_household_own_use: -$3.37 (pulled the other way, negative)\n- from_price_per_kwh: +$0.00\n- from_more_or_fewer_billing_days: +$0.00\n- not_explained: $1.72\n\nThe biggest reason is weather at +$40.77. The next factor is household's own use at -$3.37 (which pulled the other way). Price and billing days contributed $0.00 each.\n\nI should write: \"Weather raised your bill by $40.77. Your own use lowered it by $3.37.\"\n\nThat's two sentences, under 60 words. No action in FACTS to mention.",
+    "modelRequested": "nvidia/nemotron-3.5-lightning-30b-a3b",
+    "modelServed": "nvidia/nemotron-3-ultra-550b-a55b",
+    "usage": {
+      "prompt_tokens": 1346,
+      "completion_tokens": 371,
+      "total_tokens": 1717
+    },
+    "receipt": {
+      "receiptId": "rcpt_req_sil1lm5x",
+      "requestedModel": "nvidia/nemotron-3.5-lightning-30b-a3b",
+      "routedModel": "nvidia/nemotron-3-ultra-550b-a55b",
+      "route": "Nemotron 3 Ultra 550B A55B, cloud",
+      "consensus": "models diverged",
+      "raced": 3,
+      "crossChecks": [
+        "destructive_action passed",
+        "pii_guard passed",
+        "schema_validity skipped"
+      ],
+      "privacy": "cloud-ok",
+      "costUsd": 0,
+      "latencyMs": 34561
+    }
+  }
+}

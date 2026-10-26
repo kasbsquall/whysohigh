@@ -1,0 +1,30 @@
+{
+  "key": "3c7ff569bed41ce972914bad",
+  "response": {
+    "text": "A higher price per kWh added $6.24. More billing days added $4.63. Your own use lowered it by $4.03.",
+    "reasoning": "",
+    "modelRequested": "nvidia/nemotron-3.5-lightning-30b-a3b",
+    "modelServed": "nvidia/nemotron-3.5-super-vl-120b-a12b",
+    "usage": {
+      "prompt_tokens": 1398,
+      "completion_tokens": 1104,
+      "total_tokens": 2502
+    },
+    "receipt": {
+      "receiptId": "rcpt_req_vvvzkajz",
+      "requestedModel": "nvidia/nemotron-3.5-lightning-30b-a3b",
+      "routedModel": "nvidia/nemotron-3.5-super-vl-120b-a12b",
+      "route": "Nemotron 3.5 Super VL 120B A12B, cloud",
+      "consensus": "models agreed",
+      "raced": 3,
+      "crossChecks": [
+        "destructive_action passed",
+        "pii_guard passed",
+        "schema_validity skipped"
+      ],
+      "privacy": "cloud-ok",
+      "costUsd": 0,
+      "latencyMs": 40105
+    }
+  }
+}

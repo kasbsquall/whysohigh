@@ -27,13 +27,16 @@ export class ZetarisError extends Error {
   }
 }
 
+/** Zetaris echoes a failing REST source's URL, key included; keys never reach the log. */
+export const redactUrlKeys = (text: string): string => text.replace(/(api_key|apikey|token)=[^&\s"']+/gi, "$1=[redacted]");
+
 async function readError(response: Response): Promise<string> {
   const text = await response.text();
   try {
     const parsed = JSON.parse(text) as { msg?: string };
-    return (parsed.msg ?? text).slice(0, 400);
+    return redactUrlKeys((parsed.msg ?? text).slice(0, 400));
   } catch {
-    return text.slice(0, 400);
+    return redactUrlKeys(text.slice(0, 400));
   }
 }
 

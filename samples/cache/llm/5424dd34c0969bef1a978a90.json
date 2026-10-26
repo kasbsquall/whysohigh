@@ -1,0 +1,30 @@
+{
+  "key": "5424dd34c0969bef1a978a90",
+  "response": {
+    "text": "{\n  \"price_usd\": 0,\n  \"days_usd\": 0,\n  \"weather_usd\": 0,\n  \"usage_usd\": -1.93,\n  \"billing_error_suspected\": false,\n  \"billing_error_usd\": null\n}",
+    "reasoning": "",
+    "modelRequested": "nvidia/nemotron-3-ultra-550b-a55b",
+    "modelServed": "nvidia/nemotron-3.5-lightning-30b-a3b",
+    "usage": {
+      "prompt_tokens": 5731,
+      "completion_tokens": 3833,
+      "total_tokens": 9564
+    },
+    "receipt": {
+      "receiptId": "rcpt_req_e1xi2bm4",
+      "requestedModel": "nvidia/nemotron-3-ultra-550b-a55b",
+      "routedModel": "nvidia/nemotron-3.5-lightning-30b-a3b",
+      "route": "Nemotron 3.5 Lightning 30B A3B, cloud",
+      "consensus": "single route",
+      "raced": 1,
+      "crossChecks": [
+        "destructive_action passed",
+        "pii_guard passed",
+        "schema_validity passed"
+      ],
+      "privacy": "cloud-ok",
+      "costUsd": 0,
+      "latencyMs": 88256
+    }
+  }
+}

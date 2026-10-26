@@ -1,0 +1,30 @@
+{
+  "key": "bbda6506c6110af66f67f9eb",
+  "response": {
+    "text": "Your own electricity use added +$30.83, and more billing days added +$20.86. Weather pulled it down -$4.39.",
+    "reasoning": "",
+    "modelRequested": "nvidia/nemotron-3.5-lightning-30b-a3b",
+    "modelServed": "nvidia/nemotron-3.5-super-vl-120b-a12b",
+    "usage": {
+      "prompt_tokens": 1609,
+      "completion_tokens": 2318,
+      "total_tokens": 3927
+    },
+    "receipt": {
+      "receiptId": "rcpt_req_ormiu2lc",
+      "requestedModel": "nvidia/nemotron-3.5-lightning-30b-a3b",
+      "routedModel": "nvidia/nemotron-3.5-super-vl-120b-a12b",
+      "route": "Nemotron 3.5 Super VL 120B A12B, cloud",
+      "consensus": "models diverged",
+      "raced": 2,
+      "crossChecks": [
+        "destructive_action passed",
+        "pii_guard passed",
+        "schema_validity skipped"
+      ],
+      "privacy": "cloud-ok",
+      "costUsd": 0,
+      "latencyMs": 45006
+    }
+  }
+}

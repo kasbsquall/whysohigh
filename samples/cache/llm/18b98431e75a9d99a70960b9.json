@@ -1,0 +1,30 @@
+{
+  "key": "18b98431e75a9d99a70960b9",
+  "response": {
+    "text": "1. Compute the net dollar change between the current bill total ($289.20) and last month's total ($263.16) to establish the overall difference that must be partitioned.  \n2. Determine price_usd by comparing the effective variable rates (fixed monthly charge amortized plus per‑kWh rate and adjustments) for the two billing periods using the published AEP Ohio tariff tiers; attribute any rate‑driven portion of the change.  \n3. Determine days_usd by evaluating how the shift from a 29‑day to a 35‑day period affects the fixed customer charge and any prorated usage allocation; calculate the dollar impact of the longer billing window.  \n4. Determine weather_usd using the NOAA cooling‑ and heating‑degree‑day values (CDD/HDD) for the two periods; apply a weather‑to‑kWh conversion derived from the bill history, then convert the resulting usage difference to dollars.  \n5. Determine usage_usd as the residual change after subtracting price_usd, days_usd, and weather_usd from the total difference; value this residual at the effective rate to isolate the household’s actual usage change.  \n6. Check for a billing error by summing the line items on the current bill (customer charge $18.38, energy charge $44.34, riders and adjustments $226.48) and comparing the sum to the stated total $289.20; if a discrepancy exists beyond rounding, set billing_error_suspected = true and record the dollar amount as billing_error_usd; otherwise set both to false/null.",
+    "reasoning": "",
+    "modelRequested": "nvidia/nemotron-3-ultra-550b-a55b",
+    "modelServed": "nvidia/nemotron-3.5-lightning-30b-a3b",
+    "usage": {
+      "prompt_tokens": 3465,
+      "completion_tokens": 1388,
+      "total_tokens": 4853
+    },
+    "receipt": {
+      "receiptId": "rcpt_req_kfx4xtr8",
+      "requestedModel": "nvidia/nemotron-3-ultra-550b-a55b",
+      "routedModel": "nvidia/nemotron-3.5-lightning-30b-a3b",
+      "route": "Nemotron 3.5 Lightning 30B A3B, cloud",
+      "consensus": "single route",
+      "raced": 1,
+      "crossChecks": [
+        "destructive_action passed",
+        "pii_guard passed",
+        "schema_validity failed"
+      ],
+      "privacy": "cloud-ok",
+      "costUsd": 0,
+      "latencyMs": 45001
+    }
+  }
+}

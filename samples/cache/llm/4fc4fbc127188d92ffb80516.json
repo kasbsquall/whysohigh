@@ -1,0 +1,30 @@
+{
+  "key": "4fc4fbc127188d92ffb80516",
+  "response": {
+    "text": "1. Verify the current bill’s arithmetic: confirm meter reads imply 1,029 kWh, line items sum to $183.77, and the tariff (fixed $18.38 + tier‑1 rate + adjustment × 1,029 kWh) reproduces the total; flag any mismatch as a potential billing error.\n\n2. Reconstruct last month’s bill using the same tariff (fixed $18.38 + variable rate × 977 kWh) to separate the fixed charge from variable charges and establish the baseline rate for both periods.\n\n3. Compute the total dollar change ($183.77 − $175.41 = $8.36) and set price_usd: both periods fall under the identical tariff (2025‑01‑01 to 2026‑04‑09), so price_usd = $0.00 unless a rate change is found.\n\n4. Set days_usd: the customer charge is a fixed monthly amount (not prorated by days) and energy charges are per‑kWh, so the 29→35 day change creates no separate dollar effect; days_usd = $0.00.\n\n5. Estimate weather_usd: derive a weather–usage relationship from the bill history (kWh vs. HDD/CDD), apply it to the HDD change (1,192.5 → 1,099.5) to estimate weather‑driven kWh, and value that kWh at the current variable rate.\n\n6. Set usage_usd as the residual so price_usd + days_usd + weather_usd + usage_usd equals the total change, then confirm no billing error (or quantify it) by comparing the tariff‑modeled total to the actual amount due.",
+    "reasoning": "",
+    "modelRequested": "nvidia/nemotron-3-ultra-550b-a55b",
+    "modelServed": "nvidia/nemotron-3.5-super-vl-120b-a12b",
+    "usage": {
+      "prompt_tokens": 4828,
+      "completion_tokens": 1929,
+      "total_tokens": 6757
+    },
+    "receipt": {
+      "receiptId": "rcpt_req_o5lsu0j1",
+      "requestedModel": "nvidia/nemotron-3-ultra-550b-a55b",
+      "routedModel": "nvidia/nemotron-3.5-super-vl-120b-a12b",
+      "route": "Nemotron 3.5 Super VL 120B A12B, cloud",
+      "consensus": "frontier answer",
+      "raced": 1,
+      "crossChecks": [
+        "destructive_action passed",
+        "pii_guard passed",
+        "schema_validity failed"
+      ],
+      "privacy": "cloud-ok",
+      "costUsd": 0,
+      "latencyMs": 45012
+    }
+  }
+}

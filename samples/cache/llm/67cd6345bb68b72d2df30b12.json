@@ -1,0 +1,30 @@
+{
+  "key": "67cd6345bb68b72d2df30b12",
+  "response": {
+    "text": "{\n  \"price_usd\": 0,\n  \"days_usd\": 0,\n  \"weather_usd\": 0,\n  \"usage_usd\": 37.58,\n  \"billing_error_suspected\": true,\n  \"billing_error_usd\": 19.63\n}",
+    "reasoning": "",
+    "modelRequested": "nvidia/nemotron-3-ultra-550b-a55b",
+    "modelServed": "nvidia/nemotron-3.5-super-vl-120b-a12b",
+    "usage": {
+      "prompt_tokens": 2899,
+      "completion_tokens": 3833,
+      "total_tokens": 6732
+    },
+    "receipt": {
+      "receiptId": "rcpt_req_585afqi4",
+      "requestedModel": "nvidia/nemotron-3-ultra-550b-a55b",
+      "routedModel": "nvidia/nemotron-3.5-super-vl-120b-a12b",
+      "route": "Nemotron 3.5 Super VL 120B A12B, cloud",
+      "consensus": "frontier answer",
+      "raced": 1,
+      "crossChecks": [
+        "destructive_action passed",
+        "pii_guard passed",
+        "schema_validity passed"
+      ],
+      "privacy": "cloud-ok",
+      "costUsd": 0,
+      "latencyMs": 45156
+    }
+  }
+}

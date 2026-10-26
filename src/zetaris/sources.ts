@@ -56,6 +56,7 @@ export function sourceStatements(secrets: SourceSecrets, today: string): readonl
     },
     { source: "household", sql: 'REGISTER DATASOURCE TABLE "households" FROM household_pg' },
     { source: "household", sql: 'REGISTER DATASOURCE TABLE "bills" FROM household_pg' },
+    { source: "household", sql: 'REGISTER DATASOURCE TABLE "decisions" FROM household_pg' },
   ];
 }
 

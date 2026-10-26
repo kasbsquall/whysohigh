@@ -6,9 +6,21 @@
     "modelRequested": "nvidia/nemotron-3.5-super-vl-120b-a12b",
     "modelServed": "nvidia/nemotron-3.5-super-vl-120b-a12b",
     "usage": {
-      "prompt_tokens": 1891,
-      "completion_tokens": 619,
-      "total_tokens": 2510
+      "prompt_tokens": 2085,
+      "completion_tokens": 766,
+      "total_tokens": 2851
+    },
+    "receipt": {
+      "receiptId": "rcpt_req_d2lfyq8j",
+      "requestedModel": "nvidia/nemotron-3.5-super-vl-120b-a12b",
+      "routedModel": "nvidia/nemotron-3.5-super-vl-120b-a12b",
+      "route": "Nemotron 3.5 Super VL 120B A12B, cloud",
+      "consensus": "frontier answer",
+      "raced": 1,
+      "crossChecks": [],
+      "privacy": "cloud-ok",
+      "costUsd": 0,
+      "latencyMs": 5374
     }
   }
 }

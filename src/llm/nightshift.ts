@@ -25,12 +25,30 @@ export interface ChatRequest {
   readonly repeat?: number;
 }
 
+/**
+ * The part of Meterless's compute receipt (schema meterless.compute_receipt.v1) the
+ * run log keeps: which route answered, how many lanes raced, and the cross-checks.
+ */
+export interface ComputeReceipt {
+  readonly receiptId: string;
+  readonly requestedModel: string;
+  readonly routedModel: string;
+  readonly route: string;
+  readonly consensus: string;
+  readonly raced: number | null;
+  readonly crossChecks: readonly string[];
+  readonly privacy: string;
+  readonly costUsd: number | null;
+  readonly latencyMs: number | null;
+}
+
 export interface ChatResult {
   readonly text: string;
   readonly reasoning: string;
   readonly modelRequested: string;
   readonly modelServed: string;
   readonly usage?: Readonly<Record<string, number>>;
+  readonly receipt?: ComputeReceipt;
 }
 
 export interface LlmClient {
@@ -52,6 +70,35 @@ export class NightshiftError extends Error {
 }
 
 const redact = (text: string, secret: string): string => (secret ? text.replaceAll(secret, "[redacted]") : text);
+
+const str = (v: unknown): string => (typeof v === "string" ? v : "");
+const obj = (v: unknown): Record<string, unknown> => (v && typeof v === "object" ? (v as Record<string, unknown>) : {});
+const num = (v: unknown): number | null => (typeof v === "number" && Number.isFinite(v) ? v : null);
+
+/** Keeps the receipt fields worth tracing; undefined when the reply carries no Meterless receipt. */
+export function readReceipt(meterless: unknown): ComputeReceipt | undefined {
+  const m = obj(meterless);
+  if (typeof m.receipt_id !== "string") return undefined;
+  const route = obj(m.winning_route);
+  const receipt = obj(m.receipt);
+  const consensus = obj(receipt.consensus);
+  const checks = obj(receipt.cross_check).checks;
+  return {
+    receiptId: m.receipt_id,
+    requestedModel: str(m.requested_model),
+    routedModel: str(m.routed_model),
+    route: [str(route.label), str(route.kind)].filter(Boolean).join(", "),
+    consensus: str(consensus.label) || str(consensus.level),
+    raced: num(consensus.raced),
+    crossChecks: (Array.isArray(checks) ? checks : [])
+      .map(obj)
+      .map((c) => `${str(c.type)} ${str(c.status)}`.trim())
+      .filter(Boolean),
+    privacy: str(obj(m.privacy).path),
+    costUsd: num(obj(m.cost).actual_usd),
+    latencyMs: num(obj(m.usage).latency_ms),
+  };
+}
 
 /** Splits a completion into the reasoning trace and the final answer. */
 export function splitReasoning(content: string): { text: string; reasoning: string } {
@@ -90,6 +137,7 @@ export async function callNightshift(
   const body = (await response.json()) as {
     model?: string;
     usage?: Record<string, number>;
+    meterless?: unknown;
     choices?: { finish_reason?: string; message?: { content?: string | null } }[];
   };
   const choice = body.choices?.[0];
@@ -105,6 +153,7 @@ export async function callNightshift(
     modelRequested: request.model,
     modelServed: body.model ?? "unknown",
     usage: body.usage,
+    receipt: readReceipt(body.meterless),
   };
 }
 
@@ -196,6 +245,7 @@ export function createLlmClient(deps: LlmDeps): LlmClient {
         modelServed: result.modelServed,
         latencyMs: Date.now() - started,
         usage: result.usage,
+        ...(result.receipt ? { receipt: result.receipt } : {}),
       });
       return result;
     },

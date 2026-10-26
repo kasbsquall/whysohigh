@@ -1,0 +1,26 @@
+{
+  "key": "cc98edc0cac68f121d42f4e2",
+  "response": {
+    "text": "{\n  \"period_start\": \"07/20/2026\",\n  \"period_end\": \"08/19/2026\",\n  \"days\": 30,\n  \"kwh\": 1657,\n  \"total_usd\": 296.77,\n  \"prev_kwh\": 1549,\n  \"prev_days\": 30,\n  \"prev_total_usd\": 278.65,\n  \"line_items\": [\n    {\"label\": \"Customer charge\", \"usd\": 18.79},\n    {\"label\": \"Energy charge 1,657 kWh\", \"usd\": 57.62},\n    {\"label\": \"Riders and adjustments 1,657 kWh\", \"usd\": 220.36}\n  ]\n}",
+    "reasoning": "",
+    "modelRequested": "nvidia/nemotron-3.5-super-vl-120b-a12b",
+    "modelServed": "nvidia/nemotron-3.5-super-vl-120b-a12b",
+    "usage": {
+      "prompt_tokens": 2457,
+      "completion_tokens": 574,
+      "total_tokens": 3031
+    },
+    "receipt": {
+      "receiptId": "rcpt_req_x0uswnbk",
+      "requestedModel": "nvidia/nemotron-3.5-super-vl-120b-a12b",
+      "routedModel": "nvidia/nemotron-3.5-super-vl-120b-a12b",
+      "route": "Nemotron 3.5 Super VL 120B A12B, cloud",
+      "consensus": "frontier answer",
+      "raced": 1,
+      "crossChecks": [],
+      "privacy": "cloud-ok",
+      "costUsd": 0,
+      "latencyMs": 14150
+    }
+  }
+}

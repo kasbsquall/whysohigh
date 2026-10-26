@@ -6,7 +6,7 @@ import { fileCache } from "../src/cache.ts";
 import { loadConfig } from "../src/config.ts";
 import { callNightshift, createLlmClient, splitReasoning } from "../src/llm/nightshift.ts";
 import type { LogEvent, RunLogger } from "../src/log.ts";
-import { createSqlClient, createZetarisRest, ZetarisError } from "../src/zetaris/client.ts";
+import { createSqlClient, createZetarisRest, redactUrlKeys, ZetarisError } from "../src/zetaris/client.ts";
 
 interface Captured {
   readonly url: string;
@@ -221,5 +221,12 @@ describe("sample mode clients", () => {
       { agent: "BillReader", step: "model_call", source: "sample", modelServed: "m" },
       { agent: "WeatherAnalyst", step: "sql", source: "sample", sql: "SELECT 1", rowCount: 1 },
     ]);
+  });
+});
+
+describe("Zetaris error messages", () => {
+  it("never carry a REST source's key", () => {
+    const raw = "REST API call failed: HTTP 429 for URL: https://api.eia.gov/v2/x/?api_key=abc123SECRET&frequency=monthly";
+    expect(redactUrlKeys(raw)).toBe("REST API call failed: HTTP 429 for URL: https://api.eia.gov/v2/x/?api_key=[redacted]&frequency=monthly");
   });
 });

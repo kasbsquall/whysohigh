@@ -1,10 +1,11 @@
 // Orchestration of one explanation run. Agents hand their work to the critic,
 // and a rejection sends the work back with the reason instead of going on.
 
-import type { HouseholdFacts, ProgramId } from "./actions/programs.ts";
+import { PROGRAMS, type HouseholdFacts, type ProgramId } from "./actions/programs.ts";
 import { planActions, type ActionPlan } from "./agents/actionPlanner.ts";
 import { readBill, type Bill } from "./agents/billReader.ts";
 import { checkRecompute, logVerdict, type Verdict } from "./agents/critic.ts";
+import { explainInWords, type Explained } from "./agents/explainer.ts";
 import {
   estimateBill,
   loadTariffs,
@@ -28,6 +29,9 @@ import type { Runtime } from "./runtime.ts";
 import type { BillPeriod, Tariff } from "./tariff/tariff.ts";
 import { historyForBill, noaaSnapshot } from "./input.ts";
 import { billWeather, billWeatherFor, type BillWeather, type HistoryBill } from "./zetaris/queries.ts";
+import { recordDecision, type RecordedDecision } from "./zetaris/decisions.ts";
+import { ohioPrice, type StatePrice } from "./zetaris/statePrice.ts";
+import { componentUsd } from "./agents/usageAnalyst.ts";
 
 export const ORCHESTRATOR = "Orchestrator";
 
@@ -54,7 +58,13 @@ export interface Explanation {
   readonly change: ChangeResult;
   /** ActionPlanner's proposals, each judged by critic check 4. */
   readonly actions: ActionPlan;
+  /** The Explainer's sentences after critic check 6; null when the change was not split. */
+  readonly words: Explained | null;
   readonly memory: MemoryUsed | null;
+  /** The decision written back to the household database through Zetaris; null when not asked for. */
+  readonly recorded: RecordedDecision | null;
+  /** Ohio's average residential price from EIA for the bill's month, next to this bill's. */
+  readonly ohio: StatePrice | null;
 }
 
 const STRATEGIES: readonly RateStrategy[] = ["period_end", "prorated"];
@@ -149,6 +159,8 @@ export interface ExplainOptions {
    * the household's rows in the database.
    */
   readonly earlierBills?: readonly HistoryBill[];
+  /** Write the accepted decision back to household_pg.decisions through Zetaris. */
+  readonly recordDecision?: boolean;
 }
 
 async function billFor(runtime: Runtime, source: string | Bill): Promise<Bill> {
@@ -164,6 +176,57 @@ async function historyOf(runtime: Runtime, bill: Bill, options: ExplainOptions):
   return options.householdId ? billWeather(runtime.sql, "WeatherAnalyst", options.householdId) : [];
 }
 
+/** Nemotron's plain-language sentences for the accepted split, checked number by number. */
+async function wordsFor(runtime: Runtime, bill: Bill, history: readonly BillWeather[], change: ChangeResult, actions: ActionPlan): Promise<Explained | null> {
+  const d = change.decomposition;
+  if (!d || !change.closed) return null;
+  const at = history.findIndex((h) => h.periodStart === isoDate(bill.periodStart));
+  const previous = at > 0 ? history[at - 1] : null;
+  if (!previous) return null;
+  // The page and the API already lead with the change and the next step, so the sentences carry only the reasons.
+  return explainInWords(runtime.llm, runtime.logger, {
+    previousKwh: previous.kwh,
+    currentKwh: bill.kwh,
+    previousDays: previous.days,
+    currentDays: history[at].days,
+    decomposition: d,
+    action: null,
+  });
+}
+
+/** Writes the run's decision back through Zetaris when the split closed and the caller asked for it. */
+async function decisionOf(
+  runtime: Runtime,
+  options: ExplainOptions,
+  rate: RateResult,
+  change: ChangeResult,
+  actions: ActionPlan,
+  words: Explained | null,
+): Promise<RecordedDecision | null> {
+  const d = change.decomposition;
+  if (!options.recordDecision || !options.householdId || !d || !change.closed || !words) return null;
+  const verdicts = [...rate.verdicts, ...change.verdicts, ...actions.actions.flatMap((a) => (a.verdict ? [a.verdict] : [])), ...words.verdicts];
+  const top = actions.actions.find((a) => a.status === "recommended" && a.amount?.kind === "monthly");
+  const { start, end } = rate.estimate.period;
+  return recordDecision(runtime.sql, {
+    runKey: `${options.householdId}:${start}:${options.memoryDir ? "memory" : "no-memory"}`,
+    householdId: options.householdId,
+    periodStart: start,
+    periodEnd: end,
+    changeUsd: d.changeUsd,
+    priceUsd: componentUsd(d, "price"),
+    daysUsd: componentUsd(d, "days"),
+    weatherUsd: componentUsd(d, "weather"),
+    usageUsd: componentUsd(d, "usage"),
+    unexplainedUsd: componentUsd(d, "unexplained"),
+    checksPassed: verdicts.filter((v) => v.accepted).length,
+    checksRun: verdicts.length,
+    action: top ? PROGRAMS[top.id].name : null,
+    actionUsd: top?.amount?.kind === "monthly" ? top.amount.usd : null,
+    explanation: words.text,
+  });
+}
+
 /** source is a bill image path for BillReader, or bill fields already read. */
 export async function explain(runtime: Runtime, source: string | Bill, options: ExplainOptions): Promise<Explanation> {
   const { householdId, memoryDir } = options;
@@ -172,6 +235,7 @@ export async function explain(runtime: Runtime, source: string | Bill, options: 
   const tariffs = await loadTariffs(runtime.sql);
   const rate = analyzeRate(runtime, tariffs, bill, history);
   const { start, end } = rate.estimate.period;
+  const ohio = await ohioPrice(runtime.sql, runtime.logger, end, bill.totalUsd, bill.kwh);
   const plan = (change: ChangeResult, taken: ReadonlyMap<ProgramId, { at: string; text: string }>): ActionPlan =>
     planActions(
       {
@@ -187,7 +251,10 @@ export async function explain(runtime: Runtime, source: string | Bill, options: 
     );
   if (!householdId || !memoryDir) {
     const change = analyzeChange(runtime, tariffs, bill, history, rate);
-    return { bill, history, rate, change, actions: plan(change, new Map()), memory: null };
+    const actions = plan(change, new Map());
+    const words = await wordsFor(runtime, bill, history, change, actions);
+    const recorded = await decisionOf(runtime, options, rate, change, actions, words);
+    return { bill, history, rate, change, actions, words, memory: null, recorded, ohio };
   }
 
   const memory = openHouseholdMemory(join(memoryDir, "hmem"), end);
@@ -203,6 +270,7 @@ export async function explain(runtime: Runtime, source: string | Bill, options: 
 
   const change = analyzeChange(runtime, tariffs, bill, history, rate, oneOffPeriods(memory, end));
   const actions = plan(change, actionsTaken(memory, end));
+  const words = await wordsFor(runtime, bill, history, change, actions);
   // Graph first: if it fails, H-MEM is not left holding a diagnosis the graph lacks.
   await recordRun(
     graph,
@@ -215,7 +283,8 @@ export async function explain(runtime: Runtime, source: string | Bill, options: 
   );
   await recordActionPlan(graph, householdId, actions, end, runtime.logger.runId, runtime.logger);
   rememberDiagnosis(memory, householdId, start, end, summarize(bill, start, end, change), runtime.logger.runId, runtime.logger);
-  return { bill, history, rate, change, actions, memory: used };
+  const recorded = await decisionOf(runtime, options, rate, change, actions, words);
+  return { bill, history, rate, change, actions, words, memory: used, recorded, ohio };
 }
 
 /** One line a later run can recall: the bill and how its change was split. */

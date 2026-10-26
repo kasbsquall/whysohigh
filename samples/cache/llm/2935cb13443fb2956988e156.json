@@ -1,0 +1,9 @@
+{
+  "key": "2935cb13443fb2956988e156",
+  "response": {
+    "providerError": {
+      "status": 502,
+      "message": "Nightshift returned HTTP 502 for nvidia/nemotron-3-ultra-550b-a55b: {\"error\":{\"message\":\"404: {\\\"status\\\":404,\\\"title\\\":\\\"Not Found\\\",\\\"detail\\\":\\\"Function '84bf12ff-edbd-4435-baea-0fa6a7453d2e': Not found for account 'DgXBmsUiiy3If7MLv_3t_eucXS5q-Msozqsp5BkImxo'\\\"}\",\"type\":\"api_error\",\"code\":\"provider_error\",\"param\":null,\"meterless_detail\":\"nvidia_404: {\\\"status\\\":"
+    }
+  }
+}

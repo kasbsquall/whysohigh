@@ -1,0 +1,30 @@
+{
+  "key": "664f66d0e377e3ef9c56895d",
+  "response": {
+    "text": "More billing days added $32.49. Your own use added $2.59. Weather lowered it by $26.72.",
+    "reasoning": "",
+    "modelRequested": "nvidia/nemotron-3.5-lightning-30b-a3b",
+    "modelServed": "nvidia/nemotron-3.5-super-vl-120b-a12b",
+    "usage": {
+      "prompt_tokens": 565,
+      "completion_tokens": 1267,
+      "total_tokens": 1832
+    },
+    "receipt": {
+      "receiptId": "rcpt_req_j7327jct",
+      "requestedModel": "nvidia/nemotron-3.5-lightning-30b-a3b",
+      "routedModel": "nvidia/nemotron-3.5-super-vl-120b-a12b",
+      "route": "Nemotron 3.5 Super VL 120B A12B, cloud",
+      "consensus": "models agreed",
+      "raced": 3,
+      "crossChecks": [
+        "destructive_action passed",
+        "pii_guard passed",
+        "schema_validity skipped"
+      ],
+      "privacy": "cloud-ok",
+      "costUsd": 0,
+      "latencyMs": 36082
+    }
+  }
+}

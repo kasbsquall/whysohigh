@@ -1,0 +1,30 @@
+{
+  "key": "2599c2a96c99e1a8b7d67ae2",
+  "response": {
+    "text": "1. Validate the current bill arithmetic (meter reads imply 1,094 kWh; customer charge + energy charge + riders = $194.21) and compute the total change versus last month ($194.21 − $158.53 = +$35.68). Treat any internal line-item mismatch as a potential billing error.\n\n2. Confirm both billing periods fall under the same AEP Ohio RS tariff (fixed $18.38/month; tier-1 variable $0.0263125 + $0.13441 = $0.1607225 per kWh). Since rates are unchanged and both periods are 31 days, set price_usd = $0.00 and days_usd = $0.00.\n\n3. Estimate weather_usd using the NOAA degree-day bill history: derive a cooling-weather usage relationship, isolate the weather-attributable kWh difference between last month (CDD 111, HDD 100) and the current period (CDD 436, HDD 0), and value that kWh at the effective variable rate.\n\n4. Compute usage_usd as the residual so that price_usd + days_usd + weather_usd + usage_usd equals exactly +$35.68.\n\n5. Screen for a billing error by reconstructing the expected tariff total for 1,094 kWh, comparing it to the stated total and line items, and verifying billed kWh against meter reads; set billing_error_suspected and billing_error_usd accordingly.\n\n6. Return only the JSON object with keys price_usd, days_usd, weather_usd, usage_usd, billing_error_suspected, and billing_error_usd.",
+    "reasoning": "",
+    "modelRequested": "nvidia/nemotron-3-ultra-550b-a55b",
+    "modelServed": "nvidia/nemotron-3.5-super-vl-120b-a12b",
+    "usage": {
+      "prompt_tokens": 2766,
+      "completion_tokens": 1634,
+      "total_tokens": 4400
+    },
+    "receipt": {
+      "receiptId": "rcpt_req_vd7omv3i",
+      "requestedModel": "nvidia/nemotron-3-ultra-550b-a55b",
+      "routedModel": "nvidia/nemotron-3.5-super-vl-120b-a12b",
+      "route": "Nemotron 3.5 Super VL 120B A12B, cloud",
+      "consensus": "models agreed",
+      "raced": 2,
+      "crossChecks": [
+        "destructive_action passed",
+        "pii_guard passed",
+        "schema_validity failed"
+      ],
+      "privacy": "cloud-ok",
+      "costUsd": 0,
+      "latencyMs": 28430
+    }
+  }
+}

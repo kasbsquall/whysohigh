@@ -42,7 +42,7 @@ async function run(step: DemoStep, memoryDir: string): Promise<DemoRun> {
   const runtime = createRuntime();
   const { logger } = runtime;
   logger.log({ agent: ORCHESTRATOR, step: "start", demoStep: step.name, sampleMode: runtime.config.sampleMode, bill: step.bill });
-  const explanation = await explain(runtime, step.bill, { householdId: DEMO_HOUSEHOLD, memoryDir: step.memory ? memoryDir : null, facts: lindaFacts() });
+  const explanation = await explain(runtime, step.bill, { householdId: DEMO_HOUSEHOLD, memoryDir: step.memory ? memoryDir : null, facts: lindaFacts(), recordDecision: true });
   logger.log({ agent: ORCHESTRATOR, step: "done", logFile: logger.file });
   return { step: step.name, runId: logger.runId, sampleMode: runtime.config.sampleMode, logFile: logger.file, ...explanation };
 }
@@ -105,8 +105,8 @@ export interface DemoPayload {
 }
 
 /** Only the events and fields the page shows; paths, retries and token counts stay on the server. */
-const TRACE_FIELDS = ["agent", "step", "sql", "modelServed", "check", "accepted", "reason", "about", "attempt", "target"] as const;
-const TRACE_STEPS: ReadonlySet<string> = new Set(["sql", "model_call", "accepted", "rejected", "retry"]);
+const TRACE_FIELDS = ["agent", "step", "sql", "modelServed", "check", "accepted", "reason", "about", "attempt", "target", "receipt", "text", "modelRequested"] as const;
+const TRACE_STEPS: ReadonlySet<string> = new Set(["sql", "model_call", "accepted", "rejected", "retry", "wrote", "fallback"]);
 
 const readTrace = (file: string): LogEvent[] =>
   readFileSync(file, "utf8")
