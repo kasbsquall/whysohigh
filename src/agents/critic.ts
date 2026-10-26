@@ -43,11 +43,11 @@ export function checkClosure(d: Decomposition): Verdict {
   const allowed = Math.max(Math.abs(d.changeUsd) * CLOSURE_SHARE, CLOSURE_FLOOR_USD);
   const accepted = Math.abs(gapUsd) <= allowed;
   const reason = accepted
-    ? `Price, days, weather and usage explain the ${d.changeUsd.toFixed(2)} USD change; ${Math.abs(gapUsd).toFixed(2)} USD is left, within the ${allowed.toFixed(2)} USD allowed.`
-    : `${Math.abs(gapUsd).toFixed(2)} USD of the ${d.changeUsd.toFixed(2)} USD change is not explained, more than the ${allowed.toFixed(2)} USD allowed ` +
+    ? `Price, days, weather and usage explain the ${Math.abs(d.changeUsd).toFixed(2)} USD change; ${Math.abs(gapUsd).toFixed(2)} USD is left, within the ${allowed.toFixed(2)} USD allowed.`
+    : `${Math.abs(gapUsd).toFixed(2)} USD of the ${Math.abs(d.changeUsd).toFixed(2)} USD change is not explained, more than the ${allowed.toFixed(2)} USD allowed ` +
       `(${CLOSURE_SHARE * 100}% of the change, at least ${CLOSURE_FLOOR_USD} USD). ` +
       (d.usageStrategy === "model"
-        ? `Usage was measured against the ${d.model.source} weather model, which may not fit this household.`
+        ? `Usage was measured against ${d.model.source === "ohio_prior" ? "Ohio averages" : "the weather model fitted to the household's bills"}, which may not fit this household.`
         : "Usage was measured against the model calibrated to the household's previous bill.");
   return { check: "closure", accepted, reason, gapUsd };
 }
