@@ -3,6 +3,7 @@
   "tagline": "Snap your electricity bill. Why So High tells you why it went up and what you can do about it this month.",
   "event": "Open Agent Hackathon 2026",
   "track": "Track 03: Reasoning Architecture",
+  "demo_video": "https://youtu.be/1CA6gYeeOUw",
   "license": "Apache-2.0",
   "scope": "AEP Ohio residential customers in Columbus, Ohio",
   "entry_points": {
