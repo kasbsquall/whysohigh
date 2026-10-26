@@ -84,7 +84,7 @@ function doubleChecked(run: RunView, key: string): string {
   const left = /^(\$[\d,]+\.\d{2}) of the /.exec(c.text)?.[1];
   const redo = c.sentBackTo ? `, so ${esc(agentName(c.sentBackTo))} worked it out again` : ", so it was worked out again";
   const why = left ? `The first try left ${left} unexplained${redo}.` : `The first try did not add up${redo}.`;
-  return `<p class="notice">${icon("seal-check")}<span>We double-checked this. ${why} <a href="#${key}-check-${i + 1}">See check ${i + 1}</a>.</span></p>`;
+  return `<p class="notice">${icon("seal-check")}<span>We double-checked this. ${why} <a href="#${key}-check-${i + 1}">See result ${i + 1}</a>.</span></p>`;
 }
 
 /** Where the sample bill template prints "Total amount due", in the image's own pixels. */
