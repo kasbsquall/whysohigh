@@ -90,7 +90,7 @@ What the checks prove, and what they do not: the first closure check tests wheth
 
 ## Try your own bill
 
-**From a photo.** On the page, "Read your own bill" sends a photo to `POST /api/photo`. BillReader reads it with Nemotron and the same agents explain it, and the result lists every check with its verdict; the photo is deleted once it is read. Reading a new photo needs the live stack (below), and the dialog says so before the first click when it is not there. "Try a sample photo" works everywhere: it replays a recorded reading of a simulated phone photo of a test bill (`web/public/sample-photo.jpg`). Its plain-words sentence is the fallback built from the numbers, because Nemotron's sentence for it was not recorded.
+**From a photo.** On the page, "Read your own bill" sends a photo to `POST /api/photo`. BillReader reads it with Nemotron and the same agents explain it, and the result lists every check with its verdict; the photo is deleted once it is read. Reading a new photo needs the live stack (below), and the dialog says so before the first click when it is not there. "Try a sample photo" works everywhere: it replays a recorded reading of a simulated phone photo of a test bill (`web/public/sample-photo.jpg`).
 
 **From the numbers on the bill.** No keys needed. Write the numbers printed on an AEP Ohio residential bill into a request like `input_examples/example_1.json`:
 
