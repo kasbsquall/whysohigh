@@ -5,7 +5,7 @@ import { PROGRAMS, type HouseholdFacts, type ProgramId } from "./actions/program
 import { planActions, type ActionPlan } from "./agents/actionPlanner.ts";
 import { readBill, type Bill } from "./agents/billReader.ts";
 import { checkRecompute, logVerdict, type Verdict } from "./agents/critic.ts";
-import { explainInWords, type Explained } from "./agents/explainer.ts";
+import { explainInWords, weatherWord, type Explained } from "./agents/explainer.ts";
 import {
   estimateBill,
   loadTariffs,
@@ -191,6 +191,7 @@ async function wordsFor(runtime: Runtime, bill: Bill, history: readonly BillWeat
     currentDays: history[at].days,
     decomposition: d,
     action: null,
+    weather: weatherWord(previous, history[at], componentUsd(d, "weather")),
   });
 }
 

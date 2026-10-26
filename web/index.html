@@ -56,7 +56,10 @@
       <button type="button" class="btn line" id="photoClose"><i class="ph-light ph-x" aria-hidden="true"></i>Close</button>
     </div>
     <p>For AEP Ohio residential bills. Take a sharp photo of the first page. Nemotron reads the dates, kWh and totals, and the same agents split the change with AEP Ohio's published tariff and Columbus weather. The photo is deleted once it is read.</p>
-    <label class="btn solid photo-pick"><i class="ph-light ph-camera" aria-hidden="true"></i>Choose a photo<input type="file" id="photoFile" accept="image/jpeg,image/png" capture="environment" class="sr-only"></label>
+    <div class="photo-actions">
+      <label class="btn solid photo-pick"><i class="ph-light ph-camera" aria-hidden="true"></i>Choose a photo<input type="file" id="photoFile" accept="image/jpeg,image/png" capture="environment" class="sr-only"></label>
+      <button type="button" class="btn line" id="photoSample"><i class="ph-light ph-image" aria-hidden="true"></i>Try a sample photo</button>
+    </div>
     <p id="photoStatus" class="photo-status" role="status" aria-live="polite"></p>
     <div id="photoResult"></div>
   </dialog>

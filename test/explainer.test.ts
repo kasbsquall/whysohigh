@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { biggestReason, checkNumbers, factsFor, templateText, type ExplainInput } from "../src/agents/explainer.ts";
+import { biggestReason, checkNumbers, factsFor, requiredReasons, templateText, weatherWord, type ExplainInput } from "../src/agents/explainer.ts";
 import { readReceipt } from "../src/llm/nightshift.ts";
 import { decisionInsertSql, decisionReadSql, type Decision } from "../src/zetaris/decisions.ts";
 import type { Decomposition } from "../src/agents/usageAnalyst.ts";
@@ -55,6 +55,49 @@ describe("Explainer check 6", () => {
     const text = templateText(input);
     expect(text).toContain("$30.83");
     expect(checkNumbers(text, facts, biggestReason(decomposition)).accepted).toBe(true);
+  });
+});
+
+describe("Explainer facts with a memory note", () => {
+  // Linda's October split with her note: September's extra use did not repeat.
+  const october = {
+    ...decomposition,
+    fromUsd: 217.42,
+    toUsd: 116.77,
+    changeUsd: -100.65,
+    components: [
+      { key: "price", kwh: null, usd: 0 },
+      { key: "one_off", kwh: -183.8, usd: -30.83 },
+      { key: "days", kwh: -90.9, usd: -15.25 },
+      { key: "weather", kwh: -324.9, usd: -54.52 },
+      { key: "usage", kwh: -0.3, usd: -0.05 },
+      { key: "unexplained", kwh: null, usd: 0 },
+    ],
+  } as unknown as Decomposition;
+  const octoberInput: ExplainInput = { ...input, previousKwh: 1184, currentKwh: 584, previousDays: 33, currentDays: 30, decomposition: october, action: null };
+
+  it("passes the one-off use that did not repeat, so the sentences can name it", () => {
+    expect(factsFor(octoberInput).from_last_bill_one_off_use_not_repeating).toBe("-$30.83");
+  });
+
+  it("leaves the fact out when there is no note", () => {
+    expect(Object.keys(facts)).not.toContain("from_last_bill_one_off_use_not_repeating");
+  });
+
+  it("rejects October's first summary, which left out the note's $30.83", () => {
+    const old = "Weather lowered your bill by $54.52. Fewer billing days reduced it by $15.25. Your own use barely changed it, down $0.05.";
+    const v = checkNumbers(old, factsFor(octoberInput), requiredReasons(october));
+    expect(v.accepted).toBe(false);
+    expect(v.reason).toContain("$30.83");
+  });
+
+  it("requires the biggest reason and any other worth a quarter of the change", () => {
+    expect(requiredReasons(october)).toEqual([-54.52, -30.83]);
+    expect(requiredReasons(decomposition)).toEqual([30.83, 20.86]);
+  });
+
+  it("names the one-off in the fallback sentence in plain words", () => {
+    expect(templateText(octoberInput)).toContain("last bill's one-off use not repeating ($30.83)");
   });
 });
 
@@ -129,5 +172,36 @@ describe("Explainer check 6, cut replies", () => {
     const v = checkNumbers("Your own use added $30.83 mainly", facts, 30.83);
     expect(v.accepted).toBe(false);
     expect(v.reason).toContain("mid-sentence");
+  });
+});
+
+describe("Explainer fallback sentence", () => {
+  it("follows the sign: a bill that went down names less use, not more", () => {
+    const down = {
+      ...decomposition,
+      fromUsd: 158.85,
+      toUsd: 150.65,
+      changeUsd: -8.2,
+      components: [
+        { key: "price", kwh: null, usd: 6.56 },
+        { key: "days", kwh: 0, usd: 0 },
+        { key: "weather", kwh: -71, usd: -11.92 },
+        { key: "usage", kwh: -17, usd: -2.84 },
+        { key: "unexplained", kwh: null, usd: 0 },
+      ],
+    } as unknown as Decomposition;
+    const text = templateText({ ...input, decomposition: down, action: null, weather: "warmer" });
+    expect(text).toBe("Most of the change came from warmer weather ($11.92) and less use at home ($2.84).");
+  });
+});
+
+describe("Explainer weather word", () => {
+  it("says cooler for a summer drop and warmer for a spring drop", () => {
+    expect(weatherWord({ days: 29, cdd: 297, hdd: 0 }, { days: 33, cdd: 322.5, hdd: 1.5 }, -4.39)).toBe("cooler");
+    expect(weatherWord({ days: 31, cdd: 0, hdd: 400 }, { days: 30, cdd: 20, hdd: 150 }, -11.92)).toBe("warmer");
+  });
+
+  it("passes the word to the model as a fact", () => {
+    expect(factsFor({ ...input, weather: "cooler" }).weather_compared_with_last_bill).toBe("cooler");
   });
 });

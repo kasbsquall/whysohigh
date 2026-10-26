@@ -5,10 +5,12 @@
 //   npm run serve            (after npm run web:build)
 // Binds to 127.0.0.1 unless HOST says otherwise. Without .env it runs in SAMPLE_MODE.
 
-import { createReadStream, existsSync, mkdtempSync, rmSync, statSync, writeFileSync } from "node:fs";
+import { createReadStream, existsSync, mkdtempSync, readFileSync, statSync } from "node:fs";
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
 import { tmpdir } from "node:os";
 import { extname, join, normalize, resolve, sep } from "node:path";
+import { readBillPhoto, SAMPLE_PHOTO } from "../src/billPhoto.ts";
+import { SampleMissError } from "../src/cache.ts";
 import { demoPayload, runLindaDemo, type DemoPayload } from "../src/demo.ts";
 import { InputError, parseRunInput } from "../src/input.ts";
 import { runRequest } from "../src/runRequest.ts";
@@ -31,7 +33,7 @@ const TYPES: Readonly<Record<string, string>> = {
 /** The demo runs once per server process; every request reads the same result. */
 let demo: Promise<DemoPayload> | null = null;
 const SAMPLE_PHOTO_MESSAGE =
-  "Reading a new photo needs the live models. This copy of the page replays a recorded run, so it can only show Linda's two bills. To read your own bill, run Why So High with its models (README, Run it live).";
+  "Reading a new photo needs the live models. This copy of the page replays recorded runs, so it can show the sample photo but cannot read a new one. To read your own bill, run Why So High with its models (README, Run it live).";
 
 const loadDemo = (): Promise<DemoPayload> => {
   demo ??= runLindaDemo(join(mkdtempSync(join(tmpdir(), "wsh-web-")), "memory"))
@@ -150,11 +152,6 @@ async function handlePhoto(req: IncomingMessage, res: ServerResponse): Promise<v
     return;
   }
   const runtime = createRuntime();
-  if (runtime.config.sampleMode) {
-    req.resume();
-    send(res, 503, JSON_TYPE, failure("SampleMode", SAMPLE_PHOTO_MESSAGE));
-    return;
-  }
   if (photoBusy) {
     req.resume();
     send(res, 429, JSON_TYPE, failure("Busy", "Another photo is being read. Try again in a minute."));
@@ -165,29 +162,35 @@ async function handlePhoto(req: IncomingMessage, res: ServerResponse): Promise<v
     send(res, 413, JSON_TYPE, failure("TooLarge", "The photo is too large. Try a smaller one."));
     return;
   }
-  let match: RegExpExecArray | null = null;
+  let raw: { image?: unknown; sample?: unknown } = {};
   try {
-    const raw = JSON.parse(body) as { image?: unknown };
-    match = typeof raw.image === "string" ? PHOTO.exec(raw.image) : null;
+    raw = JSON.parse(body) as { image?: unknown; sample?: unknown };
   } catch {
-    match = null;
+    raw = {};
   }
-  const bytes = match ? Buffer.from(match[2], "base64") : null;
-  if (!match || !bytes || !MAGIC[match[1]].every((b, i) => bytes[i] === b)) {
+  // The sample photo is read from disk, so sample mode can replay its recorded run.
+  const isSample = raw.sample === true;
+  if (!isSample && runtime.config.sampleMode) {
+    send(res, 503, JSON_TYPE, failure("SampleMode", SAMPLE_PHOTO_MESSAGE));
+    return;
+  }
+  const match = !isSample && typeof raw.image === "string" ? PHOTO.exec(raw.image) : null;
+  const bytes = isSample ? readFileSync(SAMPLE_PHOTO) : match ? Buffer.from(match[2], "base64") : null;
+  const kind = isSample ? "jpeg" : match?.[1];
+  if (!bytes || !kind || !MAGIC[kind].every((b, i) => bytes[i] === b)) {
     send(res, 400, JSON_TYPE, failure("InvalidInput", "That file is not a JPG or PNG photo."));
     return;
   }
-  const dir = mkdtempSync(join(tmpdir(), "wsh-photo-"));
-  const file = join(dir, `bill.${match[1] === "jpeg" ? "jpg" : "png"}`);
   photoBusy = true;
   try {
-    writeFileSync(file, bytes);
-    const result = await runRequest(runtime, { householdId: null, bill: { imagePath: file }, facts: {}, earlierBills: [] }, null);
+    const result = await readBillPhoto(runtime, bytes, kind as "jpeg" | "png");
     if (result.status === "success") send(res, 200, JSON_TYPE, JSON.stringify(result));
     else send(res, 422, JSON_TYPE, JSON.stringify({ ...result, error: { type: result.error.type, message: "We could not read that bill. A sharp, flat photo of the first page works best." } }));
+  } catch (error: unknown) {
+    if (!(error instanceof SampleMissError)) throw error;
+    send(res, 503, JSON_TYPE, failure("SampleMode", SAMPLE_PHOTO_MESSAGE));
   } finally {
     photoBusy = false;
-    rmSync(dir, { recursive: true, force: true });
   }
 }
 

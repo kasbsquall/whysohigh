@@ -1,0 +1,30 @@
+{
+  "key": "6e30c6e67b0a5876855825ed",
+  "response": {
+    "text": "Weather reduced the bill by $15.24. Higher price per kWh added $6.56.",
+    "reasoning": "",
+    "modelRequested": "nvidia/nemotron-3.5-lightning-30b-a3b",
+    "modelServed": "nvidia/nemotron-3.5-super-vl-120b-a12b",
+    "usage": {
+      "prompt_tokens": 3412,
+      "completion_tokens": 2995,
+      "total_tokens": 6407
+    },
+    "receipt": {
+      "receiptId": "rcpt_req_44wjkpps",
+      "requestedModel": "nvidia/nemotron-3.5-lightning-30b-a3b",
+      "routedModel": "nvidia/nemotron-3.5-super-vl-120b-a12b",
+      "route": "Nemotron 3.5 Super VL 120B A12B, cloud",
+      "consensus": "frontier answer",
+      "raced": 1,
+      "crossChecks": [
+        "destructive_action passed",
+        "pii_guard passed",
+        "schema_validity skipped"
+      ],
+      "privacy": "cloud-ok",
+      "costUsd": 0,
+      "latencyMs": 90017
+    }
+  }
+}

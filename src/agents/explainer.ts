@@ -9,12 +9,17 @@ import type { RunLogger } from "../log.ts";
 import type { PlannedAction } from "./actionPlanner.ts";
 import { AGENT as CRITIC, logVerdict, type Verdict } from "./critic.ts";
 import { componentUsd, type Decomposition } from "./usageAnalyst.ts";
+import type { WeatherWord } from "./weatherWord.ts";
 
 export const AGENT = "Explainer";
 export const EXPLAINER_MODEL = "nvidia/nemotron-3.5-lightning-30b-a3b";
 // Nemotron reasons before it answers; with 2,000 tokens the September answer came back cut mid-sentence.
 const MAX_TOKENS = 6000;
 const ATTEMPTS = 2;
+/** Every reason worth at least this share of the change must be named, not only the biggest. */
+const NAMED_SHARE = 0.25;
+
+export { weatherWord, type WeatherWord } from "./weatherWord.ts";
 
 export interface Explained {
   readonly text: string;
@@ -31,6 +36,8 @@ export interface ExplainInput {
   readonly decomposition: Decomposition;
   /** The first recommended action with a monthly or one-time amount, if any. */
   readonly action: { readonly name: string; readonly usd: number; readonly insteadOfUsd: number | null } | null;
+  /** The weather compared with the last bill, so the sentences do not guess its direction. */
+  readonly weather?: WeatherWord;
 }
 
 const usd = (n: number): string => `$${Math.abs(n).toFixed(2)}`;
@@ -47,7 +54,10 @@ export function factsFor(input: ExplainInput): Record<string, string | number> {
     from_more_or_fewer_billing_days: `${c("days") >= 0 ? "+" : "-"}${usd(c("days"))}`,
     from_weather: `${c("weather") >= 0 ? "+" : "-"}${usd(c("weather"))}`,
     from_the_household_own_use: `${c("usage") >= 0 ? "+" : "-"}${usd(c("usage"))}`,
+    // Only with a memory note: the last bill's one-off use, which this bill did not repeat.
+    ...(c("one_off") !== 0 ? { from_last_bill_one_off_use_not_repeating: `${c("one_off") >= 0 ? "+" : "-"}${usd(c("one_off"))}` } : {}),
     not_explained: usd(c("unexplained")),
+    ...(input.weather ? { weather_compared_with_last_bill: input.weather } : {}),
     previous_bill_days: input.previousDays,
     this_bill_days: input.currentDays,
     previous_bill_kwh: input.previousKwh,
@@ -70,6 +80,7 @@ const SYSTEM =
   "so do not open with it: start with the biggest reason, then the next one, and say what pulled the other way if anything did. " +
   "If FACTS has an action, end with what it could do and its amount; the household still has to apply. " +
   "Write dollar amounts without a plus or minus sign; let the words say which way they moved. " +
+  "Name every reason worth a quarter of the change or more. If FACTS says how the weather compared with the last bill, use that word for it. " +
   "Use only numbers that appear in FACTS, written exactly as " +
   "they appear there (dollars with two decimals). No other numbers, no percentages, no dates, no math shown. " +
   "Do not call the reader by name. Reply with the sentences only.";
@@ -95,14 +106,26 @@ export function biggestReason(d: Decomposition): number {
   return same.reduce((a, c) => (Math.abs(c.usd) > Math.abs(a) ? c.usd : a), 0);
 }
 
-export function checkNumbers(text: string, facts: Record<string, string | number>, mustStateUsd: number): Verdict {
+/** The reasons the sentences must name: the biggest, and any other worth NAMED_SHARE of the change. */
+export function requiredReasons(d: Decomposition): readonly number[] {
+  const biggest = biggestReason(d);
+  const others = d.components
+    .filter((c) => c.key !== "unexplained" && Math.sign(c.usd) === Math.sign(d.changeUsd) && c.usd !== biggest)
+    .filter((c) => Math.abs(c.usd) >= NAMED_SHARE * Math.abs(d.changeUsd))
+    .map((c) => c.usd);
+  return [biggest, ...others];
+}
+
+export function checkNumbers(text: string, facts: Record<string, string | number>, mustState: number | readonly number[]): Verdict {
   const allowed = allowedNumbers(facts);
   const found = (text.match(NUMBER) ?? []).map((m) => Number(m.replaceAll(",", "")).toFixed(2));
   const strange = [...new Set(found.filter((n) => !allowed.has(n)))];
-  const must = Math.abs(mustStateUsd).toFixed(2);
+  const [biggest, ...others] = typeof mustState === "number" ? [mustState] : mustState;
+  const missing = others.filter((n) => !found.includes(Math.abs(n).toFixed(2)));
   const problems = [
     strange.length > 0 ? `uses ${strange.map((n) => n.replace(/\.00$/, "")).join(", ")}, which the agents did not compute` : null,
-    found.includes(must) ? null : `leaves out the biggest reason, ${usd(mustStateUsd)}`,
+    found.includes(Math.abs(biggest).toFixed(2)) ? null : `leaves out the biggest reason, ${usd(biggest)}`,
+    missing.length > 0 ? `leaves out ${missing.map(usd).join(" and ")}, a quarter of the change or more` : null,
     text.trim() === "" ? "is empty" : null,
     text.trim() !== "" && !/[.!?]["”)]?$/.test(text.trim()) ? "stops mid-sentence" : null,
   ].filter((p): p is string => p !== null);
@@ -113,11 +136,13 @@ export function checkNumbers(text: string, facts: Record<string, string | number
   return { check: "explanation_numbers", accepted, reason, gapUsd: 0 };
 }
 
-const LABEL: Readonly<Record<string, string>> = {
-  days: "more days on this bill",
-  usage: "more use at home",
-  weather: "the weather",
-  price: "a higher price per kWh",
+/** How each reason reads in the fallback sentence, for a bill that went up and one that went down. */
+const LABEL: Readonly<Record<string, readonly [up: string, down: string]>> = {
+  days: ["more days on this bill", "fewer days on this bill"],
+  usage: ["more use at home", "less use at home"],
+  weather: ["the weather", "the weather"],
+  price: ["a higher price per kWh", "a lower price per kWh"],
+  one_off: ["the last bill's one-off use not repeating", "the last bill's one-off use not repeating"],
 };
 
 /** The sentence used when the model is unavailable or its sentences fail check 6 twice. */
@@ -126,8 +151,8 @@ export function templateText(input: ExplainInput): string {
   const ups = d.components
     .filter((c) => c.key !== "unexplained" && Math.sign(c.usd) === Math.sign(d.changeUsd) && c.usd !== 0)
     .sort((a, b) => Math.abs(b.usd) - Math.abs(a.usd))
-    .slice(0, 2)
-    .map((c) => `${LABEL[c.key] ?? c.key} (${usd(c.usd)})`);
+    .filter((c, i) => i < 2 || Math.abs(c.usd) >= NAMED_SHARE * Math.abs(d.changeUsd))
+    .map((c) => `${c.key === "weather" && input.weather ? `${input.weather} weather` : (LABEL[c.key]?.[c.usd >= 0 ? 0 : 1] ?? c.key)} (${usd(c.usd)})`);
   const why = ups.length > 0 ? `Most of the change came from ${ups.join(" and ")}.` : `The bill went from ${usd(d.fromUsd)} to ${usd(d.toUsd)}.`;
   const act = input.action ? ` ${input.action.name} could make it ${usd(input.action.usd)} a month.` : "";
   return `${why}${act}`;
@@ -155,7 +180,7 @@ export async function explainInWords(llm: LlmClient, logger: RunLogger, input: E
       return { text: templateText(input), source: "template", verdicts };
     }
     logger.log({ agent: AGENT, step: "wrote", attempt, text });
-    const verdict = checkNumbers(text, facts, biggestReason(input.decomposition));
+    const verdict = checkNumbers(text, facts, requiredReasons(input.decomposition));
     verdicts.push(verdict);
     logVerdict(logger, verdict, AGENT, attempt);
     if (verdict.accepted) return { text, source: "model", verdicts };

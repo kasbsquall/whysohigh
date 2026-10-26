@@ -6,6 +6,7 @@ import type { ComponentKey } from "../../src/agents/usageAnalyst.ts";
 import type { DemoPayload, DemoPayloadRun, DemoRules, Household } from "../../src/demo.ts";
 import type { DemoWeather } from "../../src/demoWeather.ts";
 import type { LogEvent } from "../../src/log.ts";
+import { weatherWord } from "../../src/agents/weatherWord.ts";
 import type { BillWeather } from "../../src/zetaris/queries.ts";
 import { day, month, plainCheck, plainReason, usd } from "./format.ts";
 
@@ -188,10 +189,8 @@ function weatherDetail(previous: BillWeather, current: BillWeather): string {
  */
 export function weatherTitle(previous: BillWeather | undefined, current: BillWeather | undefined, amount: number): string {
   if (!previous || !current) return amount <= 0 ? "Milder weather" : "Weather that needed more energy";
-  const cooling = previous.cdd / previous.days + current.cdd / current.days;
-  const heating = previous.hdd / previous.days + current.hdd / current.days;
-  if (cooling >= heating) return amount <= 0 ? "Cooler weather" : "Hotter weather";
-  return amount <= 0 ? "Warmer weather" : "Colder weather";
+  const word = weatherWord(previous, current, amount);
+  return `${word.charAt(0).toUpperCase()}${word.slice(1)} weather`;
 }
 
 interface CauseContext {

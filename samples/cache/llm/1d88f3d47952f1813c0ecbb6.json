@@ -1,0 +1,26 @@
+{
+  "key": "1d88f3d47952f1813c0ecbb6",
+  "response": {
+    "text": "{\n  \"period_start\": \"09/16/2026\",\n  \"period_end\": \"10/16/2026\",\n  \"days\": 30,\n  \"kwh\": 584,\n  \"total_usd\": 116.77,\n  \"prev_kwh\": 1184,\n  \"prev_days\": 33,\n  \"prev_total_usd\": 217.42,\n  \"line_items\": [\n    {\"label\": \"Customer charge\", \"usd\": 18.79},\n    {\"label\": \"Energy charge 584 kWh\", \"usd\": 20.31},\n    {\"label\": \"Riders and adjustments 584 kWh\", \"usd\": 77.67}\n  ]\n}",
+    "reasoning": "",
+    "modelRequested": "nvidia/nemotron-3.5-lightning-30b-a3b",
+    "modelServed": "nvidia/nemotron-3.5-lightning-30b-a3b",
+    "usage": {
+      "prompt_tokens": 1823,
+      "completion_tokens": 2252,
+      "total_tokens": 4075
+    },
+    "receipt": {
+      "receiptId": "rcpt_req_jfxskkux",
+      "requestedModel": "nvidia/nemotron-3.5-lightning-30b-a3b",
+      "routedModel": "nvidia/nemotron-3.5-lightning-30b-a3b",
+      "route": "Nemotron 3.5 Lightning 30B A3B, cloud",
+      "consensus": "models agreed",
+      "raced": 3,
+      "crossChecks": [],
+      "privacy": "cloud-ok",
+      "costUsd": 0,
+      "latencyMs": 25192
+    }
+  }
+}
