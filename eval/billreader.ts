@@ -10,6 +10,10 @@
 //
 // These are clean renders of one synthetic layout, not phone photos of real
 // AEP Ohio bills; the result says how well the model reads this layout only.
+//
+// --photos reads eval/bills/photo/<id>.jpg instead (python scripts/photo-bills.py):
+// the same bills turned, seen at an angle, blurred, unevenly lit and saved as
+// compressed JPEGs, to measure how reading holds up on phone-like photos.
 
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { readBill, type Bill } from "../src/agents/billReader.ts";
@@ -18,6 +22,8 @@ import { createRuntime } from "../src/runtime.ts";
 import type { EvalHousehold } from "./households.ts";
 
 const RESULTS = "eval/results";
+const PHOTOS = process.argv.includes("--photos");
+const imageOf = (id: string): string => (PHOTOS ? `eval/bills/photo/${id}.jpg` : `eval/bills/png/${id}.png`);
 const CONCURRENCY = 3;
 const FIELDS = ["period_start", "period_end", "days", "kwh", "total_usd", "prev_kwh", "prev_days", "prev_total_usd", "line_items_sum"] as const;
 type Field = (typeof FIELDS)[number];
@@ -67,8 +73,8 @@ const households = JSON.parse(readFileSync("eval/households.json", "utf8")) as E
 const runtime = createRuntime({ echo: (): void => {} });
 
 async function evaluate(h: EvalHousehold): Promise<Outcome> {
-  const image = `eval/bills/png/${h.id}.png`;
-  if (!existsSync(image)) throw new Error(`${image} is missing. Run python scripts/render-bills.py first.`);
+  const image = imageOf(h.id);
+  if (!existsSync(image)) throw new Error(`${image} is missing. Run python scripts/${PHOTOS ? "photo-bills" : "render-bills"}.py first.`);
   try {
     const got = valuesOf(await readBill(runtime.llm, runtime.logger, image));
     const expected = truthOf(h);
@@ -105,13 +111,16 @@ const summary = {
   fieldAccuracy,
   sampleMode: runtime.config.sampleMode,
   logFile: runtime.logger.file,
-  note: "Clean renders of one synthetic bill layout (scripts/render-bills.py), not photos of real bills.",
+  note: PHOTOS
+    ? "Simulated phone photos (scripts/photo-bills.py) of the clean renders: turned up to 6 degrees, keystone up to 5%, blur 0.5 to 1.6 px, uneven light, JPEG quality 55 to 80. Not photos of real bills."
+    : "Clean renders of one synthetic bill layout (scripts/render-bills.py), not photos of real bills.",
   outcomes,
 };
 mkdirSync(RESULTS, { recursive: true });
-writeFileSync(`${RESULTS}/billreader.json`, `${JSON.stringify(summary, null, 2)}\n`, "utf8");
+const file = `${RESULTS}/${PHOTOS ? "billreader-photos" : "billreader"}.json`;
+writeFileSync(file, `${JSON.stringify(summary, null, 2)}\n`, "utf8");
 process.stdout.write(
   `BillReader: read ${read.length} of ${outcomes.length} bills, all fields right on ${summary.allFieldsCorrect}.\n` +
     FIELDS.map((f) => `  ${f.padEnd(15)} ${fieldAccuracy[f].correct}/${fieldAccuracy[f].of}`).join("\n") +
-    `\nWrote ${RESULTS}/billreader.json\n`,
+    `\nWrote ${file}\n`,
 );

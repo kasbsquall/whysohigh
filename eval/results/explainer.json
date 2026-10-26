@@ -1,0 +1,166 @@
+{
+  "summary": {
+    "note": "Households without a billing error whose split the critic accepted. One run each, temperature 0.",
+    "households": 22,
+    "passedFirstTry": 22,
+    "passedAfterSendBack": 0,
+    "fellBackToNumbersOnly": 0,
+    "sentBack": []
+  },
+  "rows": [
+    {
+      "id": "eval-01",
+      "source": "model",
+      "attempts": 1,
+      "rejected": [],
+      "text": "Weather lowered your bill by $16.60. Your own use raised it by $4.77. A higher price per kWh added $3.23."
+    },
+    {
+      "id": "eval-04",
+      "source": "model",
+      "attempts": 1,
+      "rejected": [],
+      "text": "A higher price per kWh added $6.24. More billing days added $4.63. Your own use lowered it by $4.03."
+    },
+    {
+      "id": "eval-05",
+      "source": "model",
+      "attempts": 1,
+      "rejected": [],
+      "text": "Weather lowered your bill by $15.24. A higher price per kWh raised it by $6.56. Your own use added $0.48."
+    },
+    {
+      "id": "eval-06",
+      "source": "model",
+      "attempts": 1,
+      "rejected": [],
+      "text": "Weather lowered your bill by $46.84. Your own use lowered it by $22.78. A higher price per kWh raised it by $10.30."
+    },
+    {
+      "id": "eval-07",
+      "source": "model",
+      "attempts": 1,
+      "rejected": [],
+      "text": "More billing days added $32.49. Your own use added $2.59. Weather lowered it by $26.72."
+    },
+    {
+      "id": "eval-08",
+      "source": "model",
+      "attempts": 1,
+      "rejected": [],
+      "text": "More billing days added $50.65. Weather lowered it by $22.64. Your own use lowered it by $1.97."
+    },
+    {
+      "id": "eval-09",
+      "source": "model",
+      "attempts": 1,
+      "rejected": [],
+      "text": "Weather lowered your bill by $71.45. More billing days raised it by $50.26. Your own use added $12.51."
+    },
+    {
+      "id": "eval-10",
+      "source": "model",
+      "attempts": 1,
+      "rejected": [],
+      "text": "Weather added +$41.31. More billing days added +$40.78. Your own use pulled it down -$33.06."
+    },
+    {
+      "id": "eval-11",
+      "source": "model",
+      "attempts": 1,
+      "rejected": [],
+      "text": "Weather added $54.04. Six more billing days added $26.14. Household use lowered it by $6.69."
+    },
+    {
+      "id": "eval-12",
+      "source": "model",
+      "attempts": 1,
+      "rejected": [],
+      "text": "More billing days added $40.40. Weather lowered it by $5.18. Your own use lowered it by $3.69."
+    },
+    {
+      "id": "eval-13",
+      "source": "model",
+      "attempts": 1,
+      "rejected": [],
+      "text": "Weather raised your bill by $20.75. Your own use added $0.11."
+    },
+    {
+      "id": "eval-14",
+      "source": "model",
+      "attempts": 1,
+      "rejected": [],
+      "text": "Weather raised your bill by $40.77. Your own use lowered it by $3.37."
+    },
+    {
+      "id": "eval-15",
+      "source": "model",
+      "attempts": 1,
+      "rejected": [],
+      "text": "Your own use lowered your bill by $7.98. Weather raised it by $1.70."
+    },
+    {
+      "id": "eval-16",
+      "source": "model",
+      "attempts": 1,
+      "rejected": [],
+      "text": "Your own use lowered your bill by $10.63. Weather lowered it by $3.35."
+    },
+    {
+      "id": "eval-17",
+      "source": "model",
+      "attempts": 1,
+      "rejected": [],
+      "text": "Weather raised your bill by $43.88. Your own use added $3.26."
+    },
+    {
+      "id": "eval-18",
+      "source": "model",
+      "attempts": 1,
+      "rejected": [],
+      "text": "Weather lowered your bill by $55.81. Your own use raised it by $13.20."
+    },
+    {
+      "id": "eval-19",
+      "source": "model",
+      "attempts": 1,
+      "rejected": [],
+      "text": "Weather lowered your bill by $43.14. Your own use raised it by $41.39."
+    },
+    {
+      "id": "eval-20",
+      "source": "model",
+      "attempts": 1,
+      "rejected": [],
+      "text": "Your own use raised the bill by $63.06. Weather lowered it by $46.35."
+    },
+    {
+      "id": "eval-21",
+      "source": "model",
+      "attempts": 1,
+      "rejected": [],
+      "text": "Weather raised your bill by $42.53. Your own use added $26.69. An extra billing day added $5.36."
+    },
+    {
+      "id": "eval-22",
+      "source": "model",
+      "attempts": 1,
+      "rejected": [],
+      "text": "Your own use lowered your bill by $59.86. Weather lowered it by $14.89. Extra billing days raised it by $6.99."
+    },
+    {
+      "id": "eval-23",
+      "source": "model",
+      "attempts": 1,
+      "rejected": [],
+      "text": "Your own use raised the bill by $60.46. Weather lowered it by $42.34."
+    },
+    {
+      "id": "eval-24",
+      "source": "model",
+      "attempts": 1,
+      "rejected": [],
+      "text": "Your own use lowered your bill by $47.60. Weather lowered it by $21.44. An extra billing day raised it by $5.62."
+    }
+  ]
+}

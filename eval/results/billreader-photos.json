@@ -1,0 +1,198 @@
+{
+  "bills": 30,
+  "read": 30,
+  "allFieldsCorrect": 30,
+  "fieldAccuracy": {
+    "period_start": {
+      "correct": 30,
+      "of": 30
+    },
+    "period_end": {
+      "correct": 30,
+      "of": 30
+    },
+    "days": {
+      "correct": 30,
+      "of": 30
+    },
+    "kwh": {
+      "correct": 30,
+      "of": 30
+    },
+    "total_usd": {
+      "correct": 30,
+      "of": 30
+    },
+    "prev_kwh": {
+      "correct": 30,
+      "of": 30
+    },
+    "prev_days": {
+      "correct": 30,
+      "of": 30
+    },
+    "prev_total_usd": {
+      "correct": 30,
+      "of": 30
+    },
+    "line_items_sum": {
+      "correct": 30,
+      "of": 30
+    }
+  },
+  "sampleMode": false,
+  "logFile": "logs\\20261026T045616-60e9fde8.jsonl",
+  "note": "Simulated phone photos (scripts/photo-bills.py) of the clean renders: turned up to 6 degrees, keystone up to 5%, blur 0.5 to 1.6 px, uneven light, JPEG quality 55 to 80. Not photos of real bills.",
+  "outcomes": [
+    {
+      "id": "eval-01",
+      "read": true,
+      "wrong": []
+    },
+    {
+      "id": "eval-02",
+      "read": true,
+      "wrong": []
+    },
+    {
+      "id": "eval-03",
+      "read": true,
+      "wrong": []
+    },
+    {
+      "id": "eval-04",
+      "read": true,
+      "wrong": []
+    },
+    {
+      "id": "eval-05",
+      "read": true,
+      "wrong": []
+    },
+    {
+      "id": "eval-06",
+      "read": true,
+      "wrong": []
+    },
+    {
+      "id": "eval-07",
+      "read": true,
+      "wrong": []
+    },
+    {
+      "id": "eval-08",
+      "read": true,
+      "wrong": []
+    },
+    {
+      "id": "eval-09",
+      "read": true,
+      "wrong": []
+    },
+    {
+      "id": "eval-10",
+      "read": true,
+      "wrong": []
+    },
+    {
+      "id": "eval-11",
+      "read": true,
+      "wrong": []
+    },
+    {
+      "id": "eval-12",
+      "read": true,
+      "wrong": []
+    },
+    {
+      "id": "eval-13",
+      "read": true,
+      "wrong": []
+    },
+    {
+      "id": "eval-14",
+      "read": true,
+      "wrong": []
+    },
+    {
+      "id": "eval-15",
+      "read": true,
+      "wrong": []
+    },
+    {
+      "id": "eval-16",
+      "read": true,
+      "wrong": []
+    },
+    {
+      "id": "eval-17",
+      "read": true,
+      "wrong": []
+    },
+    {
+      "id": "eval-18",
+      "read": true,
+      "wrong": []
+    },
+    {
+      "id": "eval-19",
+      "read": true,
+      "wrong": []
+    },
+    {
+      "id": "eval-20",
+      "read": true,
+      "wrong": []
+    },
+    {
+      "id": "eval-21",
+      "read": true,
+      "wrong": []
+    },
+    {
+      "id": "eval-22",
+      "read": true,
+      "wrong": []
+    },
+    {
+      "id": "eval-23",
+      "read": true,
+      "wrong": []
+    },
+    {
+      "id": "eval-24",
+      "read": true,
+      "wrong": []
+    },
+    {
+      "id": "eval-25",
+      "read": true,
+      "wrong": []
+    },
+    {
+      "id": "eval-26",
+      "read": true,
+      "wrong": []
+    },
+    {
+      "id": "eval-27",
+      "read": true,
+      "wrong": []
+    },
+    {
+      "id": "eval-28",
+      "read": true,
+      "wrong": []
+    },
+    {
+      "id": "eval-29",
+      "read": true,
+      "wrong": []
+    },
+    {
+      "id": "eval-30",
+      "read": true,
+      "wrong": []
+    }
+  ]
+}

@@ -22,6 +22,7 @@
     "eval:generate": "tsx eval/generate.ts",
     "eval": "tsx eval/run.ts",
     "eval:billreader": "tsx eval/billreader.ts",
+    "eval:explainer": "tsx eval/explainer.ts",
     "serve": "tsx server/index.ts",
     "web:dev": "vite --config web/vite.config.ts",
     "web:build": "vite build --config web/vite.config.ts"

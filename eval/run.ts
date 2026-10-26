@@ -1,7 +1,9 @@
 // Evaluation: the agents against the known truth of the 30 synthetic households
-// in eval/households.json, next to two baselines:
+// in eval/households.json, next to three baselines:
 //   (a) "it was the weather": the whole change goes to weather;
-//   (b) Nemotron with the bill only: the bill's text and no tools, k = 3 repetitions.
+//   (b) Nemotron with the bill only: the bill's text and no tools, k = 3 repetitions;
+//   (c) Nemotron with the agents' data: the bill, the published tariffs and the
+//       household's bill history with NOAA degree days, k = 3 repetitions.
 // The truth is the same dollar accounting the agents use (price from the
 // published tariff, then days, weather and usage in waterfall order) applied with
 // the household's true weather response, which the agents never see. What the
@@ -42,6 +44,12 @@ export const BASELINE_PROMPT =
   "usage_usd (the household itself using more or less). Also say whether you suspect a billing error and, if so, how many dollars. " +
   "Return only a JSON object with keys price_usd, days_usd, weather_usd, usage_usd, " +
   "billing_error_suspected (true or false) and billing_error_usd (number or null).";
+
+export const INFORMED_AGENT = "InformedBaseline";
+export const INFORMED_PROMPT =
+  `${BASELINE_PROMPT} You also get the data the agents get: the AEP Ohio residential tariffs published in OpenEI URDB that ` +
+  "cover the bills (fixed monthly charge, and per-kWh rate plus adjustment for each tier), and the household's bill history " +
+  "with cooling and heating degree days (base 65 F) for each bill from NOAA's Columbus airport station.";
 
 const quiet = { echo: (): void => {} };
 const cents = (n: number): number => Math.round(n * 100) / 100;
@@ -126,6 +134,17 @@ function truthOf(h: EvalHousehold, tariffs: readonly Tariff[], history: readonly
   return splitOf(d.components);
 }
 
+/** The bill text plus the tariffs and history the agents read through Zetaris. */
+function informedContent(h: EvalHousehold, tariffs: readonly Tariff[], history: readonly BillWeather[]): string {
+  const first = history[0]?.periodStart ?? "";
+  const last = history.at(-1)?.periodEnd ?? "";
+  const covering = tariffs
+    .filter((t) => t.approved && t.start < last && (t.end === null || t.end >= first))
+    .map((t) => ({ name: t.label, start: t.start, end: t.end, fixedMonthlyUsd: t.fixedMonthlyUsd, tiers: t.tiers }));
+  const bills = history.map((b) => ({ periodStart: b.periodStart, periodEnd: b.periodEnd, days: b.days, kwh: b.kwh, cdd: b.cdd, hdd: b.hdd }));
+  return `${INFORMED_PROMPT}\n\nBill text:\n${h.billText}\n\nTariffs:\n${JSON.stringify(covering)}\n\nBill history with degree days:\n${JSON.stringify(bills)}`;
+}
+
 interface BaselineRecord {
   readonly id: string;
   readonly repeat: number;
@@ -154,11 +173,11 @@ function resumable(runtime: Runtime): LlmClient {
 }
 
 /** Like BillReader, a reply that is not the JSON asked for is sent back once with the reason. */
-async function baselineAnswer(runtime: Runtime, h: EvalHousehold, repeat: number): Promise<BaselineAnswer> {
+async function baselineAnswer(runtime: Runtime, agent: string, content: string, h: EvalHousehold, repeat: number): Promise<BaselineAnswer> {
   const llm = resumable(runtime);
-  let messages: ChatMessage[] = [{ role: "user", content: `${BASELINE_PROMPT}\n\nBill text:\n${h.billText}` }];
+  let messages: ChatMessage[] = [{ role: "user", content }];
   for (let attempt = 1; ; attempt++) {
-    const reply = await llm.chat(BASELINE_AGENT, {
+    const reply = await llm.chat(agent, {
       model: BASELINE_MODEL,
       messages,
       maxTokens: BASELINE_MAX_TOKENS,
@@ -169,7 +188,7 @@ async function baselineAnswer(runtime: Runtime, h: EvalHousehold, repeat: number
       return parseBaselineReply(reply.text);
     } catch (error: unknown) {
       const reason = (error as Error).message;
-      runtime.logger.log({ agent: BASELINE_AGENT, step: "rejected_reply", eval: h.id, repeat, attempt, reason });
+      runtime.logger.log({ agent, step: "rejected_reply", eval: h.id, repeat, attempt, reason });
       if (attempt === 2) throw error;
       messages = [
         ...messages,
@@ -180,16 +199,16 @@ async function baselineAnswer(runtime: Runtime, h: EvalHousehold, repeat: number
   }
 }
 
-async function askBaseline(h: EvalHousehold, repeat: number): Promise<BaselineRecord> {
+async function askBaseline(agent: string, content: string, h: EvalHousehold, repeat: number): Promise<BaselineRecord> {
   const runtime = createRuntime(quiet);
   try {
-    const answer = await baselineAnswer(runtime, h, repeat);
-    runtime.logger.log({ agent: BASELINE_AGENT, step: "answer", eval: h.id, repeat, answer });
+    const answer = await baselineAnswer(runtime, agent, content, h, repeat);
+    runtime.logger.log({ agent, step: "answer", eval: h.id, repeat, answer });
     return { id: h.id, repeat, split: splitWithRemainder(answer.parts, changeOf(h)), suspected: answer.suspected, errorUsd: answer.errorUsd, failure: null };
   } catch (error: unknown) {
     if (error instanceof SampleMissError) throw error;
     const failure = (error as Error).message.slice(0, 200);
-    runtime.logger.log({ agent: BASELINE_AGENT, step: "no_answer", eval: h.id, repeat, failure });
+    runtime.logger.log({ agent, step: "no_answer", eval: h.id, repeat, failure });
     return { id: h.id, repeat, split: null, suspected: null, errorUsd: null, failure };
   }
 }
@@ -214,21 +233,30 @@ const tariffs = await loadTariffs(setup.sql);
 process.stderr.write(`Evaluating ${households.length} households (${setup.config.sampleMode ? "sample mode" : "live"}).\n`);
 
 // The agents' reasoning is deterministic given its inputs; running it K times checks that.
-const pipeline = new Map<string, { outcome: PipelineOutcome; truth: Split | null; identicalAcrossRuns: boolean }>();
+const pipeline = new Map<string, { outcome: PipelineOutcome; truth: Split | null; identicalAcrossRuns: boolean; history: readonly BillWeather[] }>();
 for (const h of households) {
   const runs = [];
   for (let k = 0; k < K; k++) runs.push(await runPipeline(h, tariffs));
   const shown = runs.map((r) => JSON.stringify(r.outcome));
-  pipeline.set(h.id, { outcome: runs[0].outcome, truth: truthOf(h, tariffs, runs[0].history), identicalAcrossRuns: shown.every((s) => s === shown[0]) });
+  pipeline.set(h.id, { outcome: runs[0].outcome, truth: truthOf(h, tariffs, runs[0].history), identicalAcrossRuns: shown.every((s) => s === shown[0]), history: runs[0].history });
 }
 process.stderr.write("Agents done. Asking the bill-only baseline.\n");
 
 const jobs = households.flatMap((h) => Array.from({ length: K }, (_, k) => ({ h, repeat: k + 1 })));
 let finished = 0;
 const baseline = await pool(jobs, CONCURRENCY, async ({ h, repeat }) => {
-  const record = await askBaseline(h, repeat);
+  const record = await askBaseline(BASELINE_AGENT, `${BASELINE_PROMPT}\n\nBill text:\n${h.billText}`, h, repeat);
   finished += 1;
   if (!setup.config.sampleMode) process.stderr.write(`  baseline ${finished}/${jobs.length} ${h.id} #${repeat}${record.failure ? " no answer" : ""}\n`);
+  return record;
+});
+
+process.stderr.write("Asking the baseline with the agents' data.\n");
+finished = 0;
+const informed = await pool(jobs, CONCURRENCY, async ({ h, repeat }) => {
+  const record = await askBaseline(INFORMED_AGENT, informedContent(h, tariffs, pipeline.get(h.id)?.history ?? []), h, repeat);
+  finished += 1;
+  if (!setup.config.sampleMode) process.stderr.write(`  informed ${finished}/${jobs.length} ${h.id} #${repeat}${record.failure ? " no answer" : ""}\n`);
   return record;
 });
 
@@ -241,16 +269,20 @@ function scores(group: readonly EvalHousehold[]) {
     agents: score(group.map((h) => ({ estimate: pipeline.get(h.id)?.outcome.split ?? null, truth: truth(h) }))),
     weatherOnly: score(group.map((h) => ({ estimate: weatherOnly(h), truth: truth(h) }))),
     billOnly: score(group.flatMap((h) => baseline.filter((b) => b.id === h.id).map((b) => ({ estimate: b.split, truth: truth(h) })))),
+    informed: score(group.flatMap((h) => informed.filter((b) => b.id === h.id).map((b) => ({ estimate: b.split, truth: truth(h) })))),
   };
 }
 
 const graded = households.filter((h) => h.cause !== "billing_error");
 const outcomes = graded.map((h) => pipeline.get(h.id)?.outcome as PipelineOutcome);
 const answeredBaseline = baseline.filter((b) => b.suspected !== null);
+const answeredInformed = informed.filter((b) => b.suspected !== null);
+const isError = (id: string): boolean => (households.find((h) => h.id === id) as EvalHousehold).overchargeUsd !== 0;
 const summary = {
   households: households.length,
   repetitions: K,
   baselineModel: BASELINE_MODEL,
+  informedNote: "Same model and prompt as the bill-only baseline, plus the published tariffs and the bill history with NOAA degree days.",
   truthDefinition:
     "Price from the published tariff, then days, weather and usage in waterfall order, with the household's true weather response calibrated to its previous bill.",
   split: {
@@ -287,6 +319,11 @@ const summary = {
         answeredBaseline.map((b) => ({ actual: (households.find((h) => h.id === b.id) as EvalHousehold).overchargeUsd !== 0, flagged: b.suspected === true })),
       ),
     },
+    informed: {
+      answers: answeredInformed.length,
+      noAnswer: informed.length - answeredInformed.length,
+      ...detection(answeredInformed.map((b) => ({ actual: isError(b.id), flagged: b.suspected === true }))),
+    },
     cases: households
       .filter((h) => h.overchargeUsd !== 0)
       .map((h) => ({
@@ -294,6 +331,7 @@ const summary = {
         injectedUsd: h.overchargeUsd,
         agentsFlaggedUsd: pipeline.get(h.id)?.outcome.possibleBillingErrorUsd ?? null,
         billOnlyFlagged: baseline.filter((b) => b.id === h.id && b.suspected === true).length,
+        informedFlagged: informed.filter((b) => b.id === h.id && b.suspected === true).length,
       })),
   },
   deterministic: [...pipeline.values()].every((p) => p.identicalAcrossRuns),
@@ -312,6 +350,7 @@ writeFileSync(
   "utf8",
 );
 writeFileSync(`${RESULTS}/bill-only-baseline.jsonl`, jsonl(baseline), "utf8");
+writeFileSync(`${RESULTS}/informed-baseline.jsonl`, jsonl(informed), "utf8");
 writeFileSync(`${RESULTS}/summary.json`, `${JSON.stringify(summary, null, 2)}\n`, "utf8");
 
 const fmt = (n: number | null | undefined): string => (n === null || n === undefined ? "-" : n.toFixed(2));
@@ -326,11 +365,13 @@ process.stdout.write(
     line("agents", all.agents),
     line("weather only", all.weatherOnly),
     line("bill only", all.billOnly),
+    line("informed", all.informed),
     line("agents, fitted", summary.split.byAgentsConfidence.fitted.agents),
     line("agents, low", summary.split.byAgentsConfidence.low.agents),
     `Critic: bill matches tariff ${summary.critic.billMatchesTariff}/24, first closure ${summary.critic.firstClosureAccepted}/24, closed ${summary.critic.changeClosed}/24, weather model rejected ${summary.critic.weatherModelRejected}/24.`,
     `Billing errors: agents precision ${fmt(summary.billingErrors.agents.precision)} recall ${fmt(summary.billingErrors.agents.recall)}; ` +
-      `bill only precision ${fmt(summary.billingErrors.billOnly.precision)} recall ${fmt(summary.billingErrors.billOnly.recall)} over ${summary.billingErrors.billOnly.answers} answers.`,
+      `bill only precision ${fmt(summary.billingErrors.billOnly.precision)} recall ${fmt(summary.billingErrors.billOnly.recall)} over ${summary.billingErrors.billOnly.answers} answers; ` +
+      `informed precision ${fmt(summary.billingErrors.informed.precision)} recall ${fmt(summary.billingErrors.informed.recall)} over ${summary.billingErrors.informed.answers} answers.`,
     `Agents identical across ${K} runs: ${summary.deterministic}. Results in ${RESULTS}/.`,
     "",
   ].join("\n"),
