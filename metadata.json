@@ -134,22 +134,54 @@
   "evaluation": {
     "file": "eval/results/summary.json",
     "households": 30,
+    "graded_split": 24,
+    "repetitions": 3,
+    "baseline_model_requested": "nvidia/nemotron-3-ultra-550b-a55b",
     "mean_error_usd": {
       "agents": 5.89,
       "it_was_the_weather": 57.82,
-      "nemotron_bill_only": 69.52
+      "nemotron_bill_only": 69.52,
+      "nemotron_with_tariffs_and_weather": 67.69,
+      "nemotron_bill_only_ultra_served": 70.22,
+      "nemotron_with_tariffs_and_weather_ultra_served": 50.06
     },
     "main_cause_right": {
       "agents": "23/24",
       "it_was_the_weather": "11/24",
-      "nemotron_bill_only": "21/72"
+      "nemotron_bill_only": "21/72",
+      "nemotron_with_tariffs_and_weather": "12/40",
+      "nemotron_bill_only_ultra_served": "16/58",
+      "nemotron_with_tariffs_and_weather_ultra_served": "10/14"
     },
-    "billing_errors_flagged": "5 of 6, precision 1.00",
+    "served_by": {
+      "note": "Nightshift's router chose the model that answered; counts over parsed answers.",
+      "nemotron_bill_only": {
+        "ultra": 64,
+        "super_vl": 26
+      },
+      "nemotron_with_tariffs_and_weather": {
+        "ultra": 14,
+        "super_vl": 26,
+        "lightning": 5,
+        "no_answer_http_410": 45
+      }
+    },
+    "billing_errors": {
+      "agents": "5 of 6, no false alarms",
+      "nemotron_bill_only": "0 of 18 error answers, 90 answers",
+      "nemotron_with_tariffs_and_weather": "3 of 5 answered, no false alarms"
+    },
     "bill_reader": {
       "file": "eval/results/billreader.json",
+      "photos_file": "eval/results/billreader-photos.json",
       "bills": 30,
-      "all_fields_right": "30/30",
-      "note": "Clean renders of one synthetic bill layout, live run of 25 Oct 2026 through Nightshift; not photos of real bills"
+      "all_fields_right_clean": "30/30",
+      "all_fields_right_phone_photos": "30/30",
+      "note": "One synthetic bill layout; the photos are simulated with scripts/photo-bills.py, not photos of real bills"
+    },
+    "explainer": {
+      "file": "eval/results/explainer.json",
+      "passed_check_6_first_try": "22/22"
     }
   },
   "pre_existing_components": [

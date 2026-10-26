@@ -2,160 +2,189 @@
 
 Snap your electricity bill. Why So High tells you why it went up and what you can do about it this month.
 
-Work in progress for the Open Agent Hackathon 2026, Track 03 (Reasoning Architecture). Scope: AEP Ohio residential customers in Columbus, Ohio.
+Built for the Open Agent Hackathon 2026, Track 03 (Reasoning Architecture). Scope: AEP Ohio residential customers in Columbus, Ohio.
 
-## Run it
+![Linda's September bill explained: up $47.30, split into her own use, more billing days and weather, checked against the published tariff, with PIPP Plus as the next step](docs/img/september.png)
 
-Requires Node 22.
+Linda's bill went up $47.30. The bill says how much, not why. Why So High reads the bill, recomputes it from AEP Ohio's published tariff, joins her bills with NOAA's daily weather for Columbus, and splits the change into price, billing days, weather and her own use. A checker recomputes every number and sends work back when it does not add up. Then it says what she can do this month, with an amount: PIPP Plus could hold her bill near $100 a month, and the checker confirmed she is under its income limit. Every number on the page traces to a SQL query, a tariff line or a model call.
+
+The household and its bills are synthetic, made from the published tariff.
+
+## Check it in two minutes, no keys
+
+Requires Node 22. With no `.env`, everything replays a recorded live run (`samples/cache/`): same code, same answers, no network.
 
 ```bash
 npm install
-npm run explain -- --bill samples/linda-2026-09.png --household samples/linda.json
+npm run demo          # Linda's two months, from an empty memory; results in out/demo/
+npm run eval          # the agents against 30 synthetic households and three baselines
+npm test              # unit tests
+npm run web:build && npm run serve   # the page on http://127.0.0.1:8787
 ```
 
-### Try your own bill
+What to look for:
 
-No keys needed. Write the numbers printed on an AEP Ohio residential bill into a request like `input_examples/example_1.json` and run it:
+- `out/demo/month1.json`: the split of the $47.30 (`change.decomposition`), the checker's rejection of the first split and acceptance of the second (`change.verdicts`), the plain-words summary and its number check (`words`), and the decision written back through Zetaris (`recorded`).
+- `logs/<run id>.jsonl`: one line per step, SQL statement, model call (with its Meterless receipt) and verdict.
+- `eval/results/summary.json`: the numbers in the Evaluation section below.
 
-```bash
-npm run explain -- --input input_examples/example_1.json
-```
+## Who it is for, and who would pay
 
-The same request works over HTTP once `npm run serve` is running:
+Linda (illustrative) is 71, retired and lives alone in Columbus on 24,000 USD a year. When her bill jumps she wants to know whether something is wrong and whether there is help. Finding out today means calling AEP Ohio, reading a tariff filing, or asking her local energy assistance agency.
 
-```bash
-curl -X POST http://127.0.0.1:8787/api/run -H "Content-Type: application/json" -d @input_examples/example_1.json
-```
-
-A request has three parts. `household` holds what the action plan needs (`householdSize`, `annualIncomeUsd`, `electricHeat`, `oldestMemberAge`, `disconnectionNotice`; all optional, and a missing fact rejects the programs that need it). `bill.fields` holds the bill as printed: `period_start` and `period_end` (MM/DD/YYYY), `days`, `kwh`, `total_usd`, and the previous period's `prev_kwh`, `prev_days` and `prev_total_usd`. `history` is optional: earlier bills as `period_start`, `period_end` and `kwh`; with 6 or more, the weather model is fitted to the household instead of the Ohio average. Dates start on 1 Jan 2024, where the weather and tariff data start; each period is 1 to 62 days; earlier bills go oldest first and may not overlap; up to 36 of them. The answer is JSON with `status`, the full explanation under `output`, and the trace file under `log_file`. A request the agents cannot use gets HTTP 400 and `status: "error"` with the reason; the endpoint takes `Content-Type: application/json` only, up to 256 KB.
-
-The three examples take different paths, and their outputs and traces are in `output_examples/`:
-
-| Request | What happens |
-|---|---|
-| `example_1.json` | A gas-heated home that used 20% more than its weather response. The bill matches the tariff; the critic rejects the first split, the model is calibrated to the previous bill, and the second split closes. |
-| `example_2.json` | An electric-heated home whose spring bill crosses the 10 Apr 2026 tariff change. The bill is within 2% of the tariff; 2.06 USD of the change stays unexplained and is reported as such. |
-| `example_3.json` | A winter bill 18.40 USD above the published tariff, with no earlier bills. It is flagged as a possible billing error with the amount. |
-
-Live, the weather join runs in Zetaris with the bills written into the query. In sample mode, a request that was never recorded uses a copy of the same NOAA table saved in `data/snapshot/` (`scripts/export-snapshot.ts`, exported from Zetaris on 23 Oct 2026, weather up to 18 Oct 2026), and the trace marks that query `"source":"snapshot"`. The tariff query is the recorded one. Reading a bill image always needs the live stack, so the HTTP endpoint takes `bill.fields` only; the CLI takes `--bill <image>`.
-
-The two-month demo, from an empty memory:
-
-```bash
-npm run demo
-```
-
-It explains Linda's September bill, stores her notes that September was a one-off and that she applied for PIPP Plus on September 25 (`samples/linda-notes.json`), explains her October bill with that memory, and explains October again without memory so the difference is visible. Results go to `out/demo/`.
-
-To see it as a page:
-
-```bash
-npm run web:build
-npm run serve
-```
-
-Then open http://127.0.0.1:8787. The server runs the same two-month demo through the agent pipeline once, then serves the explanation: each cause of the change with the agent that worked it out, the critic's checks in the order they ran (including the rejected first pass), the federated SQL and the tariff behind the numbers, and the October bill with and without Linda's note. For development, `npm run serve` in one terminal and `npm run web:dev` in another (Vite on port 5173, proxying `/api`). The server listens on 127.0.0.1 unless `HOST` says otherwise.
-
-With no `.env`, the run uses `SAMPLE_MODE=true`: the same agent code runs on model and SQL responses recorded from a live run in `samples/cache/`. Each run writes its trace to `logs/<runId>.jsonl` and its result to `out/<runId>.json`.
-
-To run live:
-
-1. Copy `.env.example` to `.env`, set `SAMPLE_MODE=false` and fill in the Meterless Nightshift runtime token, the local Zetaris password and a long random `HOUSEHOLD_DB_PASSWORD`.
-2. Start the household database on the Zetaris network: `npm run db:up`.
-3. Register the data sources in Zetaris (NOAA daily weather, OpenEI URDB tariffs, EIA retail prices and the household Postgres): `npm run setup:sources`.
-4. Check the stack: `npm run doctor`.
-
-If the Nemotron vision endpoint fails, BillReader reads the bill's text layer (`<bill>.txt`) with a Nemotron text model and logs a `fallback_text` step. Without a text layer it stops with the error. Provider failures are recorded with the samples, so sample mode replays the same path.
+The people who would put this in front of her are the ones who already take those calls: Ohio's local energy assistance agencies that sign households up for HEAP and PIPP Plus (the state routes applicants to them through (800) 282-0880), and the utility's own customer service. For them it answers the first question of every high-bill call with evidence, and it ends with the program the household qualifies for, already checked. We have not talked to any of them yet; this is the plan, not a result.
 
 ## How a run reasons
 
-1. BillReader extracts the bill fields with Nemotron.
-2. WeatherAnalyst joins the household's bills (Postgres) with NOAA daily weather in one federated Zetaris query and returns cooling and heating degree days per bill period.
-3. RateAnalyst loads AEP Ohio's published residential tariff versions from OpenEI URDB through Zetaris and recomputes the bill. It first prices the whole period with the tariff in force on the last day.
-4. ReconciliationCritic compares that recomputation with the billed total. Within 2% it accepts. Otherwise it sends the work back with the gap, and RateAnalyst prorates the period across every tariff in force. If that still misses, the run reports a possible billing error with the amount.
-5. RateAnalyst also prices last period's kWh under both periods' tariffs to separate the effect of price changes from the effect of usage.
-6. ReconciliationCritic checks that the published tariff and NOAA's weather cover every day of both bills (check 5). If not, the run stops the comparison and says which days are missing.
-7. WeatherAnalyst picks the weather model: kWh = base use per day + kWh per cooling degree day + kWh per heating degree day. With 6 or more earlier bills that have NOAA data for every day, it fits the household's own history. Otherwise it uses a statewide Ohio prior (482.2 kWh + 0.511 per HDD + 1.743 per CDD per month, fitted on EIA sales per customer against Columbus degree days, Jan 2025 to Jul 2026) and marks confidence as low.
-8. ReconciliationCritic checks that the previous bill also matches the published tariff, and judges any weather model before its share is believed (check 3): base use above zero, slopes between 0 and 4 times the Ohio ones, and a fit that explains at least half of past bills.
-9. UsageAnalyst splits the dollar change into price, extra days, weather per day, usage and unexplained. Usage is first measured against the model's prediction, so whatever the model misses on the previous bill stays unexplained. ReconciliationCritic requires the unexplained part to be under 5% of the change, never less than 1 USD (check 2). If it is larger, the work goes back with the reason and the model is calibrated to the household's previous bill.
+Two steps use a model. Everything between them is code that the checker can verify against public data.
 
-What the checks prove: the first closure check tests whether the model fits this household. After calibration the kWh add up by construction and both bills already match the tariff, so closure there only confirms the bookkeeping, and the split between weather and usage rests on check 3. With fewer than 6 bills of history, that split uses statewide slopes and is marked low confidence.
+| Step | On the page | In the code | Model or code |
+|---|---|---|---|
+| Read the bill photo into fields | Bill reader | `BillReader` | Nemotron 3.5 Super VL through Nightshift |
+| Join the bills with NOAA daily weather, fit the household's weather model | Weather check | `WeatherAnalyst` | Code, one federated Zetaris query |
+| Recompute the bill from the published tariff | Price check | `RateAnalyst` | Code, tariffs from OpenEI URDB through Zetaris |
+| Split the change into price, days, weather, own use | Usage math | `UsageAnalyst` | Code |
+| Recompute everything, reject and send work back | The checker | `ReconciliationCritic` | Code, six checks |
+| Programs the household qualifies for, with amounts | Help finder | `ActionPlanner` | Code, rules from ODJFS, PUCO and AEP Ohio |
+| What the household told us, used next month | Your notes | `HouseholdMemory` | Meterless H-MEM and World Model |
+| The summary in plain words | Plain words | `Explainer` | Nemotron through Nightshift, every number checked |
 
-10. ActionPlanner proposes what the household can do with this bill, each with an amount worked out from the household's facts: PIPP Plus (a share of income each month: 5% with gas heat, 10% with electric heat, at least 10 USD), HEAP (31 to 546 USD once per heating season, 75% less on PIPP Plus), the Summer and Winter Crisis programs (up to 1,300 and 1,200 USD), a PUCO complaint only when the bill is above the published tariff, and a usage note when the household's own use drove the change. A program the household already told us it applied for this season is skipped. Budget billing is left out until there are 12 bills to average.
-11. ReconciliationCritic checks every proposal before it is shown (check 4): income under 175% of the federal poverty guidelines for the household size (ODJFS table, Jul 2026 to May 2027, sizes 1 to 7), the program open on the bill's end date, and the crisis programs' extra condition (someone 60 or older, or a disconnection notice). A missing or malformed fact rejects the program instead of guessing. Every amount, limit and date was read from ODJFS, PUCO and AEP Ohio on 22 Oct 2026 and is listed in `src/actions/programs.ts` with its source.
+```mermaid
+flowchart LR
+  photo[Bill photo] --> reader[Bill reader<br/>Nemotron VL]
+  reader --> price[Price check]
+  reader --> weather[Weather check]
+  pg[(Household bills<br/>Postgres)] --- z{{Zetaris}}
+  noaa[(NOAA daily weather)] --- z
+  urdb[(OpenEI URDB tariffs)] --- z
+  eia[(EIA Ohio prices)] --- z
+  z --> weather
+  z --> price
+  price --> usage[Usage math]
+  weather --> usage
+  usage --> checker{The checker}
+  checker -- sent back with the reason --> price
+  checker -- sent back with the reason --> usage
+  checker --> help[Help finder]
+  help --> checker
+  checker --> words[Plain words<br/>Nemotron]
+  words --> checker
+  checker -- accepted --> z
+  memory[(Meterless memory)] <--> weather
+  memory <--> help
+```
 
-Eligibility is judged at the bill's end date so a replay gives the same plan. The page then compares each program's dates with today in Ohio: a season that closed after the bill shows as "Closed on …" with no call to action.
+The six checks:
 
-Days and weather are separated per day: "days" is the extra days used like an average day of the previous bill, "weather" is how much hotter or colder each day of this bill was.
+1. **The bill matches the tariff.** The published tariff must give within 2% of the billed total. If not, the price check tries again prorating across tariff versions; if that still misses, the run reports a possible billing error with the amount.
+2. **The change adds up.** What stays unexplained must be under 5% of the change (at least 1 USD). If not, the split goes back and the weather model is calibrated to the household's previous bill.
+3. **The weather model is believable.** Base use above zero, slopes between 0 and 4 times the Ohio ones, and a fit that explains at least half of past bills.
+4. **The household can take the action.** Income under 175% of the federal poverty guidelines for its size, the program open on the bill's date, and each crisis program's extra condition. A missing fact rejects the program instead of guessing.
+5. **The data covers every day.** Tariff and weather cover every day of both bills.
+6. **The summary uses only these numbers.** Every number in Nemotron's sentences must come from the split, to the cent; the sentences must name the biggest reason and may not stop mid-sentence. A failure goes back once, then falls back to a sentence built from the numbers.
+
+What the checks prove, and what they do not: the first closure check tests whether the weather model fits the household. After calibration to the previous bill the kWh add up by construction, so the second pass only confirms the bookkeeping, and the split between weather and own use rests on check 3. On Linda's September bill the first split left $12.60 unexplained and was sent back; that rejection, and the 5 of 6 planted billing errors it caught in the evaluation, are where the checker earns its place.
+
+![The $47.30 split one cause at a time next to the checker's log: the first split left $12.60 unexplained and was sent back to Usage math, the second pass closed with $0.00 left](docs/img/checker.png)
+
+## Try your own bill
+
+**From a photo.** On the page, "Read your own bill" sends a photo to `POST /api/photo`. BillReader reads it with Nemotron and the same agents explain it; the photo is deleted once it is read. This needs the live stack (below). In sample mode the page says so instead of pretending.
+
+**From the numbers on the bill.** No keys needed. Write the numbers printed on an AEP Ohio residential bill into a request like `input_examples/example_1.json`:
+
+```bash
+npm run explain -- --input input_examples/example_1.json
+curl -X POST http://127.0.0.1:8787/api/run -H "Content-Type: application/json" -d @input_examples/example_1.json
+```
+
+A request has three parts. `household` holds what the action plan needs (`householdSize`, `annualIncomeUsd`, `electricHeat`, `oldestMemberAge`, `disconnectionNotice`; all optional, and a missing fact rejects the programs that need it). `bill.fields` holds the bill as printed: `period_start` and `period_end` (MM/DD/YYYY), `days`, `kwh`, `total_usd`, and the previous period's `prev_kwh`, `prev_days` and `prev_total_usd`. `history` is optional: earlier bills as `period_start`, `period_end` and `kwh`; with 6 or more, the weather model is fitted to the household instead of the Ohio average. Dates start on 1 Jan 2024, where the weather and tariff data start; each period is 1 to 62 days; up to 36 earlier bills, oldest first, not overlapping. The answer is JSON with `status`, the explanation under `output` and the trace under `log_file`. A request the agents cannot use gets HTTP 400 with the reason.
+
+| Request | What happens |
+|---|---|
+| `example_1.json` | A gas-heated home that used 20% more than its weather response. The checker rejects the first split, the model is calibrated to the previous bill, and the second split closes. |
+| `example_2.json` | An electric-heated home whose spring bill crosses the 10 Apr 2026 tariff change. 2.06 USD of the change stays unexplained and is reported as such. |
+| `example_3.json` | A winter bill 18.40 USD above the published tariff, with no earlier bills. Flagged as a possible billing error with the amount. |
+
+Their outputs and traces are in `output_examples/`. In sample mode, a request that was never recorded computes its weather join from a saved copy of the same NOAA table (`data/snapshot/`, weather up to 18 Oct 2026) and the trace marks it `"source":"snapshot"`.
+
+## Run it live
+
+1. Copy `.env.example` to `.env`, set `SAMPLE_MODE=false` and fill in the Meterless Nightshift runtime token, the local Zetaris password, a long random `HOUSEHOLD_DB_PASSWORD` and, ideally, a free EIA API key (`DEMO_KEY` works but EIA limits it to a few dozen calls an hour).
+2. Start the household database on the Zetaris network: `npm run db:up`. It has no port on the host.
+3. Register the sources in Zetaris (NOAA daily weather, OpenEI URDB tariffs, EIA retail prices, and the household Postgres with its `households`, `bills` and `decisions` tables): `npm run setup:sources`.
+4. Check the stack: `npm run doctor`.
+
+If the Nemotron vision endpoint fails, BillReader reads the bill's text layer (`<bill>.txt`) with a Nemotron text model and logs a `fallback_text` step; without a text layer it stops with the error. Provider failures are recorded with the samples, so sample mode replays the same path. With `RECORD_SAMPLES=true` a live run records what sample mode replays.
 
 ## Memory
 
-Two Meterless engines, vendored in `engines/` and declared in `engines/VENDORED.md`, keep the household's memory in `.memory/<household id>/` (or `--memory <dir>`; `--no-memory` runs without it).
+Two Meterless engines, vendored in `engines/` and declared in `engines/VENDORED.md`, keep the household's memory in `.memory/<household id>/`.
 
-- H-MEM keeps what happened in words: each bill's diagnosis and what the household tells us (`npm run remember -- --household <json> --notes <json>`), tagged with the bill period it is about. Its clock is the bill's date, so replays give the same state.
-- World Model keeps the household graph with provenance on every write: household, AEP Ohio (EIA 14006), the URDB tariff versions it was billed under, NOAA station USW00014821, and each bill with its diagnosis as facts.
+- H-MEM keeps what happened in words: each bill's diagnosis and what the household tells us, tagged with the bill period it is about. Its clock is the bill's date, so replays give the same state.
+- World Model keeps the household graph with provenance on every write: household, AEP Ohio (EIA 14006), the tariff versions it was billed under, NOAA station USW00014821, and each bill with its diagnosis.
 
-How memory changes a diagnosis: when the household marked the previous bill as a one-off, WeatherAnalyst leaves it out of any fit and calibrates the model to the latest normal bill instead. The previous bill's extra use then shows as its own component ("last bill's one-off use did not repeat"). Without that note, the same October bill reads as "used less".
-
-An action note (kind `action`, tagged with the program) tells ActionPlanner the household already applied: in October, with memory, PIPP Plus shows as "You told us on Sep 25" and HEAP warns that it pays 75% less once PIPP Plus is approved. Without memory, PIPP Plus is suggested again.
-
-The sample bills are generated from the published tariff by `scripts/make-sample-bill.ts`, then rendered to PNG with a headless browser. Linda's October kWh follow a stated recipe (the Ohio prior calibrated to her August bill, applied to NOAA's degree days for that period), so in the demo her October usage matches the model by construction. Accuracy is measured on synthetic households with known causes (see Evaluation).
+Memory changes the outcome. Linda tells us September was a one-off (her grandson stayed with her from August 20 to September 10) and that she applied for PIPP Plus on September 25 (`samples/linda-notes.json`). With the note, her October bill is read against August, a normal month, and the drop shows as "last bill's one-off use did not repeat"; without it, the same bill reads as "used less". PIPP Plus is not suggested again, and HEAP says it pays 75% less once PIPP Plus is approved. `npm run demo` runs October both ways so the difference is in `out/demo/`.
 
 ## Evaluation
 
 ```bash
-npm run eval
+npm run eval              # agents vs three baselines, 30 households
+npm run eval:billreader   # BillReader on 30 rendered bills (add -- --photos for the phone-photo set)
+npm run eval:explainer    # check 6 on the Explainer's sentences
 ```
 
-With no `.env` this replays the recorded run and writes the same files that are committed in `eval/results/` (`summary.json`, one line per household in `households.jsonl`, and every bill-only answer in `bill-only-baseline.jsonl`).
+With no `.env` these replay the recorded live runs and write the files committed in `eval/results/`.
 
-**The households.** `npm run eval:generate` builds 30 synthetic AEP Ohio households (`eval/households.json`), each with 13 monthly bills made from a weather response the agents never see (base use per day, kWh per cooling and per heating degree day), NOAA's real Columbus weather, 5% monthly noise, and one cause injected in the last bill. There are six households per cause: a bill across the 10 Apr 2026 tariff change, a longer billing period, a change of season with nothing injected, a jump or drop in use, and a billing error (1, 3, 5, 8, 12 and -6% of the correct total). The bills are loaded into the household Postgres and read through the same federated Zetaris query as any household.
+**The households.** `npm run eval:generate` builds 30 synthetic AEP Ohio households, each with 13 monthly bills made from a weather response the agents never see, NOAA's real Columbus weather, 5% monthly noise, and one cause injected in the last bill. Six per cause: a bill across the 10 Apr 2026 tariff change, a longer billing period, a change of season, a jump or drop in use, and a billing error (1, 3, 5, 8, 12 and -6% of the correct total). They are loaded into the household Postgres and read through the same federated Zetaris query as any household.
 
-**The truth.** The same dollar accounting the agents use (price from the published tariff, then days, weather and usage in waterfall order), applied with the household's true weather response calibrated to its previous bill. So the evaluation measures whether the agents recover that response from 12 noisy bills, and whether the critic catches a bill that does not match the tariff. It does not measure BillReader: the agents get the bill fields directly. BillReader is measured on its own, below.
+**The truth.** The same dollar accounting the agents use, applied with the household's true weather response. The evaluation measures whether the agents recover that response from 12 noisy bills, and whether the checker catches a bill that does not match the tariff.
 
-**The baselines.** (a) "It was the weather": the whole change goes to weather. (b) Nemotron 3 Ultra 550B through Nightshift with the bill's text and no tools, asked for the same four-part split and whether it suspects a billing error, 3 repetitions per household at temperature 0.6, with one retry when the reply is not the JSON asked for (the same treatment BillReader gets).
+**The baselines.** (a) "It was the weather": the whole change goes to weather. (b) Nemotron with the bill's text only, asked for Nemotron 3 Ultra 550B. (c) The same request plus the data the agents get: the bill, the published tariffs that cover it, and the household's 13 bills with NOAA degree days. Both model baselines answer 3 times per household at temperature 0.6, asked for the same four-part split and whether they suspect a billing error, with one retry when the reply is not the JSON asked for.
 
-**Results.** Mean error per household in USD, summed over price, days, weather, usage and unexplained, and how often the biggest cause is the right one. 24 households (the 6 billing errors are scored apart); bill-only answers are pooled over the 3 repetitions.
+**Results.** Mean error per household in USD, summed over price, days, weather, own use and unexplained, and how often the biggest cause is right. 24 households (the 6 billing errors are scored apart); model answers are pooled over the repetitions.
 
-| Households | Agents | It was the weather | Nemotron, bill only |
-|---|---|---|---|
-| All 24 | 5.89 USD, 23/24 | 57.82 USD, 11/24 | 69.52 USD, 21/72 |
-| Price change (6) | 3.83 USD, 6/6 | 26.10 USD, 3/6 | 31.12 USD, 3/18 |
-| Longer period (6) | 5.38 USD, 5/6 | 84.73 USD, 2/6 | 115.05 USD, 0/18 |
-| Season change (6) | 6.14 USD, 6/6 | 13.21 USD, 4/6 | 59.17 USD, 6/18 |
-| Use jump or drop (6) | 8.20 USD, 6/6 | 107.22 USD, 2/6 | 72.76 USD, 12/18 |
+| Method | Mean error per household | Biggest cause right |
+|---|---|---|
+| The agents | 5.89 USD | 23 of 24 |
+| "It was the weather" | 57.82 USD | 11 of 24 |
+| Nemotron, bill only | 69.52 USD | 21 of 72 answers |
+| Nemotron, bill plus tariffs and weather history | 67.69 USD | 12 of 40 answers |
 
-The 4 households that heat with electricity come out at 3.93 USD and 4/4, the 20 with gas heat at 6.28 USD and 19/20. In all 24 the critic accepted a fit on the household's own bills.
+By cause, the agents' mean error was 3.83 USD on tariff changes, 5.38 on longer billing periods, 6.14 on weather and 8.20 on changes in use.
 
-Billing errors, all 30 households: the agents flag 5 of the 6 with the exact amount and flag none of the other 24 (precision 1.00, recall 0.83). The one missed is the 1% error, under the critic's 2% tolerance on purpose. Nemotron with the bill only suspected a billing error in none of its 90 answers.
+**Which model answered.** Both model baselines ask Nightshift for Nemotron 3 Ultra 550B, and Nightshift's router chose the model that actually answered; the trace records it for every answer. Bill only: Ultra answered 64 of 90 times and Super VL 26. With tariffs and weather: Ultra 14, Super VL 26 and Lightning 5 of 45 answers. Counting only the answers Ultra gave, the error was 70.22 USD (16 of 58 biggest causes right) with the bill only and 50.06 USD (10 of 14) with the data. The other 45 informed requests got no answer, because Nightshift routed them to a retired model and returned HTTP 410; they count as missing, not as wrong.
 
-The agents give the same result in 3 runs per household. The critic closed 22 of the 24 changes. The other two are bills across the tariff change, where the agents report 2.04 and 1.44 USD as not explained instead of hiding them. The first closure check, before calibrating to the previous bill, passed 5 times out of 24.
+**Billing errors.** The agents flagged 5 of the 6 planted errors with no false alarm. The one they missed is the 1% error, under the checker's 2% tolerance on purpose. Nemotron with the bill only flagged none in 90 answers. With tariffs and weather it flagged 3 of the 5 error bills it answered, also with no false alarm.
 
-**BillReader.** `npm run eval:billreader` reads the last bill of each of the 30 households as an image (`eval/bills/png/`, rendered from `eval/bills/<id>.html` by `scripts/render-bills.py`) with Nemotron 3.5 Super VL through Nightshift, and compares every printed field with what the generator printed: both period dates, days, kWh, total, last month's kWh, days and total, and whether the line items add up to the total. There is no text layer next to these images, so a vision failure would count as a failure. In the live run of 25 Oct 2026 (03:36 UTC, trace in `eval/results/billreader-live.trace.jsonl`) it read 30 of 30 bills with every field right, each on the first attempt, with a median of 4.3 s per bill. With no `.env` the command replays that run and gives the same result (`eval/results/billreader.json`). These are clean renders of one synthetic layout, not phone photos of real AEP Ohio bills, so the result says the model reads this layout reliably and nothing yet about a crumpled photo or AEP's own bill design.
+**The checker at work.** Over the 24 households without a billing error, the bill matched the tariff every time (once after the price check tried again), the first split was accepted 5 times, and 22 of 24 changes closed in the end; the other 2 report what stays unexplained.
+
+**Reading photos.** BillReader read the last bill of all 30 households with every field right (both dates, days, kWh, total, last month's kWh, days and total, and line items adding up to the total), first as clean renders and then as simulated phone photos (`scripts/photo-bills.py`: turned up to 6 degrees, seen at an angle, blurred, unevenly lit, JPEG quality 55 to 80): 30 of 30 both times (`eval/results/billreader.json`, `billreader-photos.json`). These are one synthetic layout, not AEP Ohio's own bill design.
+
+**The summary in plain words.** For the 22 households whose split the checker accepted, Nemotron's sentences passed check 6 on the first try every time (`eval/results/explainer.json`). During development the check stopped a reply that was cut mid-sentence at a 2,000-token limit, which an earlier version would have shown.
 
 **Limits of this evaluation.**
 
-- The synthetic bills are priced with the same tariff engine the agents use, so a correct bill always recomputes exactly; billing error detection here only tests how large an error must be to be caught.
-- Homes that heat with electricity get a heating slope of 0.7 to 1.6 kWh per heating degree day, around EIA's figure: RECS 2020 table CE4.3 gives 28 billion kWh a year of space heating for 5.20 million Midwest homes heated with electricity, about 5,400 kWh each, which over Columbus's 4,244 (2024) to 5,204 (2025) heating degree days is 1.0 to 1.3. A first run used 2.3 to 3.2 with no source; check 3 rejected those fits as above 4 times the Ohio slope and the agents fell back to the low-confidence Ohio prior. With the sourced range no fit is rejected, so this evaluation no longer exercises that fallback; unit tests do.
-- 30 households, one utility, one weather station. The noise level and the size of each injected cause are choices of the generator, stated in `eval/generate.ts`.
+- The synthetic bills are priced with the same tariff engine the agents use, so a correct bill recomputes exactly. Billing-error detection here only tests how large an error must be to be caught.
+- Electric-heat homes get a heating slope of 0.7 to 1.6 kWh per heating degree day, around EIA's RECS 2020 figure (table CE4.3), so no fit is rejected by check 3 here; unit tests cover that fallback.
+- 30 households, one utility, one weather station. The noise and the size of each cause are choices of the generator, stated in `eval/generate.ts`.
 
 ## Sponsor technology
 
-- **Zetaris** is where the data meets. Every run asks Zetaris, in Lightning SQL, for the household's bills in Postgres joined with NOAA's daily weather for Columbus in one federated query (WeatherAnalyst), and for AEP Ohio's published tariff versions from OpenEI URDB (RateAnalyst). Nothing is copied into the app first. EIA's Ohio retail sales are registered as a fourth source; the statewide weather prior was fitted once from them and lives as a constant in `src/agents/weatherAnalyst.ts`, so EIA is not queried on each run. Sources are registered by `npm run setup:sources` (`src/zetaris/sources.ts`), queries are in `src/zetaris/queries.ts`, and every query is logged with the agent that asked for it.
-- **Meterless** runs the models and keeps the memory. Every model call goes through Nightshift (`src/llm/nightshift.ts`), and the trace records both the model requested and the model Nightshift says served it. H-MEM keeps what happened and what the household told us, and World Model keeps the household graph with provenance; both are the Meterless reference engines, vendored unchanged in `engines/` and passing their conformance suites. The memory changes the outcome: Linda's October bill reads differently with and without her September note, and a program she already applied for is not suggested again.
-- **NVIDIA Nemotron** reads the bill. BillReader sends the bill image to Nemotron 3.5 Super VL and, when the vision call fails, the bill's text layer to Nemotron 3.5 Lightning. Nemotron 3 Ultra 550B is the bill-only baseline in the evaluation, which is how we know the agents add something over the largest model reading the bill alone.
-- **Cursor** was not used. The organizers' HackOS FAQ lists it as optional; the code was written with Claude Code (see AI and model usage).
+- **Zetaris is where the data meets, in both directions.** Every run asks Zetaris, in Lightning SQL, for the household's bills in Postgres joined with NOAA's daily weather in one federated query (Weather check), for AEP Ohio's tariff versions from OpenEI URDB (Price check), and for Ohio's average residential price from the EIA API, unpacking EIA's nested rows with `LATERAL VIEW explode` (context next to the bill). When every check passes, the decision is written back into the household's Postgres through Zetaris (`INSERT INTO household_pg.decisions`) and read back to confirm it. Nothing is copied into the app first. Sources: `src/zetaris/sources.ts`; queries: `src/zetaris/queries.ts`, `decisions.ts`, `statePrice.ts`; every statement is logged with the step that asked for it and Zetaris's query id.
+- **Meterless runs the models and keeps the memory.** Every model call goes through Nightshift (`src/llm/nightshift.ts`), and the trace keeps its compute receipt: receipt id, the model asked for, the route that answered, the consensus label and the cross-checks. The page lists every call with its receipt. Routing is visible: the Explainer asks for Nemotron 3.5 Lightning and Nightshift has answered with Nemotron 3 Ultra. H-MEM and World Model hold the household's memory, vendored unchanged and passing their conformance suites, and that memory changes the diagnosis and the plan.
+- **NVIDIA Nemotron reads the bill and writes the summary.** Nemotron 3.5 Super VL reads the photo, Nemotron 3.5 Lightning reads the text layer when vision fails, and a Nemotron text model writes the plain-words summary that check 6 verifies. Both model baselines in the evaluation ask for Nemotron 3 Ultra 550B, and the evaluation reports which model answered.
+- **Cursor** was not used. The organizers' HackOS FAQ lists it as optional; the code was written with Claude Code.
 
-What is particular to this build: the models do one job, reading a document a person photographed, and everything after that is arithmetic that a critic can check against public data. Zetaris lets that check reach the household's private bills and three public sources in the same query, and the Meterless memory is what turns one diagnosis into a household history.
+What is particular to this build: the models do the two jobs that need language (reading a document a person photographed, and saying the result in plain words), and everything between them is arithmetic that a checker verifies against public data, including the model's own sentences. Zetaris lets that check reach the household's private bills and three public sources in the same place, and holds the decision afterwards.
 
 ## AI and model usage
 
-- Models: `nvidia/nemotron-3.5-super-vl-120b-a12b` (BillReader, bill image), `nvidia/nemotron-3.5-lightning-30b-a3b` (BillReader, text-layer fallback), `nvidia/nemotron-3-ultra-550b-a55b` (evaluation baseline only), all through Meterless Nightshift.
-- Agent framework: none. The orchestrator is plain TypeScript; the analysts, the critic and the planner are deterministic code, so the same bill fields always give the same diagnosis and every number can be traced to a query or a tariff line.
+- Models, all through Meterless Nightshift: `nvidia/nemotron-3.5-super-vl-120b-a12b` (BillReader, bill image), `nvidia/nemotron-3.5-lightning-30b-a3b` (BillReader text-layer fallback, and the model the Explainer asks for), `nvidia/nemotron-3-ultra-550b-a55b` (asked for by the evaluation baselines). The model that actually answered is logged on every call.
+- Agent framework: none. The orchestrator is plain TypeScript; the analysts, the checker and the planner are deterministic code, so the same bill fields always give the same diagnosis.
 - Libraries: none at runtime beyond Node 22's standard library. TypeScript runs through tsx; Vite builds the page and Vitest runs the tests.
-- Development: the code, tests and documentation were written with Claude Code (Anthropic) and reviewed and run by the author. Cursor was not used.
-- Sample mode: with no `.env`, `SAMPLE_MODE=true` runs the same agent code on model and SQL responses recorded from a live run (`samples/cache/`), with no network access. A new request with bill fields runs too: its weather join is computed from the saved NOAA copy in `data/snapshot/`, and the trace says so. A bill image that was never recorded needs the live stack.
-- `metadata.json` lists the agents, models, sources and evaluation figures in one place.
+- Development: written with Claude Code (Anthropic), reviewed and run by the author.
+- `metadata.json` lists the steps, models, sources and evaluation figures in one place.
 
 ## Data and licensing
 
@@ -163,7 +192,7 @@ What is particular to this build: the models do one job, reading a document a pe
 |---|---|---|
 | NOAA NCEI daily summaries, station USW00014821 (Columbus) | Degree days per bill period | U.S. government data |
 | OpenEI Utility Rate Database | AEP Ohio residential tariff versions | CC0 |
-| EIA retail sales API | Ohio residential sales per customer, Jan 2025 to Jul 2026, fitted into the statewide prior | U.S. government data |
+| EIA retail sales API | Ohio's average residential price each run; the statewide weather prior, fitted once on Jan 2025 to Jul 2026 | U.S. government data |
 | EIA RECS 2020, table CE4.3 | Heating slope of electric-heat homes in the evaluation | U.S. government data |
 | ODJFS, PUCO and AEP Ohio program pages, read 22 Oct 2026 | Program amounts, income limits and dates, each cited in `src/actions/programs.ts` | Public program information |
 | Linda's household and bills | Demo | Synthetic, made from the published tariff by `scripts/make-sample-bill.ts` |
@@ -173,15 +202,14 @@ No real customer data is used anywhere.
 
 ## Limitations
 
+- Not yet tried on real AEP Ohio bills. A charge that URDB does not list would make a real bill look like a possible billing error.
 - One utility and one city: AEP Ohio residential customers, weather from the Columbus airport station.
-- Not yet tried on real AEP Ohio bills. The recomputation uses the tariff as URDB publishes it; a charge that URDB does not list would make a real bill look like a possible billing error.
-- BillReader is measured on 30 clean renders of one synthetic bill layout (30 of 30 correct), not on photos of real bills.
-- Sample mode cannot read a new bill image without Nightshift; a new bill given as fields works, with weather from the saved NOAA copy, which ends on 18 Oct 2026.
-- With fewer than 6 earlier bills, the split between weather and usage rests on the statewide prior and is marked low confidence.
-- Billing errors under the critic's 2% tolerance are not flagged.
+- Reading a new photo needs the live stack; sample mode replays Linda's bills and takes new bills as numbers.
+- With fewer than 6 earlier bills, the split between weather and own use rests on the statewide prior and is marked low confidence (Linda's case).
+- Billing errors under the checker's 2% tolerance are not flagged.
 - Program rules were read on 22 Oct 2026; the income table covers Jul 2026 to May 2027 and households of 1 to 7 people.
-- A memory note cannot be withdrawn yet, and a program rejected for a missing fact is stored the same way as one the household is not eligible for.
-- The server is for local use: no accounts, no authentication, bound to 127.0.0.1 unless `HOST` says otherwise.
+- A memory note cannot be withdrawn yet.
+- The server is for local use: no accounts, bound to 127.0.0.1 unless `HOST` says otherwise, one photo at a time.
 
 ## Pre-existing components
 
@@ -195,8 +223,6 @@ npm run typecheck
 npm run conformance:hmem
 npm run conformance:world-model
 ```
-
-Sample bills are synthetic and labelled SAMPLE. The household in `samples/linda.json` is illustrative.
 
 ## License
 
