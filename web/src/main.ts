@@ -1,6 +1,7 @@
 // Loads Linda's runs from the server and keeps the page in step with the tab, the
 // memory switch and the address bar (#september, #october, #october-check-4).
 
+import { BASE, STATIC_DEMO } from "./env.ts";
 import "./styles.css";
 import type { DemoPayload } from "../../src/demo.ts";
 import { pageView, type PageView } from "./model.ts";
@@ -306,7 +307,7 @@ async function load(): Promise<void> {
     $("page").setAttribute("aria-busy", "true");
     $("panel").innerHTML = skeleton();
     try {
-      const res = await fetch("/api/demo");
+      const res = await fetch(STATIC_DEMO ? `${BASE}demo.json` : "/api/demo");
       const body = (await res.json().catch(() => null)) as DemoPayload | { error: string } | null;
       if (body === null || !res.ok || "error" in body) throw new Error(`The demo service answered ${res.status}.`);
       page = pageView(body);

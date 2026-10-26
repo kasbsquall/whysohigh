@@ -1,6 +1,7 @@
 // HTML for each part of the page, from the view model. Text from the server is escaped.
 // Agents carry their plain names here; their names in the code appear only in the evidence.
 
+import { BASE } from "./env.ts";
 import { day, esc, kwh, month, short, usd } from "./format.ts";
 import type { DemoRules } from "../../src/demo.ts";
 import type { DemoWeather } from "../../src/demoWeather.ts";
@@ -99,7 +100,7 @@ const billSvg = (src: string, viewBox: string, attrs: string): string =>
 /** The bill the household sent, small, with its total circled; it opens full size. */
 function billThumb(run: RunView): string {
   if (!run.billImage) return "";
-  const src = `/${esc(run.billImage)}`;
+  const src = `${BASE}${esc(run.billImage)}`;
   return `
     <figure class="bill-thumb block" style="--b:2">
       <button type="button" class="thumb-btn" id="billOpen" aria-haspopup="dialog" aria-controls="billDialog">
@@ -121,7 +122,7 @@ export function billDialog(run: RunView): string {
         <button type="button" class="btn line" id="billClose">${icon("x")}Close</button>
       </div>
       <div class="bill-full" tabindex="0" aria-label="The bill at full size; on a phone, slide it sideways to read it all">
-        ${billSvg(`/${esc(run.billImage)}`, BILL_CROP, `role="img" aria-label="Your ${esc(run.to.label)}, a sample statement${esc(when)}: ${esc(kwh(run.to.kwh))}, total amount due ${usd(run.to.usd)}, circled."`)}
+        ${billSvg(`${BASE}${esc(run.billImage)}`, BILL_CROP, `role="img" aria-label="Your ${esc(run.to.label)}, a sample statement${esc(when)}: ${esc(kwh(run.to.kwh))}, total amount due ${usd(run.to.usd)}, circled."`)}
       </div>
       <p class="bill-hint">${icon("arrows-left-right")}Slide the bill sideways to read it all.</p>
     </dialog>`;
@@ -485,7 +486,7 @@ export function checks(run: RunView, rules: DemoRules, key: string): string {
     return `${title}<ol class="checks" start="${start}">${html}</ol>`;
   });
   return `
-    <p class="agent">${icon(AGENT_ICONS.ReconciliationCritic)}<span><b>${esc(agentName("ReconciliationCritic"))}</b> recomputes everything and sends work back when it does not add up. ${run.checks.length} checks, in the order they ran.</span></p>
+    <p class="agent">${icon(AGENT_ICONS.ReconciliationCritic)}<span><b>${esc(agentName("ReconciliationCritic"))}</b> recomputes everything and sends work back when it does not add up. Its six checks gave ${run.checks.length} results, in the order they ran; the help-program check is with the next step.</span></p>
     ${groups.join("")}
     ${rulesLine(run, rules)}`;
 }

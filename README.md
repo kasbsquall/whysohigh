@@ -20,6 +20,7 @@ npm run demo          # Linda's two months, from an empty memory; results in out
 npm run eval          # the agents against 30 synthetic households and three baselines
 npm test              # unit tests
 npm run web:build && npm run serve   # the page on http://127.0.0.1:8787
+npm run web:static    # the same page as static files in web/dist-static, for any static host
 ```
 
 What to look for:
@@ -83,7 +84,7 @@ The six checks:
 5. **The data covers every day.** Tariff and weather cover every day of both bills.
 6. **The summary uses only these numbers.** Every number in Nemotron's sentences must come from the split, to the cent; the sentences must name the biggest reason and may not stop mid-sentence. A failure goes back once, then falls back to a sentence built from the numbers.
 
-What the checks prove, and what they do not: the first closure check tests whether the weather model fits the household. After calibration to the previous bill the kWh add up by construction, so the second pass only confirms the bookkeeping, and the split between weather and own use rests on check 3. On Linda's September bill the first split left $12.60 unexplained and was sent back; that rejection, and the 5 of 6 planted billing errors it caught in the evaluation, are where the checker earns its place.
+What the checks prove, and what they do not: the first closure check tests whether the weather model fits the household. After calibration to the previous bill the kWh add up by construction, so the second pass only confirms the bookkeeping, and the split between weather and own use rests on check 3. On Linda's September bill the first split left $12.60 unexplained and was sent back. Over the evaluation, removing that second pass more than doubles the error (5.89 to 13.95 USD), and the checker caught 5 of 6 planted billing errors with no false alarm.
 
 ![The $47.30 split one cause at a time next to the checker's log: the first split left $12.60 unexplained and was sent back to Usage math, the second pass closed with $0.00 left](docs/img/checker.png)
 
@@ -147,11 +148,15 @@ With no `.env` these replay the recorded live runs and write the files committed
 | Method | Mean error per household | Biggest cause right |
 |---|---|---|
 | The agents | 5.89 USD | 23 of 24 |
+| The agents without the checker's second pass | 13.95 USD | 21 of 24 |
+| The agents with Ohio averages instead of the household's own fit | 27.46 USD | 19 of 24 |
 | "It was the weather" | 57.82 USD | 11 of 24 |
 | Nemotron, bill only | 69.52 USD | 21 of 72 answers |
 | Nemotron, bill plus tariffs and weather history | 67.69 USD | 12 of 40 answers |
 
 By cause, the agents' mean error was 3.83 USD on tariff changes, 5.38 on longer billing periods, 6.14 on weather and 8.20 on changes in use.
+
+**What each piece is worth.** The two middle rows are the same code with one piece removed. Without the second pass, the first split stands even when the checker would have sent it back: the error more than doubles. With Ohio averages in place of the weather model fitted to each household's 12 bills, it is almost five times larger. One caution: the truth is also calibrated to the previous bill, so part of what the second pass gains comes from sharing that step with the truth.
 
 **Which model answered.** Both model baselines ask Nightshift for Nemotron 3 Ultra 550B, and Nightshift's router chose the model that actually answered; the trace records it for every answer. Bill only: Ultra answered 64 of 90 times and Super VL 26. With tariffs and weather: Ultra 14, Super VL 26 and Lightning 5 of 45 answers. Counting only the answers Ultra gave, the error was 70.22 USD (16 of 58 biggest causes right) with the bill only and 50.06 USD (10 of 14) with the data. The other 45 informed requests got no answer, because Nightshift routed them to a retired model and returned HTTP 410; they count as missing, not as wrong.
 
@@ -174,7 +179,7 @@ By cause, the agents' mean error was 3.83 USD on tariff changes, 5.38 on longer 
 - **Zetaris is where the data meets, in both directions.** Every run asks Zetaris, in Lightning SQL, for the household's bills in Postgres joined with NOAA's daily weather in one federated query (Weather check), for AEP Ohio's tariff versions from OpenEI URDB (Price check), and for Ohio's average residential price from the EIA API, unpacking EIA's nested rows with `LATERAL VIEW explode` (context next to the bill). When every check passes, the decision is written back into the household's Postgres through Zetaris (`INSERT INTO household_pg.decisions`) and read back to confirm it. Nothing is copied into the app first. Sources: `src/zetaris/sources.ts`; queries: `src/zetaris/queries.ts`, `decisions.ts`, `statePrice.ts`; every statement is logged with the step that asked for it and Zetaris's query id.
 - **Meterless runs the models and keeps the memory.** Every model call goes through Nightshift (`src/llm/nightshift.ts`), and the trace keeps its compute receipt: receipt id, the model asked for, the route that answered, the consensus label and the cross-checks. The page lists every call with its receipt. Routing is visible: the Explainer asks for Nemotron 3.5 Lightning and Nightshift has answered with Nemotron 3 Ultra. H-MEM and World Model hold the household's memory, vendored unchanged and passing their conformance suites, and that memory changes the diagnosis and the plan.
 - **NVIDIA Nemotron reads the bill and writes the summary.** Nemotron 3.5 Super VL reads the photo, Nemotron 3.5 Lightning reads the text layer when vision fails, and a Nemotron text model writes the plain-words summary that check 6 verifies. Both model baselines in the evaluation ask for Nemotron 3 Ultra 550B, and the evaluation reports which model answered.
-- **Cursor** was not used. The organizers' HackOS FAQ lists it as optional; the code was written with Claude Code.
+- **Cursor** was not used. The HackOS FAQ for this event says: "Do I have to use Cursor? No. Cursor is optional and recommended." The code was written with Claude Code.
 
 What is particular to this build: the models do the two jobs that need language (reading a document a person photographed, and saying the result in plain words), and everything between them is arithmetic that a checker verifies against public data, including the model's own sentences. Zetaris lets that check reach the household's private bills and three public sources in the same place, and holds the decision afterwards.
 

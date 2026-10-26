@@ -3,6 +3,7 @@
   "repetitions": 3,
   "baselineModel": "nvidia/nemotron-3-ultra-550b-a55b",
   "informedNote": "Same model and prompt as the bill-only baseline, plus the published tariffs and the bill history with NOAA degree days.",
+  "ablationNote": "agentsFirstPassOnly: the first split, with no closure check sending it back. agentsOhioAverages: Ohio averages instead of the weather model fitted to the household's 12 bills, checker on.",
   "servedBy": {
     "note": "Both baselines ask Nightshift for the model above; its router chose the model that answered. Counts over answers that parsed.",
     "billOnly": {
@@ -32,6 +33,32 @@
         },
         "meanTotalErrorUsd": 5.89,
         "mainCauseRight": 23
+      },
+      "agentsFirstPassOnly": {
+        "answered": 24,
+        "unanswered": 0,
+        "meanAbsErrorUsd": {
+          "price": 0.17,
+          "days": 0.37,
+          "weather": 2.7,
+          "usage": 5.87,
+          "unexplained": 4.84
+        },
+        "meanTotalErrorUsd": 13.95,
+        "mainCauseRight": 21
+      },
+      "agentsOhioAverages": {
+        "answered": 24,
+        "unanswered": 0,
+        "meanAbsErrorUsd": {
+          "price": 0.17,
+          "days": 0.03,
+          "weather": 13.47,
+          "usage": 13.43,
+          "unexplained": 0.37
+        },
+        "meanTotalErrorUsd": 27.46,
+        "mainCauseRight": 19
       },
       "weatherOnly": {
         "answered": 24,
@@ -115,6 +142,32 @@
           "meanTotalErrorUsd": 3.83,
           "mainCauseRight": 6
         },
+        "agentsFirstPassOnly": {
+          "answered": 6,
+          "unanswered": 0,
+          "meanAbsErrorUsd": {
+            "price": 0.67,
+            "days": 0.03,
+            "weather": 1.24,
+            "usage": 6,
+            "unexplained": 5.36
+          },
+          "meanTotalErrorUsd": 13.29,
+          "mainCauseRight": 4
+        },
+        "agentsOhioAverages": {
+          "answered": 6,
+          "unanswered": 0,
+          "meanAbsErrorUsd": {
+            "price": 0.67,
+            "days": 0,
+            "weather": 10.68,
+            "usage": 10.68,
+            "unexplained": 0.68
+          },
+          "meanTotalErrorUsd": 22.71,
+          "mainCauseRight": 4
+        },
         "weatherOnly": {
           "answered": 6,
           "unanswered": 0,
@@ -194,6 +247,32 @@
             "unexplained": 0
           },
           "meanTotalErrorUsd": 5.38,
+          "mainCauseRight": 5
+        },
+        "agentsFirstPassOnly": {
+          "answered": 6,
+          "unanswered": 0,
+          "meanAbsErrorUsd": {
+            "price": 0,
+            "days": 1.37,
+            "weather": 2.69,
+            "usage": 6.03,
+            "unexplained": 6.31
+          },
+          "meanTotalErrorUsd": 16.4,
+          "mainCauseRight": 5
+        },
+        "agentsOhioAverages": {
+          "answered": 6,
+          "unanswered": 0,
+          "meanAbsErrorUsd": {
+            "price": 0,
+            "days": 0.09,
+            "weather": 10.38,
+            "usage": 9.87,
+            "unexplained": 0.42
+          },
+          "meanTotalErrorUsd": 20.76,
           "mainCauseRight": 5
         },
         "weatherOnly": {
@@ -277,6 +356,32 @@
           "meanTotalErrorUsd": 6.14,
           "mainCauseRight": 6
         },
+        "agentsFirstPassOnly": {
+          "answered": 6,
+          "unanswered": 0,
+          "meanAbsErrorUsd": {
+            "price": 0,
+            "days": 0,
+            "weather": 2.76,
+            "usage": 4.23,
+            "unexplained": 2.74
+          },
+          "meanTotalErrorUsd": 9.73,
+          "mainCauseRight": 6
+        },
+        "agentsOhioAverages": {
+          "answered": 6,
+          "unanswered": 0,
+          "meanAbsErrorUsd": {
+            "price": 0,
+            "days": 0,
+            "weather": 20.09,
+            "usage": 20.09,
+            "unexplained": 0
+          },
+          "meanTotalErrorUsd": 40.17,
+          "mainCauseRight": 5
+        },
         "weatherOnly": {
           "answered": 6,
           "unanswered": 0,
@@ -357,6 +462,32 @@
           },
           "meanTotalErrorUsd": 8.2,
           "mainCauseRight": 6
+        },
+        "agentsFirstPassOnly": {
+          "answered": 6,
+          "unanswered": 0,
+          "meanAbsErrorUsd": {
+            "price": 0,
+            "days": 0.1,
+            "weather": 4.1,
+            "usage": 7.24,
+            "unexplained": 4.96
+          },
+          "meanTotalErrorUsd": 16.4,
+          "mainCauseRight": 6
+        },
+        "agentsOhioAverages": {
+          "answered": 6,
+          "unanswered": 0,
+          "meanAbsErrorUsd": {
+            "price": 0,
+            "days": 0.01,
+            "weather": 12.73,
+            "usage": 13.1,
+            "unexplained": 0.36
+          },
+          "meanTotalErrorUsd": 26.2,
+          "mainCauseRight": 5
         },
         "weatherOnly": {
           "answered": 6,
@@ -441,6 +572,32 @@
           "meanTotalErrorUsd": 6.28,
           "mainCauseRight": 19
         },
+        "agentsFirstPassOnly": {
+          "answered": 20,
+          "unanswered": 0,
+          "meanAbsErrorUsd": {
+            "price": 0.2,
+            "days": 0.38,
+            "weather": 2.84,
+            "usage": 6.04,
+            "unexplained": 4.74
+          },
+          "meanTotalErrorUsd": 14.21,
+          "mainCauseRight": 17
+        },
+        "agentsOhioAverages": {
+          "answered": 20,
+          "unanswered": 0,
+          "meanAbsErrorUsd": {
+            "price": 0.2,
+            "days": 0.03,
+            "weather": 12.51,
+            "usage": 12.35,
+            "unexplained": 0.33
+          },
+          "meanTotalErrorUsd": 25.42,
+          "mainCauseRight": 17
+        },
         "weatherOnly": {
           "answered": 20,
           "unanswered": 0,
@@ -521,6 +678,32 @@
           },
           "meanTotalErrorUsd": 3.93,
           "mainCauseRight": 4
+        },
+        "agentsFirstPassOnly": {
+          "answered": 4,
+          "unanswered": 0,
+          "meanAbsErrorUsd": {
+            "price": 0,
+            "days": 0.32,
+            "weather": 1.97,
+            "usage": 5.02,
+            "unexplained": 5.36
+          },
+          "meanTotalErrorUsd": 12.67,
+          "mainCauseRight": 4
+        },
+        "agentsOhioAverages": {
+          "answered": 4,
+          "unanswered": 0,
+          "meanAbsErrorUsd": {
+            "price": 0,
+            "days": 0.02,
+            "weather": 18.27,
+            "usage": 18.83,
+            "unexplained": 0.54
+          },
+          "meanTotalErrorUsd": 37.67,
+          "mainCauseRight": 2
         },
         "weatherOnly": {
           "answered": 4,
@@ -606,6 +789,32 @@
           "meanTotalErrorUsd": 5.89,
           "mainCauseRight": 23
         },
+        "agentsFirstPassOnly": {
+          "answered": 24,
+          "unanswered": 0,
+          "meanAbsErrorUsd": {
+            "price": 0.17,
+            "days": 0.37,
+            "weather": 2.7,
+            "usage": 5.87,
+            "unexplained": 4.84
+          },
+          "meanTotalErrorUsd": 13.95,
+          "mainCauseRight": 21
+        },
+        "agentsOhioAverages": {
+          "answered": 24,
+          "unanswered": 0,
+          "meanAbsErrorUsd": {
+            "price": 0.17,
+            "days": 0.03,
+            "weather": 13.47,
+            "usage": 13.43,
+            "unexplained": 0.37
+          },
+          "meanTotalErrorUsd": 27.46,
+          "mainCauseRight": 19
+        },
         "weatherOnly": {
           "answered": 24,
           "unanswered": 0,
@@ -675,6 +884,20 @@
       "low": {
         "households": 0,
         "agents": {
+          "answered": 0,
+          "unanswered": 0,
+          "meanAbsErrorUsd": null,
+          "meanTotalErrorUsd": null,
+          "mainCauseRight": 0
+        },
+        "agentsFirstPassOnly": {
+          "answered": 0,
+          "unanswered": 0,
+          "meanAbsErrorUsd": null,
+          "meanTotalErrorUsd": null,
+          "mainCauseRight": 0
+        },
+        "agentsOhioAverages": {
           "answered": 0,
           "unanswered": 0,
           "meanAbsErrorUsd": null,

@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { billImageOf, type DemoPayload } from "../src/demo.ts";
 import { esc, kwh, month, plainCheck, plainReason, short, usd } from "../web/src/format.ts";
-import { AGENT_NAMES, checksFromTrace, pageView, stripView } from "../web/src/model.ts";
+import { AGENT_NAMES, checksFromTrace, pageView, stripView, weatherTitle } from "../web/src/model.ts";
 import { actionPitch, actions, billDialog, cascade, comparison, failure, friendlyError, memoryPanel, memorySwitch, nextStepLine, panel, parseHash, strip, tabKey, todayInOhio } from "../web/src/view.ts";
 
 // The sample-mode answer of GET /api/demo, saved from the server on 24 Oct 2026, with the
@@ -439,5 +439,21 @@ describe("round 4: one today, programs open now, one value per fact", () => {
     expect(lead).toContain('id="memSwitch"');
     expect(oct.match(/id="memSwitch"/g)).toHaveLength(1);
     expect(panel(page, "first", true, "2026-10-25")).not.toContain('id="memSwitch"');
+  });
+});
+
+describe("weather cause title", () => {
+  const bill = (cdd: number, hdd: number) => ({ periodStart: "2026-01-01", periodEnd: "2026-01-31", days: 30, kwh: 900, cdd, hdd }) as never;
+  it("says cooler when a summer bill went down with the weather", () => {
+    expect(weatherTitle(bill(300, 0), bill(290, 5), -4.39)).toBe("Cooler weather");
+  });
+  it("says warmer when a spring bill went down because heating need fell", () => {
+    expect(weatherTitle(bill(0, 400), bill(10, 200), -11.92)).toBe("Warmer weather");
+  });
+  it("says colder when a winter bill went up with the weather", () => {
+    expect(weatherTitle(bill(0, 300), bill(0, 600), 25)).toBe("Colder weather");
+  });
+  it("keeps a neutral title without the weather of both bills", () => {
+    expect(weatherTitle(undefined, undefined, -3)).toBe("Milder weather");
   });
 });

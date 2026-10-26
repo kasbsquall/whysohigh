@@ -162,6 +162,22 @@ describe("analyzeChange", () => {
     expect(runtime.events.find((e) => e.step === "retry" && e.target === "UsageAnalyst")).toMatchObject({ next: "calibrated" });
   });
 
+  it("with one strategy, keeps the first split even when the checker rejects it (evaluation ablation)", () => {
+    const runtime = fakeRuntime();
+    const history = [august, september];
+    const result = analyzeChange(runtime, tariffs, lindaBill, history, rateFor(runtime, lindaBill, history), new Set(), { strategies: ["model"] });
+    expect(result.closed).toBe(false);
+    expect(result.decomposition?.usageStrategy).toBe("model");
+    expect(runtime.events.some((e) => e.step === "retry")).toBe(false);
+  });
+
+  it("uses the weather model it is given instead of fitting one (evaluation ablation)", () => {
+    const runtime = fakeRuntime();
+    const history = [august, september];
+    const result = analyzeChange(runtime, tariffs, lindaBill, history, rateFor(runtime, lindaBill, history), new Set(), { model: OHIO_PRIOR });
+    expect(result.decomposition?.model.source).toBe("ohio_prior");
+  });
+
   it("stops before splitting when NOAA is missing days", () => {
     const runtime = fakeRuntime();
     const history = [august, { ...september, weatherDays: 31 }];

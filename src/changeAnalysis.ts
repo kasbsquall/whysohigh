@@ -118,6 +118,12 @@ function calibrationTarget(
   };
 }
 
+/** Evaluation ablations: a fixed weather model, or fewer usage strategies (one strategy means no second pass). */
+export interface ChangeAblation {
+  readonly model?: WeatherModel;
+  readonly strategies?: readonly UsageStrategy[];
+}
+
 export function analyzeChange(
   runtime: Runtime,
   tariffs: readonly Tariff[],
@@ -125,6 +131,7 @@ export function analyzeChange(
   history: readonly BillWeather[],
   rate: RateResult,
   oneOffPeriods: ReadonlySet<string> = new Set(),
+  ablation: ChangeAblation = {},
 ): ChangeResult {
   const { logger } = runtime;
   if (!rate.closed) {
@@ -148,11 +155,14 @@ export function analyzeChange(
   if (!previousCheck.accepted) return skip(runtime, `Previous bill: ${previousCheck.reason}`, verdicts);
   if (rate.priceEffectUsd === null) return skip(runtime, "No price effect could be computed for the previous bill.", verdicts);
 
-  const model = chooseWeatherModel(
-    runtime,
-    fittableHistory(history, current.periodStart).filter((b) => !oneOffPeriods.has(b.periodStart)),
-    verdicts,
-  );
+  const model =
+    ablation.model ??
+    chooseWeatherModel(
+      runtime,
+      fittableHistory(history, current.periodStart).filter((b) => !oneOffPeriods.has(b.periodStart)),
+      verdicts,
+    );
+  const strategies = ablation.strategies ?? USAGE_STRATEGIES;
   const { target, effect } = calibrationTarget(history, previous, current, oneOffPeriods);
   if (effect) logger.log({ agent: ORCHESTRATOR, step: "memory_effect", ...effect });
   const sides: [BillSide, BillSide] = [
@@ -161,8 +171,8 @@ export function analyzeChange(
   ];
 
   const attempts: { decomposition: Decomposition; closure: Verdict }[] = [];
-  for (let attempt = 1; attempt <= USAGE_STRATEGIES.length; attempt++) {
-    const strategy = USAGE_STRATEGIES[attempt - 1];
+  for (let attempt = 1; attempt <= strategies.length; attempt++) {
+    const strategy = strategies[attempt - 1];
     if (strategy === "calibrated") {
       const credible = checkWeatherModel(calibrate(model, target));
       verdicts.push(credible);
@@ -181,8 +191,8 @@ export function analyzeChange(
     logVerdict(logger, closure, "UsageAnalyst", attempt);
     attempts.push({ decomposition, closure });
     if (closure.accepted) break;
-    if (attempt < USAGE_STRATEGIES.length) {
-      logger.log({ agent: ORCHESTRATOR, step: "retry", target: "UsageAnalyst", next: USAGE_STRATEGIES[attempt], reason: closure.reason });
+    if (attempt < strategies.length) {
+      logger.log({ agent: ORCHESTRATOR, step: "retry", target: "UsageAnalyst", next: strategies[attempt], reason: closure.reason });
     }
   }
 

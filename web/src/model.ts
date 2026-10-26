@@ -182,6 +182,18 @@ function weatherDetail(previous: BillWeather, current: BillWeather): string {
   return `${definition} ${text.charAt(0).toUpperCase()}${text.slice(1)}.`;
 }
 
+/**
+ * Names the weather the way the reader felt it: in a cooling season a lower bill
+ * means cooler weather, in a heating season it means warmer weather.
+ */
+export function weatherTitle(previous: BillWeather | undefined, current: BillWeather | undefined, amount: number): string {
+  if (!previous || !current) return amount <= 0 ? "Milder weather" : "Weather that needed more energy";
+  const cooling = previous.cdd / previous.days + current.cdd / current.days;
+  const heating = previous.hdd / previous.days + current.hdd / current.days;
+  if (cooling >= heating) return amount <= 0 ? "Cooler weather" : "Hotter weather";
+  return amount <= 0 ? "Warmer weather" : "Colder weather";
+}
+
 interface CauseContext {
   readonly run: DemoPayloadRun;
   readonly from: BillEnd;
@@ -228,7 +240,7 @@ function describeCause(key: ComponentKey, amount: number, ctx: CauseContext): Om
     }
     case "weather":
       return {
-        title: amount <= 0 ? "Milder weather" : "Weather that needed more energy",
+        title: weatherTitle(ctx.previous, ctx.current, amount),
         detail: ctx.previous && ctx.current ? weatherDetail(ctx.previous, ctx.current) : "Weather for both bills from NOAA.",
         role: "CHECKED BY",
         agent: "WeatherAnalyst",

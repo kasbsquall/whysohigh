@@ -1,13 +1,16 @@
 // "Read your own bill": the photo is shrunk in the browser, sent to POST /api/photo,
 // read by BillReader (Nemotron vision) and explained by the same agents as Linda's bills.
 
+import { STATIC_DEMO } from "./env.ts";
 import { esc, usd } from "./format.ts";
 
 const MAX_SIDE = 1600;
 const QUALITY = 0.85;
 
 interface Verdict {
+  readonly check: string;
   readonly accepted: boolean;
+  readonly reason: string;
 }
 interface Component {
   readonly key: string;
@@ -39,6 +42,28 @@ const LABELS: Readonly<Record<string, string>> = {
   unexplained: "Not explained",
 };
 
+const CHECKS: Readonly<Record<string, string>> = {
+  bill_recompute: "The bill matches the tariff",
+  freshness: "The data covers every day",
+  weather_model: "The weather model is believable",
+  closure: "The change adds up",
+  explanation_numbers: "The summary uses only these numbers",
+};
+
+const OFFLINE_MESSAGE =
+  "This online copy replays a recorded run, so it can only show Linda's two bills. To read your own bill, run Why So High on your computer with its models (README, Run it live).";
+
+/** Whether this copy can read a new photo; the static copy and sample mode cannot. */
+async function photoAvailability(): Promise<{ available: boolean; message: string | null }> {
+  if (STATIC_DEMO) return { available: false, message: OFFLINE_MESSAGE };
+  try {
+    const res = await fetch("/api/photo");
+    return res.ok ? ((await res.json()) as { available: boolean; message: string | null }) : { available: true, message: null };
+  } catch {
+    return { available: true, message: null };
+  }
+}
+
 /** Draws the photo at most MAX_SIDE pixels on its long side and encodes it as JPEG. */
 async function shrink(file: File): Promise<string> {
   const bitmap = await createImageBitmap(file);
@@ -67,6 +92,13 @@ export function photoResult(r: PhotoResult): string {
     .join("");
   const verdicts = [...out.rate.verdicts, ...out.change.verdicts, ...(out.words?.verdicts ?? [])];
   const passed = verdicts.filter((v) => v.accepted).length;
+  const title = (v: Verdict): string => (v.check === "closure" && !v.accepted ? "Too much left unexplained" : (CHECKS[v.check] ?? v.check));
+  const checks = verdicts
+    .map((v, i) => {
+      const again = verdicts.slice(0, i).some((w) => w.check === v.check) ? ", again" : "";
+      return `<li class="${v.accepted ? "ok" : "no"}"><i class="ph-light ph-${v.accepted ? "check-circle" : "warning-circle"}" aria-hidden="true"></i><span><b>${esc(v.accepted ? "Accepted" : "Sent back")}: ${esc(title(v))}${again}</b> ${esc(v.reason)}</span></li>`;
+    })
+    .join("");
   const d = out.change.decomposition;
   const split = d
     ? `<h3 class="photo-h">Your bill went ${d.changeUsd < 0 ? "down" : "up"} <span class="num">${usd(Math.abs(d.changeUsd))}</span></h3>
@@ -82,7 +114,9 @@ export function photoResult(r: PhotoResult): string {
     <dl class="photo-read">${read}</dl>
     ${error}
     ${split}
-    <p class="summary-credit">${passed} of ${verdicts.length} checks passed. Without your household size and income we cannot check help programs.</p>`;
+    <h3 class="photo-h">Checked before you see it</h3>
+    <p class="summary-credit">${passed} of ${verdicts.length} results accepted, in the order the checker ran them. Without your household size and income it cannot check help programs.</p>
+    <ul class="photo-checks">${checks}</ul>`;
 }
 
 export function wirePhoto(): void {
@@ -92,7 +126,16 @@ export function wirePhoto(): void {
   const status = document.getElementById("photoStatus");
   const result = document.getElementById("photoResult");
   if (!open || !dialog || !input || !status || !result) return;
-  open.addEventListener("click", () => dialog.showModal());
+  const pick = dialog.querySelector<HTMLElement>(".photo-pick");
+  open.addEventListener("click", () => {
+    dialog.showModal();
+    void photoAvailability().then(({ available, message }) => {
+      if (available) return;
+      input.disabled = true;
+      pick?.setAttribute("hidden", "");
+      status.textContent = message ?? OFFLINE_MESSAGE;
+    });
+  });
   document.getElementById("photoClose")?.addEventListener("click", () => dialog.close());
   dialog.addEventListener("close", () => open.focus());
   input.addEventListener("change", async () => {

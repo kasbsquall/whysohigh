@@ -16,7 +16,7 @@ import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import type { Bill } from "../src/agents/billReader.ts";
 import { loadTariffs, priceEffect } from "../src/agents/rateAnalyst.ts";
 import { decompose } from "../src/agents/usageAnalyst.ts";
-import type { WeatherModel } from "../src/agents/weatherAnalyst.ts";
+import { OHIO_PRIOR, type WeatherModel } from "../src/agents/weatherAnalyst.ts";
 import { SampleMissError } from "../src/cache.ts";
 import { analyzeChange } from "../src/changeAnalysis.ts";
 import { analyzeRate, ORCHESTRATOR } from "../src/pipeline.ts";
@@ -69,6 +69,13 @@ interface PipelineOutcome {
   readonly modelSource: string | null;
   readonly usageStrategy: string | null;
   readonly split: Split | null;
+  /** The same pipeline with a piece removed, to show what each piece is worth. */
+  readonly ablations: {
+    /** Only the first split: no closure check sending it back for a second pass. */
+    readonly firstPassOnly: Split | null;
+    /** Ohio averages instead of the weather model fitted to the household's 12 bills, checker on. */
+    readonly ohioAverages: Split | null;
+  };
 }
 
 async function runPipeline(h: EvalHousehold, tariffs: readonly Tariff[]): Promise<{ outcome: PipelineOutcome; history: readonly BillWeather[] }> {
@@ -88,6 +95,8 @@ async function runPipeline(h: EvalHousehold, tariffs: readonly Tariff[]): Promis
   };
   const rate = analyzeRate(runtime, tariffs, bill, history);
   const change = analyzeChange(runtime, tariffs, bill, history, rate);
+  const firstPassOnly = analyzeChange(runtime, tariffs, bill, history, rate, new Set(), { strategies: ["model"] }).decomposition;
+  const ohioAverages = analyzeChange(runtime, tariffs, bill, history, rate, new Set(), { model: OHIO_PRIOR }).decomposition;
   const closures = change.verdicts.filter((v) => v.check === "closure");
   const d = change.decomposition;
   runtime.logger.log({ agent: ORCHESTRATOR, step: "done", eval: h.id });
@@ -105,6 +114,10 @@ async function runPipeline(h: EvalHousehold, tariffs: readonly Tariff[]): Promis
       modelSource: d?.model.source ?? null,
       usageStrategy: d?.usageStrategy ?? null,
       split: d ? splitOf(d.components) : null,
+      ablations: {
+        firstPassOnly: firstPassOnly ? splitOf(firstPassOnly.components) : null,
+        ohioAverages: ohioAverages ? splitOf(ohioAverages.components) : null,
+      },
     },
   };
 }
@@ -275,6 +288,8 @@ function scores(group: readonly EvalHousehold[]) {
   return {
     households: group.length,
     agents: score(group.map((h) => ({ estimate: pipeline.get(h.id)?.outcome.split ?? null, truth: truth(h) }))),
+    agentsFirstPassOnly: score(group.map((h) => ({ estimate: pipeline.get(h.id)?.outcome.ablations.firstPassOnly ?? null, truth: truth(h) }))),
+    agentsOhioAverages: score(group.map((h) => ({ estimate: pipeline.get(h.id)?.outcome.ablations.ohioAverages ?? null, truth: truth(h) }))),
     weatherOnly: score(group.map((h) => ({ estimate: weatherOnly(h), truth: truth(h) }))),
     billOnly: score(group.flatMap((h) => baseline.filter((b) => b.id === h.id).map((b) => ({ estimate: b.split, truth: truth(h) })))),
     informed: score(group.flatMap((h) => informed.filter((b) => b.id === h.id).map((b) => ({ estimate: b.split, truth: truth(h) })))),
@@ -295,6 +310,7 @@ const summary = {
   repetitions: K,
   baselineModel: BASELINE_MODEL,
   informedNote: "Same model and prompt as the bill-only baseline, plus the published tariffs and the bill history with NOAA degree days.",
+  ablationNote: "agentsFirstPassOnly: the first split, with no closure check sending it back. agentsOhioAverages: Ohio averages instead of the weather model fitted to the household's 12 bills, checker on.",
   servedBy: {
     note: "Both baselines ask Nightshift for the model above; its router chose the model that answered. Counts over answers that parsed.",
     billOnly: countBy(baseline.filter((b) => b.modelServed !== null).map((b) => b.modelServed as string)),
@@ -380,6 +396,8 @@ process.stdout.write(
   [
     `Split of the change, ${all.households} households, mean error per household in USD:`,
     line("agents", all.agents),
+    line("agents, first pass only", all.agentsFirstPassOnly),
+    line("agents, Ohio averages", all.agentsOhioAverages),
     line("weather only", all.weatherOnly),
     line("bill only", all.billOnly),
     line("informed", all.informed),

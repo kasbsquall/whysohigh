@@ -25,7 +25,8 @@
     "eval:explainer": "tsx eval/explainer.ts",
     "serve": "tsx server/index.ts",
     "web:dev": "vite --config web/vite.config.ts",
-    "web:build": "vite build --config web/vite.config.ts"
+    "web:build": "vite build --config web/vite.config.ts",
+    "web:static": "tsx scripts/build-static.ts"
   },
   "devDependencies": {
     "@types/node": "^22.10.0",

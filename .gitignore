@@ -10,5 +10,6 @@ out/*
 
 .ui-direcciones/
 web/dist/
+web/dist-static/
 .artes/
 .scratch/

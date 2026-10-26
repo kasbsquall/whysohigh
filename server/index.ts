@@ -1,7 +1,7 @@
 // Web server for Why So High: GET /api/demo runs Linda's demo through the same
 // agent pipeline as the CLI, POST /api/run runs one request (input_examples/),
-// POST /api/photo reads a bill photo with BillReader and explains it, and the
-// built page is served from web/dist.
+// POST /api/photo reads a bill photo with BillReader and explains it (GET says
+// whether this copy can), and the built page is served from web/dist.
 //   npm run serve            (after npm run web:build)
 // Binds to 127.0.0.1 unless HOST says otherwise. Without .env it runs in SAMPLE_MODE.
 
@@ -30,6 +30,9 @@ const TYPES: Readonly<Record<string, string>> = {
 
 /** The demo runs once per server process; every request reads the same result. */
 let demo: Promise<DemoPayload> | null = null;
+const SAMPLE_PHOTO_MESSAGE =
+  "Reading a new photo needs the live models. This copy of the page replays a recorded run, so it can only show Linda's two bills. To read your own bill, run Why So High with its models (README, Run it live).";
+
 const loadDemo = (): Promise<DemoPayload> => {
   demo ??= runLindaDemo(join(mkdtempSync(join(tmpdir(), "wsh-web-")), "memory"))
     .then(demoPayload)
@@ -149,7 +152,7 @@ async function handlePhoto(req: IncomingMessage, res: ServerResponse): Promise<v
   const runtime = createRuntime();
   if (runtime.config.sampleMode) {
     req.resume();
-    send(res, 503, JSON_TYPE, failure("SampleMode", "Reading a new photo needs the live models. This copy of the page replays a recorded run, so it can only show Linda's two bills."));
+    send(res, 503, JSON_TYPE, failure("SampleMode", SAMPLE_PHOTO_MESSAGE));
     return;
   }
   if (photoBusy) {
@@ -206,6 +209,12 @@ const server = createServer((req, res) => {
     return;
   }
   if (path === "/api/photo") {
+    if (req.method === "GET") {
+      // Lets the page say before the first click whether this copy can read a photo.
+      const available = !createRuntime().config.sampleMode;
+      send(res, 200, JSON_TYPE, JSON.stringify({ available, message: available ? null : SAMPLE_PHOTO_MESSAGE }));
+      return;
+    }
     if (req.method !== "POST") {
       send(res, 405, JSON_TYPE, failure("MethodNotAllowed", "Use POST with a JSON body."));
       return;

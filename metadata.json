@@ -143,7 +143,9 @@
       "nemotron_bill_only": 69.52,
       "nemotron_with_tariffs_and_weather": 67.69,
       "nemotron_bill_only_ultra_served": 70.22,
-      "nemotron_with_tariffs_and_weather_ultra_served": 50.06
+      "nemotron_with_tariffs_and_weather_ultra_served": 50.06,
+      "agents_without_second_pass": 13.95,
+      "agents_with_ohio_averages": 27.46
     },
     "main_cause_right": {
       "agents": "23/24",
@@ -151,7 +153,9 @@
       "nemotron_bill_only": "21/72",
       "nemotron_with_tariffs_and_weather": "12/40",
       "nemotron_bill_only_ultra_served": "16/58",
-      "nemotron_with_tariffs_and_weather_ultra_served": "10/14"
+      "nemotron_with_tariffs_and_weather_ultra_served": "10/14",
+      "agents_without_second_pass": "21/24",
+      "agents_with_ohio_averages": "19/24"
     },
     "served_by": {
       "note": "Nightshift's router chose the model that answered; counts over parsed answers.",
@@ -182,7 +186,8 @@
     "explainer": {
       "file": "eval/results/explainer.json",
       "passed_check_6_first_try": "22/22"
-    }
+    },
+    "ablation_note": "Same code with one piece removed: no closure check sending the first split back, or Ohio averages instead of the household's fitted weather model. The truth is also calibrated to the previous bill."
   },
   "pre_existing_components": [
     "Meterless H-MEM and World Model engines (Apache-2.0), vendored unchanged from github.com/Meterless/Meterless at commit 1742dec, listed in engines/VENDORED.md"
