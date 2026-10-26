@@ -1,10 +1,11 @@
 // Web server for Why So High: GET /api/demo runs Linda's demo through the same
 // agent pipeline as the CLI, POST /api/run runs one request (input_examples/),
-// and the built page is served from web/dist.
+// POST /api/photo reads a bill photo with BillReader and explains it, and the
+// built page is served from web/dist.
 //   npm run serve            (after npm run web:build)
 // Binds to 127.0.0.1 unless HOST says otherwise. Without .env it runs in SAMPLE_MODE.
 
-import { createReadStream, existsSync, mkdtempSync, statSync } from "node:fs";
+import { createReadStream, existsSync, mkdtempSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
 import { tmpdir } from "node:os";
 import { extname, join, normalize, resolve, sep } from "node:path";
@@ -77,14 +78,14 @@ const JSON_TYPE = "application/json; charset=utf-8";
  * (the rest is drained, not read, so the 413 still reaches the caller) or when
  * the client goes away before the end.
  */
-function readBody(req: IncomingMessage): Promise<string | null> {
+function readBody(req: IncomingMessage, maxBytes = MAX_BODY_BYTES): Promise<string | null> {
   return new Promise((resolve) => {
     const chunks: Buffer[] = [];
     let size = 0;
-    let tooLarge = Number(req.headers["content-length"] ?? 0) > MAX_BODY_BYTES;
+    let tooLarge = Number(req.headers["content-length"] ?? 0) > maxBytes;
     req.on("data", (chunk: Buffer) => {
       size += chunk.length;
-      if (size > MAX_BODY_BYTES) tooLarge = true;
+      if (size > maxBytes) tooLarge = true;
       if (!tooLarge) chunks.push(chunk);
     });
     req.on("end", () => resolve(tooLarge ? null : Buffer.concat(chunks).toString("utf8")));
@@ -131,6 +132,62 @@ async function handleRun(req: IncomingMessage, res: ServerResponse): Promise<voi
   }
 }
 
+// The page shrinks a photo to 1,600 px JPEG before sending, which stays well under this.
+const MAX_PHOTO_BYTES = 4 * 1024 * 1024;
+const PHOTO = /^data:image\/(jpeg|png);base64,([A-Za-z0-9+/=]+)$/;
+const MAGIC: Readonly<Record<string, readonly number[]>> = { jpeg: [0xff, 0xd8, 0xff], png: [0x89, 0x50, 0x4e, 0x47] };
+// One photo at a time: each one is a vision model call and a full run.
+let photoBusy = false;
+
+/** POST /api/photo: { "image": "data:image/jpeg;base64,..." }. Same result shape as /api/run. */
+async function handlePhoto(req: IncomingMessage, res: ServerResponse): Promise<void> {
+  if (!/^application\/json\b/i.test(req.headers["content-type"] ?? "")) {
+    req.resume();
+    send(res, 415, JSON_TYPE, failure("UnsupportedMediaType", "Send the photo as JSON."));
+    return;
+  }
+  const runtime = createRuntime();
+  if (runtime.config.sampleMode) {
+    req.resume();
+    send(res, 503, JSON_TYPE, failure("SampleMode", "Reading a new photo needs the live models. This copy of the page replays a recorded run, so it can only show Linda's two bills."));
+    return;
+  }
+  if (photoBusy) {
+    req.resume();
+    send(res, 429, JSON_TYPE, failure("Busy", "Another photo is being read. Try again in a minute."));
+    return;
+  }
+  const body = await readBody(req, MAX_PHOTO_BYTES);
+  if (body === null) {
+    send(res, 413, JSON_TYPE, failure("TooLarge", "The photo is too large. Try a smaller one."));
+    return;
+  }
+  let match: RegExpExecArray | null = null;
+  try {
+    const raw = JSON.parse(body) as { image?: unknown };
+    match = typeof raw.image === "string" ? PHOTO.exec(raw.image) : null;
+  } catch {
+    match = null;
+  }
+  const bytes = match ? Buffer.from(match[2], "base64") : null;
+  if (!match || !bytes || !MAGIC[match[1]].every((b, i) => bytes[i] === b)) {
+    send(res, 400, JSON_TYPE, failure("InvalidInput", "That file is not a JPG or PNG photo."));
+    return;
+  }
+  const dir = mkdtempSync(join(tmpdir(), "wsh-photo-"));
+  const file = join(dir, `bill.${match[1] === "jpeg" ? "jpg" : "png"}`);
+  photoBusy = true;
+  try {
+    writeFileSync(file, bytes);
+    const result = await runRequest(runtime, { householdId: null, bill: { imagePath: file }, facts: {}, earlierBills: [] }, null);
+    if (result.status === "success") send(res, 200, JSON_TYPE, JSON.stringify(result));
+    else send(res, 422, JSON_TYPE, JSON.stringify({ ...result, error: { type: result.error.type, message: "We could not read that bill. A sharp, flat photo of the first page works best." } }));
+  } finally {
+    photoBusy = false;
+    rmSync(dir, { recursive: true, force: true });
+  }
+}
+
 const server = createServer((req, res) => {
   const path = pathOf(req.url);
   if (path === null) {
@@ -145,6 +202,17 @@ const server = createServer((req, res) => {
     handleRun(req, res).catch((error: unknown) => {
       process.stderr.write(`Run failed: ${(error as Error).message}\n`);
       send(res, 500, JSON_TYPE, JSON.stringify({ status: "error", error: { type: "Error", message: "The run could not finish." } }));
+    });
+    return;
+  }
+  if (path === "/api/photo") {
+    if (req.method !== "POST") {
+      send(res, 405, JSON_TYPE, failure("MethodNotAllowed", "Use POST with a JSON body."));
+      return;
+    }
+    handlePhoto(req, res).catch((error: unknown) => {
+      process.stderr.write(`Photo failed: ${(error as Error).message}\n`);
+      send(res, 500, JSON_TYPE, failure("Error", "The photo could not be read."));
     });
     return;
   }

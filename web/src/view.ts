@@ -32,6 +32,7 @@ const AGENT_ICONS: Readonly<Record<string, string>> = {
   ReconciliationCritic: "list-checks",
   HouseholdMemory: "notebook",
   ActionPlanner: "hand-heart",
+  Explainer: "pen-nib",
 };
 
 const CAUSE_ICONS: Readonly<Record<CauseView["key"], string>> = {
@@ -159,6 +160,25 @@ export function memorySwitch(page: PageView, on: boolean): string {
     </div>`;
 }
 
+/** Nemotron's summary of the split, with who wrote it and what checked it. */
+export function summary(run: RunView): string {
+  const w = run.words;
+  if (!w) return "";
+  const credit = w.byModel
+    ? `Written by Nemotron through Meterless Nightshift. ${esc(agentName("ReconciliationCritic"))} matched every number in it to the split below before showing it.`
+    : `Built from the numbers below. Nemotron's summary did not pass ${esc(agentName("ReconciliationCritic").toLowerCase())}, so it is not shown.`;
+  return `<div class="summary"><p class="summary-text">${esc(w.text)}</p><p class="summary-credit">${icon(AGENT_ICONS.Explainer)}<span>${credit}</span></p></div>`;
+}
+
+/** This bill's price per kWh next to Ohio's average that month, from EIA through Zetaris. */
+export function ohioNote(run: RunView): string {
+  const o = run.ohio;
+  if (!o) return "";
+  const [y, m] = o.month.split("-");
+  const month = new Date(Date.UTC(Number(y), Number(m) - 1, 1)).toLocaleString("en-US", { month: "long", year: "numeric", timeZone: "UTC" });
+  return `<p class="unit-note ohio-note">This bill works out to <span class="num">${o.billCentsPerKwh.toFixed(2)}</span> cents per kWh, fixed charge included. Ohio homes paid <span class="num">${o.ohioCentsPerKwh.toFixed(2)}</span> cents on average in ${esc(month)}, the latest month the US Energy Information Administration has published.</p>`;
+}
+
 function lead(run: RunView, rules: DemoRules, key: string, today: string, memory: string): string {
   const dir = run.changeUsd < 0 ? "down" : "up";
   const conf = run.confidence;
@@ -178,12 +198,13 @@ function lead(run: RunView, rules: DemoRules, key: string, today: string, memory
       <div class="lead-main block" style="--b:0">
         <h1 class="headline" tabindex="-1"><span class="hl-line">Your bill went ${dir}</span>
           <span class="big ${dir}">${icon(dir === "up" ? "arrow-up" : "arrow-down", "dir")}<span class="num">${usd(Math.abs(run.changeUsd))}</span></span></h1>
-        <div class="why-row"><div class="why-head"><p class="why">Here is why.</p>${memory}</div>${doubleChecked(run, key)}${nextStepLine(run, today, key)}</div>
+        <div class="why-row"><div class="why-head"><p class="why">Here is why.</p>${memory}</div>${summary(run)}${doubleChecked(run, key)}${nextStepLine(run, today, key)}</div>
       </div>
       <div class="lead-side block" style="--b:1">
         <div class="bills-wrap">
           <dl class="bills">${bill(run.from, "then")}${bill(run.to, "now")}</dl>
           <p class="unit-note">kWh means kilowatt-hours, the unit your meter counts.</p>
+          ${ohioNote(run)}
         </div>
         ${meter}
       </div>
@@ -600,7 +621,7 @@ export const todayInOhio = (now: Date = new Date()): string => new Intl.DateTime
 
 /** Names that are letters keep their full name beside them: "HEAP (Home Energy Assistance Program)". */
 const named = (a: { id: string; name: string; longName?: string }): string =>
-  a.longName && a.longName !== a.name && a.name.length <= 5 ? `${a.name} (${a.longName})` : a.name;
+  a.longName && a.longName !== a.name && /^[A-Z]{3,}\b/.test(a.name) ? `${a.name} (${a.longName})` : a.name;
 
 /** A season that ended since the bill's date is closed today, whatever the bill's date said. */
 const closedNow = (a: ActionView, today: string): boolean => a.status === "recommended" && a.window !== null && today > a.window.to;
@@ -852,6 +873,47 @@ export function evidence(run: RunView, weather: DemoWeather): string {
         : ""
     }
     ${block("ev-words", "What the checker wrote, word for word", "list-checks", `<ol class="words">${words}</ol>`)}
+    ${
+      e.decisionSql
+        ? block(
+            "ev-saved",
+            "Saved to your record through Zetaris",
+            "floppy-disk",
+            `<p>Once every check passed, the decision was written back to <code translate="no">household_pg.decisions</code>, next to your bills, and read back through Zetaris to confirm it is there.</p><pre class="sql"><code translate="no">${esc(e.decisionSql)}</code></pre><pre class="sql"><code translate="no">${esc(e.decisionReadSql ?? "")}</code></pre>${
+              e.decisionReadBack
+                ? `<p>Read back: <code translate="no">${esc(e.decisionReadBack.map((c) => (/^-?\d+\.\d+$/.test(c) ? Number(c).toFixed(2) : c)).join(", "))}</code></p>`
+                : ""
+            }`,
+          )
+        : ""
+    }
+    ${
+      e.ohioSql
+        ? block(
+            "ev-ohio",
+            "Ohio's average price that month",
+            "chart-line",
+            `<p>From the US Energy Information Administration's API, read through Zetaris. EIA nests its rows, so the query unpacks them first.</p><pre class="sql"><code translate="no">${esc(e.ohioSql)}</code></pre>`,
+          )
+        : ""
+    }
+    ${
+      e.modelCalls.length > 0
+        ? block(
+            "ev-models",
+            "Every model call, with its Meterless receipt",
+            "cpu",
+            `<p>Nightshift routes each request and returns a compute receipt with it. The model asked for and the model that answered can differ.</p><div class="agents-scroll"><table class="agents"><thead><tr><th scope="col">Step</th><th scope="col">Asked for</th><th scope="col">Answered</th><th scope="col">Receipt</th></tr></thead><tbody>${e.modelCalls
+              .map(
+                (c) =>
+                  `<tr><td>${esc(agentName(c.agent))}</td><td><code translate="no">${esc(c.modelRequested.replace(/^nvidia\//, ""))}</code></td><td><code translate="no">${esc(c.modelServed.replace(/^nvidia\//, ""))}</code></td><td>${
+                    c.receiptId ? `<code translate="no">${esc(c.receiptId)}</code>${c.consensus ? `, ${esc(c.consensus)}` : ""}${c.crossChecks.length ? `, ${c.crossChecks.filter((x) => x.endsWith("passed")).length} cross-checks passed` : ""}` : "Recorded before receipts were kept"
+                  }</td></tr>`,
+              )
+              .join("")}</tbody></table></div>`,
+          )
+        : ""
+    }
     ${block(
       "ev-run",
       "This run",

@@ -35,7 +35,8 @@
         <span class="brand-word">Why So High</span>
       </a>
       <span class="household" id="household"><span class="sk-line on-dark" aria-hidden="true"></span><span class="sr-only">Loading the household…</span></span>
-      <span class="sample"><i class="ph-light ph-flask" aria-hidden="true"></i>Sample bill, made-up data</span>
+      <span class="sample"><i class="ph-light ph-flask" aria-hidden="true"></i>Sample household, made-up data</span>
+      <button type="button" class="btn on-dark" id="photoOpen" aria-haspopup="dialog" aria-controls="photoDialog"><i class="ph-light ph-camera" aria-hidden="true"></i>Read your own bill</button>
     </div>
     <div class="tabs" role="tablist" aria-label="Which bill">
       <button class="tab" type="button" role="tab" id="tab-first" aria-selected="true" aria-controls="page" aria-disabled="true"><i class="ph-light ph-file-text" aria-hidden="true"></i><span id="tab-first-label"><span class="sk-line on-dark tab-sk" aria-hidden="true"></span><span class="sr-only">First bill</span></span><span class="when" id="tab-first-when"></span></button>
@@ -49,6 +50,16 @@
     <div id="panel"></div>
   </div>
   <div id="live" class="sr-only" aria-live="polite" aria-atomic="true"></div>
+  <dialog id="photoDialog" class="bill-dialog photo-dialog" aria-labelledby="photoH">
+    <div class="dlg-head">
+      <h2 id="photoH">Read your own bill</h2>
+      <button type="button" class="btn line" id="photoClose"><i class="ph-light ph-x" aria-hidden="true"></i>Close</button>
+    </div>
+    <p>For AEP Ohio residential bills. Take a sharp photo of the first page. Nemotron reads the dates, kWh and totals, and the same agents split the change with AEP Ohio's published tariff and Columbus weather. The photo is deleted once it is read.</p>
+    <label class="btn solid photo-pick"><i class="ph-light ph-camera" aria-hidden="true"></i>Choose a photo<input type="file" id="photoFile" accept="image/jpeg,image/png" capture="environment" class="sr-only"></label>
+    <p id="photoStatus" class="photo-status" role="status" aria-live="polite"></p>
+    <div id="photoResult"></div>
+  </dialog>
 </main>
 
 <footer class="foot">

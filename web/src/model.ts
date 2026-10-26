@@ -27,17 +27,19 @@ export const AGENT_NAMES: Readonly<Record<string, string>> = {
   ReconciliationCritic: "The checker",
   HouseholdMemory: "Your notes",
   ActionPlanner: "Help finder",
+  Explainer: "Plain words",
 };
 
 /** What each agent does, in one line, for the evidence table. */
 export const AGENT_JOBS: Readonly<Record<string, string>> = {
-  BillReader: "Reads the bill photo (Nemotron vision model)",
-  RateAnalyst: "Recomputes the bill from AEP Ohio's published tariff",
-  WeatherAnalyst: "Columbus daily weather from NOAA, as degree days",
-  UsageAnalyst: "Splits days, weather and your own use",
-  ReconciliationCritic: "Recomputes everything and sends work back when it does not add up",
-  HouseholdMemory: "What the household told us, used on the next bill",
-  ActionPlanner: "Programs the household qualifies for today, with amounts",
+  BillReader: "Reads the bill photo. Nemotron vision model, through Nightshift",
+  RateAnalyst: "Recomputes the bill from AEP Ohio's published tariff. Code, no model",
+  WeatherAnalyst: "Columbus daily weather from NOAA, as degree days. Code, no model",
+  UsageAnalyst: "Splits days, weather and your own use. Code, no model",
+  ReconciliationCritic: "Recomputes everything and sends work back when it does not add up. Code, no model",
+  HouseholdMemory: "What the household told us, used on the next bill. Meterless H-MEM and World Model",
+  ActionPlanner: "Programs the household qualifies for today, with amounts. Code, no model",
+  Explainer: "Writes the summary in plain words. Nemotron, through Nightshift; the checker matches every number",
 };
 
 /** The plain name of an agent, or the code name when it has none. */
@@ -91,9 +93,26 @@ export interface ActionView {
   readonly window: { readonly from: string; readonly to: string } | null;
 }
 
+/** One Nemotron call and the compute receipt Meterless returned with it. */
+export interface ModelCall {
+  readonly agent: string;
+  readonly modelRequested: string;
+  readonly modelServed: string;
+  readonly receiptId: string | null;
+  readonly route: string | null;
+  readonly consensus: string | null;
+  readonly crossChecks: readonly string[];
+}
+
 export interface Evidence {
   readonly weatherSql: string | null;
   readonly tariffSql: string | null;
+  /** The decision written back to the household record through Zetaris, and the read that confirmed it. */
+  readonly decisionSql: string | null;
+  readonly decisionReadSql: string | null;
+  readonly decisionReadBack: readonly string[] | null;
+  readonly ohioSql: string | null;
+  readonly modelCalls: readonly ModelCall[];
   readonly tariff: { readonly label: string; readonly name: string; readonly start: string } | null;
   readonly billModel: string | null;
   readonly runId: string;
@@ -128,6 +147,10 @@ export interface RunView {
   readonly notOffered: readonly { readonly id: string; readonly name: string; readonly reason: string }[];
   /** The bill image this run read, as the page serves it, when the server says which. */
   readonly billImage: string | null;
+  /** Nemotron's summary after check 6, or the sentence built from the numbers when it failed. */
+  readonly words: { readonly text: string; readonly byModel: boolean } | null;
+  /** Ohio's average residential price that month (EIA), next to this bill's. */
+  readonly ohio: { readonly month: string; readonly ohioCentsPerKwh: number; readonly billCentsPerKwh: number } | null;
 }
 
 const TARIFF_AGENT = "RateAnalyst";
@@ -244,6 +267,7 @@ function describeCause(key: ComponentKey, amount: number, ctx: CauseContext): Om
 const CHECK_TITLES: Readonly<Record<string, string>> = {
   freshness: "The data covers every day",
   weather_model: "The weather model is believable",
+  explanation_numbers: "The summary uses only these numbers",
 };
 
 function checkTitle(e: LogEvent): string {
@@ -283,9 +307,30 @@ function evidenceFrom(run: DemoPayloadRun): Evidence {
   };
   const model = [...run.trace].reverse().find((t) => t.agent === "BillReader" && t.step === "model_call");
   const segment = run.rate.estimate.charges.segments[0];
+  const orchestrator = run.trace.filter((t) => t.agent === "Orchestrator" && t.step === "sql").map((t) => String(t.sql));
+  const receiptOf = (t: LogEvent): Record<string, unknown> => (t.receipt && typeof t.receipt === "object" ? (t.receipt as Record<string, unknown>) : {});
+  const text = (v: unknown): string | null => (typeof v === "string" && v !== "" ? v : null);
   return {
     weatherSql: sqlOf("WeatherAnalyst"),
     tariffSql: sqlOf(TARIFF_AGENT),
+    decisionSql: orchestrator.find((q) => q.startsWith("INSERT")) ?? null,
+    decisionReadSql: orchestrator.find((q) => q.startsWith("SELECT run_key")) ?? null,
+    decisionReadBack: run.recorded?.readBack ?? null,
+    ohioSql: run.trace.find((t) => t.step === "sql" && String(t.sql).includes("eia_api"))?.sql as string | undefined ?? null,
+    modelCalls: run.trace
+      .filter((t) => t.step === "model_call")
+      .map((t) => {
+        const r = receiptOf(t);
+        return {
+          agent: String(t.agent),
+          modelRequested: String(t.modelRequested ?? ""),
+          modelServed: String(t.modelServed ?? ""),
+          receiptId: text(r.receiptId),
+          route: text(r.route),
+          consensus: text(r.consensus),
+          crossChecks: Array.isArray(r.crossChecks) ? r.crossChecks.map(String) : [],
+        };
+      }),
     tariff: segment ? { label: segment.tariff.label, name: segment.tariff.name, start: segment.tariff.start } : null,
     billModel: model ? String(model.modelServed) : null,
     runId: run.runId,
@@ -372,6 +417,8 @@ export function runView(run: DemoPayloadRun, household: Household, minBillsToFit
     }),
     notOffered: run.actions.notProposed.map((n) => ({ id: n.id, name: n.name, reason: plainReason(n.reason) })),
     billImage: run.billImage ?? null,
+    words: run.words ? { text: run.words.text, byModel: run.words.source === "model" } : null,
+    ohio: run.ohio ?? null,
   };
 }
 

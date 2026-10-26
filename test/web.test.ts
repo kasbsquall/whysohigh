@@ -327,7 +327,7 @@ describe("round 3: the paper bill, the next step and the weather labels", () => 
 
   it("puts the first offered action under the headline, worded from its amount and linked to its card", () => {
     const sep = nextStepLine(page.first, "2026-10-24", "september");
-    expect(sep).toContain("<b>Next step:</b> PIPP Plus could make your bill about $100 a month, instead of this bill&#39;s $217.42.");
+    expect(sep).toContain("<b>Next step:</b> PIPP Plus (Percentage of Income Payment Plan) could make your bill about $100 a month, instead of this bill&#39;s $217.42.");
     expect(sep).toContain('href="#september-act-pipp_plus"');
     expect(actions(page.first, "2026-10-24")).toContain('id="september-act-pipp_plus"');
     const oct = nextStepLine(page.withMemory, "2026-10-24", "october");

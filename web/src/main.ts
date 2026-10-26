@@ -5,6 +5,7 @@ import "./styles.css";
 import type { DemoPayload } from "../../src/demo.ts";
 import { pageView, type PageView } from "./model.ts";
 import { failure, friendlyError, panel, parseHash, skeleton, stripHint, tabKey, tabWhen, todayInOhio, type Tab } from "./view.ts";
+import { wirePhoto } from "./photo.ts";
 
 interface State {
   readonly tab: Tab;
@@ -330,4 +331,5 @@ async function load(): Promise<void> {
   await start(false);
 }
 
+wirePhoto();
 void load();

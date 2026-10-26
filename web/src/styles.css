@@ -78,9 +78,22 @@ code{font-family:var(--font-mono); font-size:1em; color:var(--ink); overflow-wra
 .brand svg{width:28px; height:28px; flex:none}
 .brand-word{font-family:var(--font-display); font-weight:700; font-size:21px; letter-spacing:-0.012em}
 .household{color:var(--on-service-2); font-size:16px; margin-left:auto; min-width:12ch}
-.sample{display:inline-flex; align-items:center; gap:6px; font-size:16px; font-weight:500;
-  padding:6px 10px; border-radius:var(--radius); background:oklch(66% .16 45 / .22); color:var(--on-service);
-  border:1px solid oklch(80% .1 55 / .55)}
+.sample{display:inline-flex; align-items:center; gap:6px; font-size:15px; font-weight:500; color:var(--on-service-2)}
+.btn.on-dark{background:oklch(97.5% .008 230 / .1); color:var(--on-service); border-color:oklch(97.5% .008 230 / .35); min-height:40px; padding:8px 14px; font-size:16px}
+.btn.on-dark:hover{background:oklch(97.5% .008 230 / .18)}
+.btn:focus-visible{outline:2px solid currentColor; outline-offset:2px}
+.photo-dialog{width:min(640px, calc(100vw - 32px))}
+.photo-dialog > p{margin-top:var(--s3); max-width:60ch}
+.photo-pick{margin-top:var(--s4); position:relative}
+.photo-pick:focus-within{outline:2px solid var(--service); outline-offset:2px}
+.photo-status{margin-top:var(--s3); color:var(--ink-2); min-height:1.4em}
+.photo-h{font-family:var(--font-display); font-size:20px; font-weight:700; margin-top:var(--s5)}
+.photo-read{display:grid; gap:var(--s1); margin-top:var(--s2)}
+.photo-read div{display:grid; grid-template-columns:14ch minmax(0,1fr); gap:var(--s3)}
+.photo-read dt{color:var(--ink-2)}
+.photo-split{list-style:none; padding:0; margin-top:var(--s3); display:grid; gap:var(--s1)}
+.photo-split li{display:flex; justify-content:space-between; gap:var(--s3); border-bottom:1px solid var(--line); padding-bottom:var(--s1)}
+.photo-msg{margin-top:var(--s3)}
 .tabs{display:flex; gap:var(--s2); margin-top:var(--s1)}
 .tab{appearance:none; background:none; border:0; cursor:pointer; color:var(--on-service-2);
   font:500 17px/1 var(--font-display); padding:14px 14px 15px; min-height:48px; display:inline-flex; gap:8px; align-items:center;
@@ -93,7 +106,7 @@ code{font-family:var(--font-mono); font-size:1em; color:var(--ink); overflow-wra
 .tab .when{font-weight:400; font-size:16px; color:inherit}
 .tab .when:empty{display:none}
 .tab[aria-disabled="true"]{cursor:progress}
-.tab-sk{display:inline-block; width:9ch; height:12px; vertical-align:middle}
+.tab-sk, .sk-line.on-dark.tab-sk{display:inline-block; width:9ch; height:12px; vertical-align:middle}
 
 /* ---------- Entrance: blocks at 60ms steps, rows at 30ms, capped at 8 ---------- */
 .block{animation:rise 260ms var(--ease-out) both; animation-delay:calc(var(--b, 0) * 60ms)}
@@ -128,6 +141,11 @@ main{padding-bottom:var(--s9)}
 .unit-note{margin-top:var(--s2); font-size:16px; color:var(--ink-2)}
 .why-row{display:grid; gap:var(--s2); margin-top:var(--s2)}
 .why{font-family:var(--font-display); font-size:24px; font-weight:600; letter-spacing:-0.012em}
+.summary{display:grid; gap:var(--s1); max-width:62ch}
+.summary-text{font-size:19px; line-height:1.5; color:var(--ink); text-wrap:pretty}
+.summary-credit{display:flex; gap:8px; align-items:flex-start; font-size:14px; line-height:1.45; color:var(--ink-2)}
+.summary-credit i{font-size:18px; margin-top:1px; flex:none}
+.ohio-note{margin-top:var(--s1)}
 /* October: the memory switch sits beside "Here is why.", its one line under both. */
 .why-head{display:grid; grid-template-columns:auto minmax(0,1fr); align-items:center; column-gap:var(--s5)}
 .mem-ctl{display:contents}
@@ -485,7 +503,8 @@ ol.words b{color:var(--ink); font-family:var(--font-display)}
   .wrap{padding:0 var(--s4)}
   .shell-top{gap:var(--s2) var(--s4)}
   .household{margin-left:0; width:100%; font-size:16px}
-  .sample{font-size:16px}
+  .sample{font-size:15px}
+  #photoOpen{margin-left:auto; min-height:44px; padding:6px 12px; font-size:15px}
   .tab{padding:12px 10px 13px; font-size:16px}
   .tab .when{display:none}
   .lead{padding-top:var(--s6); gap:var(--s5)}
